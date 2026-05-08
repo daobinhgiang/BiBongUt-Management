@@ -1,5 +1,5 @@
-import { Stack, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useRef } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
@@ -7,21 +7,26 @@ import { useFamily } from "@/features/auth/hooks/useFamily";
 export default function AppLayout() {
   const { data: familyMember, isLoading } = useFamily();
   const router = useRouter();
-  const [ready, setReady] = useState(false);
+  const segments = useSegments();
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
     if (isLoading) return;
 
-    if (!familyMember) {
+    const inTabs = segmentsRef.current.some((s) => s === "(tabs)");
+
+    if (!familyMember && inTabs) {
       router.replace("/(app)/family-setup");
-    } else {
+    } else if (familyMember && !inTabs) {
       router.replace("/(app)/(tabs)");
     }
-    // Delay one frame so router.replace processes before Stack renders
-    requestAnimationFrame(() => setReady(true));
-  }, [familyMember, isLoading]);
 
-  if (!ready) {
+    hasNavigated.current = true;
+  }, [familyMember, isLoading, router]);
+
+  if (isLoading || !hasNavigated.current) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
