@@ -1,24 +1,69 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+/**
+ * Root Layout
+ *
+ * Top-level layout wrapping the entire app with global providers:
+ *
+ * 1. **global.css** — NativeWind/Tailwind styles (must be imported at root)
+ * 2. **QueryClientProvider** — TanStack Query for server state management
+ * 3. **SessionProvider** — Supabase auth context (session, sign-in/out methods)
+ *
+ * Auth Gate:
+ * - `(app)` routes require an active session (redirect to login if not authenticated)
+ * - `(auth)` routes require NO session (redirect to app if already authenticated)
+ * - While the initial session is loading, a loading screen is shown
+ *
+ * @see https://docs.expo.dev/router/reference/authentication/
+ */
+import "../global.css";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Slot, useRouter, useSegments } from "expo-router";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { queryClient } from "@/lib/query-client";
+import { SessionProvider, useSession } from "@/lib/auth/ctx";
+
+/**
+ * Auth gate — redirects users based on session state.
+ * Placed inside SessionProvider so it can access useSession().
+ */
+function AuthGate() {
+  const { session, isLoading } = useSession();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!session && !inAuthGroup) {
+      // Not signed in — redirect to login
+      router.replace("/(auth)/login");
+    } else if (session && inAuthGroup) {
+      // Signed in but on auth screen — redirect to app
+      router.replace("/(app)/(tabs)");
+    }
+  }, [session, isLoading, segments, router]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return <Slot />;
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <SessionProvider>
+        <AuthGate />
+      </SessionProvider>
+    </QueryClientProvider>
   );
 }
