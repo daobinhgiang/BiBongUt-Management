@@ -1,5 +1,6 @@
 -- award_points() integration test
--- Run against a local Supabase instance:
+-- Run against a local Supabase instance as superuser (bypasses RLS and FK
+-- checks to auth.users, since test UUIDs don't exist in auth.users):
 --   psql "$DATABASE_URL" -f supabase/tests/award_points_test.sql
 
 begin;

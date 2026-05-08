@@ -837,8 +837,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_family_with_member: {
+        Args: { p_name: string; p_nickname: string }
+        Returns: string
+      }
       is_family_member: { Args: { p_family_id: string }; Returns: boolean }
       is_family_parent: { Args: { p_family_id: string }; Returns: boolean }
+      join_family_with_invite: {
+        Args: { p_invite_code: string; p_nickname: string }
+        Returns: string
+      }
       my_family_ids: { Args: never; Returns: string[] }
     }
     Enums: {

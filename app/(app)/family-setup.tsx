@@ -11,13 +11,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useSession } from "@/lib/auth/ctx";
-import { createFamily } from "@/features/families";
-import { joinFamily } from "@/features/families";
+import { createFamily, joinFamily } from "@/features/families";
 
 type Mode = "choose" | "create" | "join";
 
 export default function FamilySetupScreen() {
-  const { session, signOut } = useSession();
+  const { signOut } = useSession();
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<Mode>("choose");
   const [familyName, setFamilyName] = useState("");
@@ -36,7 +35,6 @@ export default function FamilySetupScreen() {
     try {
       await createFamily({
         name: familyName.trim(),
-        userId: session!.user.id,
         nickname: nickname.trim(),
       });
       queryClient.invalidateQueries({ queryKey: ["my-family"] });
@@ -57,7 +55,6 @@ export default function FamilySetupScreen() {
     try {
       await joinFamily({
         inviteCode: inviteCode.trim(),
-        userId: session!.user.id,
         nickname: nickname.trim(),
       });
       queryClient.invalidateQueries({ queryKey: ["my-family"] });
