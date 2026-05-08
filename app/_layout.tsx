@@ -18,7 +18,7 @@ import "../global.css";
 
 import { Slot, useRouter, useSegments } from "expo-router";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import { queryClient } from "@/lib/query-client";
@@ -31,21 +31,21 @@ import { SessionProvider, useSession } from "@/lib/auth/ctx";
 function AuthGate() {
   const { session, isLoading } = useSession();
   const segments = useSegments();
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
   const router = useRouter();
 
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup = segments[0] === "(auth)";
+    const inAuthGroup = segmentsRef.current[0] === "(auth)";
 
     if (!session && !inAuthGroup) {
-      // Not signed in — redirect to login
       router.replace("/(auth)/login");
     } else if (session && inAuthGroup) {
-      // Signed in but on auth screen — redirect to app
       router.replace("/(app)/(tabs)");
     }
-  }, [session, isLoading, segments, router]);
+  }, [session, isLoading, router]);
 
   if (isLoading) {
     return (
