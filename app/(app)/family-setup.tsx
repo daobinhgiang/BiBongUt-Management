@@ -11,7 +11,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useSession } from "@/lib/auth/ctx";
-import { supabase } from "@/lib/supabase";
+import { createFamily } from "@/features/families";
+import { joinFamily } from "@/features/families";
 
 type Mode = "choose" | "create" | "join";
 
@@ -33,23 +34,11 @@ export default function FamilySetupScreen() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const { data: family, error: familyErr } = await supabase
-        .from("families")
-        .insert({ name: familyName.trim(), created_by: session!.user.id })
-        .select("id")
-        .single();
-      if (familyErr) throw familyErr;
-
-      const { error: memberErr } = await supabase
-        .from("family_members")
-        .insert({
-          family_id: family.id,
-          user_id: session!.user.id,
-          role: "parent" as const,
-          nickname: nickname.trim(),
-        });
-      if (memberErr) throw memberErr;
-
+      await createFamily({
+        name: familyName.trim(),
+        userId: session!.user.id,
+        nickname: nickname.trim(),
+      });
       queryClient.invalidateQueries({ queryKey: ["my-family"] });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to create family");
@@ -66,31 +55,11 @@ export default function FamilySetupScreen() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const { data: invite, error: inviteErr } = await supabase
-        .from("family_invites")
-        .select("id, family_id, expires_at, accepted_at")
-        .eq("token", inviteCode.trim())
-        .maybeSingle();
-      if (inviteErr) throw inviteErr;
-      if (!invite) throw new Error("Invalid invite code");
-      if (invite.accepted_at) throw new Error("This invite has already been used");
-      if (new Date(invite.expires_at) < new Date()) throw new Error("This invite has expired");
-
-      const { error: memberErr } = await supabase
-        .from("family_members")
-        .insert({
-          family_id: invite.family_id,
-          user_id: session!.user.id,
-          role: "child" as const,
-          nickname: nickname.trim(),
-        });
-      if (memberErr) throw memberErr;
-
-      await supabase
-        .from("family_invites")
-        .update({ accepted_at: new Date().toISOString() })
-        .eq("id", invite.id);
-
+      await joinFamily({
+        inviteCode: inviteCode.trim(),
+        userId: session!.user.id,
+        nickname: nickname.trim(),
+      });
       queryClient.invalidateQueries({ queryKey: ["my-family"] });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to join family");

@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
@@ -8,6 +8,7 @@ import { useFamily } from "@/features/auth/hooks/useFamily";
 export default function AppLayout() {
   const { data: familyMember, isLoading } = useFamily();
   const router = useRouter();
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -17,9 +18,10 @@ export default function AppLayout() {
     } else {
       router.replace("/(app)/(tabs)");
     }
+    setHasRedirected(true);
   }, [familyMember, isLoading, router]);
 
-  if (isLoading) {
+  if (isLoading || !hasRedirected) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
