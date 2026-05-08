@@ -1,0 +1,211 @@
+import { useRef, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { Link } from "expo-router";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+
+import { useSession } from "@/lib/auth/ctx";
+
+const signupSchema = z
+  .object({
+    email: z.string().email("Enter a valid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+type SignupForm = z.infer<typeof signupSchema>;
+
+export default function SignupScreen() {
+  const { signUpWithEmail } = useSession();
+  const passwordRef = useRef<React.ElementRef<typeof TextInput>>(null);
+  const confirmPasswordRef = useRef<React.ElementRef<typeof TextInput>>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupForm>({
+    defaultValues: { email: "", password: "", confirmPassword: "" },
+  });
+
+  const onSubmit = async (data: SignupForm) => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      await signUpWithEmail(data.email, data.password);
+    } catch (e: any) {
+      setError(e.message ?? "Sign up failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const submitForm = handleSubmit(onSubmit);
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <View className="flex-1 items-center justify-center bg-white px-6">
+        <Text className="mb-2 text-3xl font-bold text-gray-900">
+          Join BiBongUt
+        </Text>
+        <Text className="mb-8 text-base text-gray-500">
+          Create your account
+        </Text>
+
+        <View className="w-full max-w-sm gap-4">
+          {error && (
+            <View className="rounded-lg bg-red-50 px-4 py-3">
+              <Text className="text-sm text-red-600">{error}</Text>
+            </View>
+          )}
+
+          <View>
+            <Text className="mb-1 text-sm font-medium text-gray-700">
+              Email
+            </Text>
+            <Controller
+              control={control}
+              name="email"
+              rules={{
+                required: "Email is required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Enter a valid email",
+                },
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                  placeholder="you@example.com"
+                  placeholderTextColor="#9ca3af"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  keyboardType="email-address"
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmitEditing={() => passwordRef.current?.focus()}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {errors.email && (
+              <Text className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+              </Text>
+            )}
+          </View>
+
+          <View>
+            <Text className="mb-1 text-sm font-medium text-gray-700">
+              Password
+            </Text>
+            <Controller
+              control={control}
+              name="password"
+              rules={{
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={passwordRef}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                  placeholder="At least 6 characters"
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {errors.password && (
+              <Text className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </Text>
+            )}
+          </View>
+
+          <View>
+            <Text className="mb-1 text-sm font-medium text-gray-700">
+              Confirm Password
+            </Text>
+            <Controller
+              control={control}
+              name="confirmPassword"
+              rules={{ required: "Please confirm your password" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={confirmPasswordRef}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                  placeholder="Re-enter your password"
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry
+                  returnKeyType="done"
+                  onSubmitEditing={() => {
+                    if (!isSubmitting) submitForm();
+                  }}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {errors.confirmPassword && (
+              <Text className="mt-1 text-sm text-red-500">
+                {errors.confirmPassword.message}
+              </Text>
+            )}
+          </View>
+
+          <Pressable
+            className="mt-2 w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
+            onPress={submitForm}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-base font-semibold text-white">
+                Create Account
+              </Text>
+            )}
+          </Pressable>
+        </View>
+
+        <Link href="/(auth)/login" asChild>
+          <Pressable className="mt-6">
+            <Text className="text-base text-blue-600">
+              Already have an account? Sign in
+            </Text>
+          </Pressable>
+        </Link>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}

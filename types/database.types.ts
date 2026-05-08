@@ -1,0 +1,963 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      badge_unlocks: {
+        Row: {
+          badge_id: string
+          family_member_id: string
+          id: string
+          unlocked_at: string
+        }
+        Insert: {
+          badge_id: string
+          family_member_id: string
+          id?: string
+          unlocked_at?: string
+        }
+        Update: {
+          badge_id?: string
+          family_member_id?: string
+          id?: string
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badge_unlocks_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "badge_unlocks_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      badges: {
+        Row: {
+          code: string
+          coins_reward: number
+          criteria: Json | null
+          description: string | null
+          icon_url: string | null
+          id: string
+          name: string
+          xp_reward: number
+        }
+        Insert: {
+          code: string
+          coins_reward?: number
+          criteria?: Json | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name: string
+          xp_reward?: number
+        }
+        Update: {
+          code?: string
+          coins_reward?: number
+          criteria?: Json | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      bucket_list_items: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          family_id: string
+          id: string
+          points: number
+          status: Database["public"]["Enums"]["bucket_status"]
+          title: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          family_id: string
+          id?: string
+          points?: number
+          status?: Database["public"]["Enums"]["bucket_status"]
+          title: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          family_id?: string
+          id?: string
+          points?: number
+          status?: Database["public"]["Enums"]["bucket_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bucket_list_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bucket_list_items_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_events: {
+        Row: {
+          all_day: boolean
+          created_at: string
+          created_by: string
+          description: string | null
+          end_at: string
+          family_id: string
+          id: string
+          start_at: string
+          title: string
+        }
+        Insert: {
+          all_day?: boolean
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_at: string
+          family_id: string
+          id?: string
+          start_at: string
+          title: string
+        }
+        Update: {
+          all_day?: boolean
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_at?: string
+          family_id?: string
+          id?: string
+          start_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_participants: {
+        Row: {
+          challenge_id: string
+          completed_at: string | null
+          family_member_id: string
+          id: string
+          joined_at: string
+          points_earned: number
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string | null
+          family_member_id: string
+          id?: string
+          joined_at?: string
+          points_earned?: number
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string | null
+          family_member_id?: string
+          id?: string
+          joined_at?: string
+          points_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participants_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_participants_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          family_id: string
+          id: string
+          points: number
+          start_date: string | null
+          status: Database["public"]["Enums"]["challenge_status"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          family_id: string
+          id?: string
+          points?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["challenge_status"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          family_id?: string
+          id?: string
+          points?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["challenge_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenges_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenges_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_attendees: {
+        Row: {
+          event_id: string
+          family_member_id: string
+          id: string
+          status: Database["public"]["Enums"]["attendance_status"]
+        }
+        Insert: {
+          event_id: string
+          family_member_id: string
+          id?: string
+          status?: Database["public"]["Enums"]["attendance_status"]
+        }
+        Update: {
+          event_id?: string
+          family_member_id?: string
+          id?: string
+          status?: Database["public"]["Enums"]["attendance_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendees_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      families: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      family_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          family_id: string
+          id: string
+          invited_by: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          family_id: string
+          id?: string
+          invited_by: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          family_id?: string
+          id?: string
+          invited_by?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_invites_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_members: {
+        Row: {
+          avatar_url: string | null
+          birthdate: string | null
+          coins: number
+          created_at: string
+          current_streak: number
+          family_id: string
+          id: string
+          last_active_date: string | null
+          level: number
+          longest_streak: number
+          nickname: string
+          pin_hash: string | null
+          role: Database["public"]["Enums"]["family_role"]
+          total_xp: number
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          birthdate?: string | null
+          coins?: number
+          created_at?: string
+          current_streak?: number
+          family_id: string
+          id?: string
+          last_active_date?: string | null
+          level?: number
+          longest_streak?: number
+          nickname: string
+          pin_hash?: string | null
+          role?: Database["public"]["Enums"]["family_role"]
+          total_xp?: number
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          birthdate?: string | null
+          coins?: number
+          created_at?: string
+          current_streak?: number
+          family_id?: string
+          id?: string
+          last_active_date?: string | null
+          level?: number
+          longest_streak?: number
+          nickname?: string
+          pin_hash?: string | null
+          role?: Database["public"]["Enums"]["family_role"]
+          total_xp?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movie_watches: {
+        Row: {
+          id: string
+          movie_id: string
+          notes: string | null
+          rating: number | null
+          watched_at: string
+          watched_by: string
+        }
+        Insert: {
+          id?: string
+          movie_id: string
+          notes?: string | null
+          rating?: number | null
+          watched_at?: string
+          watched_by: string
+        }
+        Update: {
+          id?: string
+          movie_id?: string
+          notes?: string | null
+          rating?: number | null
+          watched_at?: string
+          watched_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movie_watches_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movie_watches_watched_by_fkey"
+            columns: ["watched_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movies: {
+        Row: {
+          added_by: string
+          created_at: string
+          family_id: string
+          id: string
+          poster_url: string | null
+          rating: number | null
+          status: Database["public"]["Enums"]["movie_status"]
+          title: string
+          year: number | null
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          family_id: string
+          id?: string
+          poster_url?: string | null
+          rating?: number | null
+          status?: Database["public"]["Enums"]["movie_status"]
+          title: string
+          year?: number | null
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          family_id?: string
+          id?: string
+          poster_url?: string | null
+          rating?: number | null
+          status?: Database["public"]["Enums"]["movie_status"]
+          title?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movies_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movies_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_redemptions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          coins_spent: number
+          id: string
+          redeemed_at: string
+          redeemed_by: string
+          reward_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          coins_spent: number
+          id?: string
+          redeemed_at?: string
+          redeemed_by: string
+          reward_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          coins_spent?: number
+          id?: string
+          redeemed_at?: string
+          redeemed_by?: string
+          reward_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_redeemed_by_fkey"
+            columns: ["redeemed_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          cost_coins: number
+          created_at: string
+          created_by: string
+          description: string | null
+          family_id: string
+          icon_url: string | null
+          id: string
+          is_active: boolean
+          title: string
+        }
+        Insert: {
+          cost_coins: number
+          created_at?: string
+          created_by: string
+          description?: string | null
+          family_id: string
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+        }
+        Update: {
+          cost_coins?: number
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          family_id?: string
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rewards_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_completions: {
+        Row: {
+          coins_awarded: number
+          completed_at: string
+          completed_by: string
+          id: string
+          notes: string | null
+          photo_url: string | null
+          points_awarded: number
+          task_id: string
+        }
+        Insert: {
+          coins_awarded?: number
+          completed_at?: string
+          completed_by: string
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          points_awarded?: number
+          task_id: string
+        }
+        Update: {
+          coins_awarded?: number
+          completed_at?: string
+          completed_by?: string
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          points_awarded?: number
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_completions_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_completions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          assignee_id: string | null
+          coins_reward: number
+          created_at: string
+          created_by: string
+          description: string | null
+          difficulty: Database["public"]["Enums"]["task_difficulty"]
+          due_date: string | null
+          family_id: string
+          id: string
+          is_active: boolean
+          points: number
+          recurrence: Database["public"]["Enums"]["task_recurrence"]
+          title: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          coins_reward?: number
+          created_at?: string
+          created_by: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          due_date?: string | null
+          family_id: string
+          id?: string
+          is_active?: boolean
+          points?: number
+          recurrence?: Database["public"]["Enums"]["task_recurrence"]
+          title: string
+        }
+        Update: {
+          assignee_id?: string | null
+          coins_reward?: number
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          due_date?: string | null
+          family_id?: string
+          id?: string
+          is_active?: boolean
+          points?: number
+          recurrence?: Database["public"]["Enums"]["task_recurrence"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          created_at: string
+          delta_coins: number
+          delta_xp: number
+          family_member_id: string
+          id: string
+          reason: string
+          ref_id: string | null
+          ref_table: string | null
+        }
+        Insert: {
+          created_at?: string
+          delta_coins?: number
+          delta_xp?: number
+          family_member_id: string
+          id?: string
+          reason: string
+          ref_id?: string | null
+          ref_table?: string | null
+        }
+        Update: {
+          created_at?: string
+          delta_coins?: number
+          delta_xp?: number
+          family_member_id?: string
+          id?: string
+          reason?: string
+          ref_id?: string | null
+          ref_table?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      award_points: {
+        Args: {
+          p_coins: number
+          p_member_id: string
+          p_reason: string
+          p_ref_id: string
+          p_ref_table: string
+          p_xp: number
+        }
+        Returns: undefined
+      }
+      is_family_member: { Args: { p_family_id: string }; Returns: boolean }
+      is_family_parent: { Args: { p_family_id: string }; Returns: boolean }
+      my_family_ids: { Args: never; Returns: string[] }
+    }
+    Enums: {
+      attendance_status: "going" | "maybe" | "declined"
+      bucket_status: "pending" | "done"
+      challenge_status: "active" | "completed" | "cancelled"
+      family_role: "parent" | "child"
+      movie_status: "want_to_watch" | "watched"
+      task_difficulty: "easy" | "medium" | "hard"
+      task_recurrence: "none" | "daily" | "weekly" | "monthly"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      attendance_status: ["going", "maybe", "declined"],
+      bucket_status: ["pending", "done"],
+      challenge_status: ["active", "completed", "cancelled"],
+      family_role: ["parent", "child"],
+      movie_status: ["want_to_watch", "watched"],
+      task_difficulty: ["easy", "medium", "hard"],
+      task_recurrence: ["none", "daily", "weekly", "monthly"],
+    },
+  },
+} as const
