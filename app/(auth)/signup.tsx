@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { useSession } from "@/lib/auth/ctx";
@@ -39,6 +40,7 @@ export default function SignupScreen() {
     handleSubmit,
     formState: { errors },
   } = useForm<SignupForm>({
+    resolver: zodResolver(signupSchema),
     defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
@@ -47,8 +49,8 @@ export default function SignupScreen() {
     setIsSubmitting(true);
     try {
       await signUpWithEmail(data.email, data.password);
-    } catch (e: any) {
-      setError(e.message ?? "Sign up failed");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Sign up failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,13 +85,6 @@ export default function SignupScreen() {
             <Controller
               control={control}
               name="email"
-              rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email",
-                },
-              }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
@@ -121,13 +116,6 @@ export default function SignupScreen() {
             <Controller
               control={control}
               name="password"
-              rules={{
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   ref={passwordRef}
@@ -158,7 +146,6 @@ export default function SignupScreen() {
             <Controller
               control={control}
               name="confirmPassword"
-              rules={{ required: "Please confirm your password" }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   ref={confirmPasswordRef}

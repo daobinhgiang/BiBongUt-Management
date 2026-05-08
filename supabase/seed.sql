@@ -1,12 +1,54 @@
 -- Seed script for BiBongUt Family Management App
--- Uses service_role context (bypasses RLS) for seeding
+-- Runs with service_role (bypasses RLS) via `supabase db reset`
+
+-- Create test auth users (required for FK references)
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, confirmation_token, raw_app_meta_data, raw_user_meta_data)
+values
+  (
+    '00000000-0000-0000-0000-aaaaaaaaaaaa',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated',
+    'parent@test.com',
+    crypt('password123', gen_salt('bf')),
+    now(), now(), now(), '',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb
+  ),
+  (
+    '00000000-0000-0000-0000-bbbbbbbbbbbb',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated',
+    'child@test.com',
+    crypt('password123', gen_salt('bf')),
+    now(), now(), now(), '',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb
+  );
+
+-- Create identities for the test users (required for email login)
+insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+values
+  (
+    '00000000-0000-0000-0000-aaaaaaaaaaaa',
+    '00000000-0000-0000-0000-aaaaaaaaaaaa',
+    'parent@test.com', 'email',
+    '{"sub":"00000000-0000-0000-0000-aaaaaaaaaaaa","email":"parent@test.com"}'::jsonb,
+    now(), now(), now()
+  ),
+  (
+    '00000000-0000-0000-0000-bbbbbbbbbbbb',
+    '00000000-0000-0000-0000-bbbbbbbbbbbb',
+    'child@test.com', 'email',
+    '{"sub":"00000000-0000-0000-0000-bbbbbbbbbbbb","email":"child@test.com"}'::jsonb,
+    now(), now(), now()
+  );
 
 -- Create test family
 insert into public.families (id, name, created_by)
 values (
   '00000000-0000-0000-0000-000000000001',
   'Dao Family',
-  '00000000-0000-0000-0000-aaaaaaaaaaaa' -- placeholder auth user id
+  '00000000-0000-0000-0000-aaaaaaaaaaaa'
 );
 
 -- Create parent member
@@ -58,13 +100,3 @@ values (
   10,
   '00000000-0000-0000-0001-000000000001'
 );
-
--- Test award_points: give the child 50 XP and 5 coins for completing a task
-select public.award_points(
-  '00000000-0000-0000-0001-000000000002',
-  50, 5,
-  'task_complete', 'tasks', '00000000-0000-0000-0002-000000000001'
-);
-
--- Verify: child should now have 50 XP, 5 coins, level 1
--- (level stays at 1 because floor(sqrt(50/100))+1 = 1)
