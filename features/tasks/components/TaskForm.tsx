@@ -202,7 +202,7 @@ export function TaskForm({ onSubmit, isPending }: Props) {
                 className="rounded-lg border border-gray-300 px-3 py-2"
                 keyboardType="number-pad"
                 value={String(value)}
-                onChangeText={(t) => onChange(Number(t) || 0)}
+                onChangeText={(t) => { const n = Number(t); onChange(Number.isNaN(n) ? 0 : n); }}
               />
             )}
           />
@@ -217,7 +217,7 @@ export function TaskForm({ onSubmit, isPending }: Props) {
                 className="rounded-lg border border-gray-300 px-3 py-2"
                 keyboardType="number-pad"
                 value={String(value)}
-                onChangeText={(t) => onChange(Number(t) || 0)}
+                onChangeText={(t) => { const n = Number(t); onChange(Number.isNaN(n) ? 0 : n); }}
               />
             )}
           />
