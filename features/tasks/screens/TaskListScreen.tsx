@@ -116,8 +116,8 @@ export function TaskListScreen() {
         onDismiss={dismissToast}
       />
 
-      {/* FAB */}
-      {family?.role === "parent" && (
+      {/* FAB — any family member can create tasks */}
+      {family != null && (
         <Pressable
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-blue-600 shadow-lg"
           onPress={() => router.push("/(app)/tasks/new")}

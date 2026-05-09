@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import { Pressable } from "react-native";
+import { Pressable, Text } from "react-native";
 
 import { TaskCreateScreen } from "@/features/tasks/screens/TaskCreateScreen";
 
@@ -24,11 +24,13 @@ export default function NewTaskRoute() {
                 if (router.canGoBack()) router.back();
                 else router.replace("/(app)/(tabs)/do");
               }}
-              className="ml-1 flex-row items-center justify-center p-1"
+              className="ml-1 flex-row items-center p-1"
             >
               <Ionicons name="chevron-back" size={28} color="#2563eb" />
+              <Text className="text-base font-normal text-blue-600">Back</Text>
             </Pressable>
           ),
+          headerTitle: "New Task",
         }}
       />
       <TaskCreateScreen />
