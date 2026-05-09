@@ -98,10 +98,10 @@ export default function FamilySetupScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1"
     >
-      <View className="flex-1 items-center justify-center bg-white px-6">
+      <View className="flex-1 items-center justify-center bg-bark-50 px-6">
         <View className="mb-2 flex-row items-center gap-2">
-          <HandWaving size={32} color="#f59e0b" weight="duotone" />
-          <Text className="text-3xl font-bold text-gray-900">
+          <HandWaving size={32} color="#b3a56f" weight="duotone" />
+          <Text className="text-3xl font-bold text-jungle-800">
             Welcome to BiBongUt
           </Text>
         </View>
@@ -119,7 +119,7 @@ export default function FamilySetupScreen() {
           {mode === "choose" && (
             <>
               <Pressable
-                className="w-full flex-row items-center justify-center gap-2 rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
+                className="w-full flex-row items-center justify-center gap-2 rounded-lg bg-jungle-500 py-3.5 active:bg-jungle-600"
                 onPress={() => switchMode("create")}
               >
                 <House size={20} color="#fff" weight="bold" />
@@ -129,11 +129,11 @@ export default function FamilySetupScreen() {
               </Pressable>
 
               <Pressable
-                className="w-full flex-row items-center justify-center gap-2 rounded-lg border border-blue-600 bg-white py-3.5 active:bg-blue-50"
+                className="w-full flex-row items-center justify-center gap-2 rounded-lg border border-jungle-500 bg-white py-3.5 active:bg-jungle-50"
                 onPress={() => switchMode("join")}
               >
-                <LinkIcon size={20} color="#2563eb" weight="bold" />
-                <Text className="text-base font-semibold text-blue-600">
+                <LinkIcon size={20} color="#819067" weight="bold" />
+                <Text className="text-base font-semibold text-jungle-600">
                   Join with Invite Code
                 </Text>
               </Pressable>
@@ -144,7 +144,7 @@ export default function FamilySetupScreen() {
             <>
               <View>
                 <View className="mb-1 flex-row items-center gap-1.5">
-                  <UsersThree size={14} color="#374151" />
+                  <UsersThree size={14} color="#6b7a54" />
                   <Text className="text-sm font-medium text-gray-700">
                     Family Name
                   </Text>
@@ -154,9 +154,9 @@ export default function FamilySetupScreen() {
                   name="familyName"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      className="w-full rounded-lg border border-bark-200 bg-white px-4 py-3 text-base text-gray-900"
                       placeholder="e.g. The Dao Family"
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#b3a56f"
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
@@ -172,7 +172,7 @@ export default function FamilySetupScreen() {
               </View>
               <View>
                 <View className="mb-1 flex-row items-center gap-1.5">
-                  <Smiley size={14} color="#374151" />
+                  <Smiley size={14} color="#6b7a54" />
                   <Text className="text-sm font-medium text-gray-700">
                     Your Nickname
                   </Text>
@@ -182,9 +182,9 @@ export default function FamilySetupScreen() {
                   name="nickname"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      className="w-full rounded-lg border border-bark-200 bg-white px-4 py-3 text-base text-gray-900"
                       placeholder="e.g. Dad, Mom, Papa"
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#b3a56f"
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
@@ -198,7 +198,7 @@ export default function FamilySetupScreen() {
                 )}
               </View>
               <Pressable
-                className={`w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700 ${isSubmitting ? "opacity-50" : ""}`}
+                className={`w-full items-center rounded-lg bg-jungle-500 py-3.5 active:bg-jungle-600 ${isSubmitting ? "opacity-50" : ""}`}
                 onPress={createForm.handleSubmit(handleCreate)}
                 disabled={isSubmitting}
               >
@@ -214,8 +214,8 @@ export default function FamilySetupScreen() {
                 className="flex-row items-center justify-center gap-1"
                 onPress={() => switchMode("choose")}
               >
-                <CaretLeft size={16} color="#2563eb" />
-                <Text className="text-base text-blue-600">Back</Text>
+                <CaretLeft size={16} color="#819067" />
+                <Text className="text-base text-jungle-600">Back</Text>
               </Pressable>
             </>
           )}
@@ -224,7 +224,7 @@ export default function FamilySetupScreen() {
             <>
               <View>
                 <View className="mb-1 flex-row items-center gap-1.5">
-                  <Ticket size={14} color="#374151" />
+                  <Ticket size={14} color="#6b7a54" />
                   <Text className="text-sm font-medium text-gray-700">
                     Invite Code
                   </Text>
@@ -234,9 +234,9 @@ export default function FamilySetupScreen() {
                   name="inviteCode"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      className="w-full rounded-lg border border-bark-200 bg-white px-4 py-3 text-base text-gray-900"
                       placeholder="Paste your invite code"
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#b3a56f"
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
@@ -253,7 +253,7 @@ export default function FamilySetupScreen() {
               </View>
               <View>
                 <View className="mb-1 flex-row items-center gap-1.5">
-                  <Smiley size={14} color="#374151" />
+                  <Smiley size={14} color="#6b7a54" />
                   <Text className="text-sm font-medium text-gray-700">
                     Your Nickname
                   </Text>
@@ -263,9 +263,9 @@ export default function FamilySetupScreen() {
                   name="nickname"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      className="w-full rounded-lg border border-bark-200 bg-white px-4 py-3 text-base text-gray-900"
                       placeholder="e.g. Kiddo, Junior"
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#b3a56f"
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
@@ -279,7 +279,7 @@ export default function FamilySetupScreen() {
                 )}
               </View>
               <Pressable
-                className={`w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700 ${isSubmitting ? "opacity-50" : ""}`}
+                className={`w-full items-center rounded-lg bg-jungle-500 py-3.5 active:bg-jungle-600 ${isSubmitting ? "opacity-50" : ""}`}
                 onPress={joinForm.handleSubmit(handleJoin)}
                 disabled={isSubmitting}
               >
@@ -295,8 +295,8 @@ export default function FamilySetupScreen() {
                 className="flex-row items-center justify-center gap-1"
                 onPress={() => switchMode("choose")}
               >
-                <CaretLeft size={16} color="#2563eb" />
-                <Text className="text-base text-blue-600">Back</Text>
+                <CaretLeft size={16} color="#819067" />
+                <Text className="text-base text-jungle-600">Back</Text>
               </Pressable>
             </>
           )}

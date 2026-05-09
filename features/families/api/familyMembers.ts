@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
 
 export type FamilyMemberOption = {
   id: string;
@@ -20,12 +19,10 @@ async function fetchFamilyMembers(
   return data;
 }
 
-export function useFamilyMembers() {
-  const { data: family } = useFamily();
-
+export function useFamilyMembers(familyId: string | undefined) {
   return useQuery({
-    queryKey: ["family-members", family?.family_id],
-    queryFn: () => fetchFamilyMembers(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: ["family-members", familyId],
+    queryFn: () => fetchFamilyMembers(familyId!),
+    enabled: !!familyId,
   });
 }

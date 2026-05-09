@@ -1,7 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import {
   User,
-  PencilLine,
   CalendarBlank,
   Warning,
   ArrowsClockwise,
@@ -12,8 +11,8 @@ import {
 import { localToday, type TaskWithAssignee } from "../types";
 
 const DIFFICULTY_COLORS = {
-  easy: { bg: "bg-green-100", text: "text-green-700" },
-  medium: { bg: "bg-yellow-100", text: "text-yellow-700" },
+  easy: { bg: "bg-jungle-100", text: "text-jungle-700" },
+  medium: { bg: "bg-bark-100", text: "text-bark-600" },
   hard: { bg: "bg-red-100", text: "text-red-700" },
 } as const;
 
@@ -29,13 +28,13 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
 
   return (
     <Pressable
-      className="flex-row items-center gap-3 rounded-xl bg-white p-4 shadow-sm"
+      className="flex-row items-center gap-3 rounded-xl bg-white border border-bark-100 p-4 shadow-sm"
       onPress={onPress}
     >
       {/* Checkbox */}
       <Pressable
         className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
-          isCompleting ? "border-blue-400 bg-blue-400" : "border-gray-300"
+          isCompleting ? "border-jungle-400 bg-jungle-400" : "border-bark-200"
         }`}
         onPress={onComplete}
         disabled={isCompleting}
@@ -60,16 +59,6 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
               {task.difficulty}
             </Text>
           </View>
-
-          {/* Creator (hidden when same as assignee) */}
-          {task.creator.id !== task.assignee?.id && (
-            <View className="flex-row items-center gap-0.5">
-              <PencilLine size={12} color="#9ca3af" />
-              <Text className="text-xs text-gray-400">
-                {task.creator.nickname}
-              </Text>
-            </View>
-          )}
 
           {/* Assignee */}
           {task.assignee && (
@@ -109,14 +98,14 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
       {/* Points preview */}
       <View className="items-end">
         <View className="flex-row items-center gap-0.5">
-          <Lightning size={14} color="#2563eb" weight="fill" />
-          <Text className="text-sm font-semibold text-blue-600">
+          <Lightning size={14} color="#819067" weight="fill" />
+          <Text className="text-sm font-semibold text-jungle-600">
             {task.points} XP
           </Text>
         </View>
         <View className="flex-row items-center gap-0.5">
-          <CurrencyCircleDollar size={12} color="#ca8a04" />
-          <Text className="text-xs text-yellow-600">{task.coins_reward}</Text>
+          <CurrencyCircleDollar size={12} color="#807200" />
+          <Text className="text-xs text-bark-500">{task.coins_reward}</Text>
         </View>
       </View>
     </Pressable>

@@ -47,6 +47,7 @@ export function TaskEditScreen() {
     <TaskForm
       onSubmit={handleSubmit}
       isPending={updateTask.isPending}
+      familyId={task.family_id}
       initialValues={{
         title: task.title,
         description: task.description ?? "",

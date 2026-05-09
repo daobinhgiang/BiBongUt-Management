@@ -60,10 +60,10 @@ export default function SignupScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1"
     >
-      <View className="flex-1 items-center justify-center bg-white px-6">
+      <View className="flex-1 items-center justify-center bg-bark-50 px-6">
         <View className="mb-2 flex-row items-center gap-2">
-          <Confetti size={32} color="#2563eb" weight="duotone" />
-          <Text className="text-3xl font-bold text-gray-900">
+          <Confetti size={32} color="#819067" weight="duotone" />
+          <Text className="text-3xl font-bold text-jungle-800">
             Join BiBongUt
           </Text>
         </View>
@@ -80,7 +80,7 @@ export default function SignupScreen() {
 
           <View>
             <View className="mb-1 flex-row items-center gap-1.5">
-              <Envelope size={14} color="#374151" />
+              <Envelope size={14} color="#6b7a54" />
               <Text className="text-sm font-medium text-gray-700">Email</Text>
             </View>
             <Controller
@@ -88,9 +88,9 @@ export default function SignupScreen() {
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                  className="w-full rounded-lg border border-bark-200 bg-white px-4 py-3 text-base text-gray-900"
                   placeholder="you@example.com"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#b3a56f"
                   autoCapitalize="none"
                   autoComplete="email"
                   keyboardType="email-address"
@@ -112,7 +112,7 @@ export default function SignupScreen() {
 
           <View>
             <View className="mb-1 flex-row items-center gap-1.5">
-              <Lock size={14} color="#374151" />
+              <Lock size={14} color="#6b7a54" />
               <Text className="text-sm font-medium text-gray-700">
                 Password
               </Text>
@@ -123,9 +123,9 @@ export default function SignupScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   ref={passwordRef}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                  className="w-full rounded-lg border border-bark-200 bg-white px-4 py-3 text-base text-gray-900"
                   placeholder="At least 6 characters"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#b3a56f"
                   secureTextEntry
                   returnKeyType="next"
                   blurOnSubmit={false}
@@ -145,7 +145,7 @@ export default function SignupScreen() {
 
           <View>
             <View className="mb-1 flex-row items-center gap-1.5">
-              <Lock size={14} color="#374151" />
+              <Lock size={14} color="#6b7a54" />
               <Text className="text-sm font-medium text-gray-700">
                 Confirm Password
               </Text>
@@ -156,9 +156,9 @@ export default function SignupScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   ref={confirmPasswordRef}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                  className="w-full rounded-lg border border-bark-200 bg-white px-4 py-3 text-base text-gray-900"
                   placeholder="Re-enter your password"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#b3a56f"
                   secureTextEntry
                   returnKeyType="done"
                   onSubmitEditing={() => {
@@ -178,7 +178,7 @@ export default function SignupScreen() {
           </View>
 
           <Pressable
-            className={`mt-2 w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700 ${isSubmitting ? "opacity-50" : ""}`}
+            className={`mt-2 w-full items-center rounded-lg bg-jungle-500 py-3.5 active:bg-jungle-600 ${isSubmitting ? "opacity-50" : ""}`}
             onPress={submitForm}
             disabled={isSubmitting}
           >
@@ -194,7 +194,7 @@ export default function SignupScreen() {
 
         <Link href="/(auth)/login" asChild>
           <Pressable className="mt-6">
-            <Text className="text-base text-blue-600">
+            <Text className="text-base text-jungle-600">
               Already have an account? Sign in
             </Text>
           </Pressable>

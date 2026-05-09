@@ -17,8 +17,8 @@ import { UserCircle, Trophy, GameController } from "phosphor-react-native";
 
 export default function MeScreen() {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <UserCircle size={48} color="#2563eb" weight="duotone" />
+    <View className="flex-1 items-center justify-center bg-bark-50">
+      <UserCircle size={48} color="#819067" weight="duotone" />
       <Text className="mt-3 text-xl font-semibold">Me</Text>
       <View className="mt-2 flex-row items-center gap-2">
         <Trophy size={16} color="#6b7280" />

@@ -20,7 +20,7 @@ export function TasksScreenHeaderBack() {
       }}
       className="ml-1 min-h-[44px] flex-row items-center justify-center px-2 py-2"
     >
-      <Ionicons name="chevron-back" size={28} color="#2563eb" />
+      <Ionicons name="chevron-back" size={28} color="#819067" />
     </Pressable>
   );
 }

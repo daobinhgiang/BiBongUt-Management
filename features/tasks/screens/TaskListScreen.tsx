@@ -61,14 +61,14 @@ export function TaskListScreen() {
 
   if (isLoading || (isDoneFilter && isLoadingDone)) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
+      <View className="flex-1 items-center justify-center bg-bark-100">
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-bark-100">
       <TaskFilterBar active={filter} onChange={setFilter} />
 
       {filtered.length === 0 ? (
@@ -86,7 +86,7 @@ export function TaskListScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-2 px-4 pb-24"
+          contentContainerClassName="gap-2 px-4 pb-24 pt-4"
           renderItem={({ item }) => (
             <TaskCard
               task={item}
@@ -120,7 +120,7 @@ export function TaskListScreen() {
       {/* FAB — any family member can create tasks */}
       {family != null && (
         <Pressable
-          className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-blue-600 shadow-lg"
+          className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
           onPress={() => router.push("/(app)/tasks/new")}
         >
           <PlusIcon size={28} color="#fff" weight="bold" />

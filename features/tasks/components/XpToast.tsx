@@ -66,13 +66,13 @@ export function XpToast({ points, coins, visible, onDismiss }: Props) {
     <View className="absolute left-0 right-0 top-16 z-50 items-center" pointerEvents="none">
       <Animated.View
         style={animatedStyle}
-        className="flex-row items-center gap-3 rounded-full bg-gray-900 px-5 py-2.5 shadow-lg"
+        className="flex-row items-center gap-3 rounded-full bg-jungle-900 px-5 py-2.5 shadow-lg"
       >
-        <Text className="text-base font-bold text-blue-400">
+        <Text className="text-base font-bold text-jungle-200">
           +{points} XP
         </Text>
-        <View className="h-4 w-px bg-gray-600" />
-        <Text className="text-base font-bold text-yellow-400">
+        <View className="h-4 w-px bg-jungle-700" />
+        <Text className="text-base font-bold text-bark-300">
           +{coins} coins
         </Text>
       </Animated.View>
