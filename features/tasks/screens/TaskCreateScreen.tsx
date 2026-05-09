@@ -35,5 +35,5 @@ export function TaskCreateScreen() {
     );
   };
 
-  return <TaskForm onSubmit={handleSubmit} isPending={createTask.isPending} />;
+  return <TaskForm onSubmit={handleSubmit} isPending={createTask.isPending} familyId={family?.family_id} />;
 }

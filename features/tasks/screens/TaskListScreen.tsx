@@ -86,7 +86,7 @@ export function TaskListScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-2 px-4 pb-24"
+          contentContainerClassName="gap-2 px-4 pb-24 pt-4"
           renderItem={({ item }) => (
             <TaskCard
               task={item}

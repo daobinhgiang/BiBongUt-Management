@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   TextT,
   FileText,
@@ -14,6 +13,7 @@ import {
   ArrowsClockwise,
 } from "phosphor-react-native";
 
+import { DueDateField } from "./DueDateField";
 import {
   createTaskSchema,
   type CreateTaskFormValues,
@@ -28,6 +28,7 @@ const RECURRENCES = ["none", "daily", "weekly", "monthly"] as const;
 type Props = {
   onSubmit: (values: CreateTaskFormValues) => void;
   isPending: boolean;
+  familyId: string | undefined;
   initialValues?: Partial<CreateTaskFormValues>;
   submitLabel?: string;
   pendingLabel?: string;
@@ -36,12 +37,12 @@ type Props = {
 export function TaskForm({
   onSubmit,
   isPending,
+  familyId,
   initialValues,
   submitLabel = "Create Task",
   pendingLabel = "Saving...",
 }: Props) {
-  const { data: members = [] } = useFamilyMembers();
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const { data: members = [] } = useFamilyMembers(familyId);
   const isEdit = !!initialValues;
   const [userChangedDifficulty, setUserChangedDifficulty] = useState(false);
 
@@ -270,29 +271,7 @@ export function TaskForm({
           control={control}
           name="due_date"
           render={({ field: { onChange, value } }) => (
-            <>
-              <Pressable
-                className="rounded-lg border border-bark-200 px-3 py-2"
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text className={value ? "text-gray-900" : "text-gray-400"}>
-                  {value
-                    ? new Date(value).toLocaleDateString()
-                    : "No due date"}
-                </Text>
-              </Pressable>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={value ? new Date(value) : new Date()}
-                  mode="date"
-                  minimumDate={new Date()}
-                  onChange={(_, date) => {
-                    setShowDatePicker(false);
-                    if (date) onChange(date.toISOString().split("T")[0]);
-                  }}
-                />
-              )}
-            </>
+            <DueDateField value={value} onChange={onChange} />
           )}
         />
       </View>
