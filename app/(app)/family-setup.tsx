@@ -9,60 +9,79 @@ import {
   Platform,
 } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import { useSession } from "@/lib/auth/ctx";
 import { createFamily, joinFamily } from "@/features/families";
 
 type Mode = "choose" | "create" | "join";
 
+const createSchema = z.object({
+  familyName: z.string().min(1, "Family name is required").trim(),
+  nickname: z.string().min(1, "Nickname is required").trim(),
+});
+
+const joinSchema = z.object({
+  inviteCode: z
+    .string()
+    .uuid("Enter a valid invite code")
+    .trim(),
+  nickname: z.string().min(1, "Nickname is required").trim(),
+});
+
+type CreateForm = z.infer<typeof createSchema>;
+type JoinForm = z.infer<typeof joinSchema>;
+
 export default function FamilySetupScreen() {
   const { signOut } = useSession();
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<Mode>("choose");
-  const [familyName, setFamilyName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
-  const [nickname, setNickname] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCreate = async () => {
-    if (!familyName.trim() || !nickname.trim()) {
-      setError("Please fill in all fields");
-      return;
-    }
+  const createForm = useForm<CreateForm>({
+    resolver: zodResolver(createSchema),
+    defaultValues: { familyName: "", nickname: "" },
+  });
+
+  const joinForm = useForm<JoinForm>({
+    resolver: zodResolver(joinSchema),
+    defaultValues: { inviteCode: "", nickname: "" },
+  });
+
+  const handleCreate = async (data: CreateForm) => {
     setError(null);
-    setIsSubmitting(true);
     try {
       await createFamily({
-        name: familyName.trim(),
-        nickname: nickname.trim(),
+        name: data.familyName,
+        nickname: data.nickname,
       });
       queryClient.invalidateQueries({ queryKey: ["my-family"] });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to create family");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleJoin = async () => {
-    if (!inviteCode.trim() || !nickname.trim()) {
-      setError("Please fill in all fields");
-      return;
-    }
+  const handleJoin = async (data: JoinForm) => {
     setError(null);
-    setIsSubmitting(true);
     try {
       await joinFamily({
-        inviteCode: inviteCode.trim(),
-        nickname: nickname.trim(),
+        inviteCode: data.inviteCode,
+        nickname: data.nickname,
       });
       queryClient.invalidateQueries({ queryKey: ["my-family"] });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to join family");
-    } finally {
-      setIsSubmitting(false);
     }
+  };
+
+  const isSubmitting =
+    createForm.formState.isSubmitting || joinForm.formState.isSubmitting;
+
+  const switchMode = (newMode: Mode) => {
+    setMode(newMode);
+    setError(null);
   };
 
   return (
@@ -89,7 +108,7 @@ export default function FamilySetupScreen() {
             <>
               <Pressable
                 className="w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
-                onPress={() => setMode("create")}
+                onPress={() => switchMode("create")}
               >
                 <Text className="text-base font-semibold text-white">
                   Create a Family
@@ -98,7 +117,7 @@ export default function FamilySetupScreen() {
 
               <Pressable
                 className="w-full items-center rounded-lg border border-blue-600 bg-white py-3.5 active:bg-blue-50"
-                onPress={() => setMode("join")}
+                onPress={() => switchMode("join")}
               >
                 <Text className="text-base font-semibold text-blue-600">
                   Join with Invite Code
@@ -113,30 +132,54 @@ export default function FamilySetupScreen() {
                 <Text className="mb-1 text-sm font-medium text-gray-700">
                   Family Name
                 </Text>
-                <TextInput
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
-                  placeholder="e.g. The Dao Family"
-                  placeholderTextColor="#9ca3af"
-                  value={familyName}
-                  onChangeText={setFamilyName}
-                  autoFocus
+                <Controller
+                  control={createForm.control}
+                  name="familyName"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      placeholder="e.g. The Dao Family"
+                      placeholderTextColor="#9ca3af"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      autoFocus
+                    />
+                  )}
                 />
+                {createForm.formState.errors.familyName && (
+                  <Text className="mt-1 text-sm text-red-500">
+                    {createForm.formState.errors.familyName.message}
+                  </Text>
+                )}
               </View>
               <View>
                 <Text className="mb-1 text-sm font-medium text-gray-700">
                   Your Nickname
                 </Text>
-                <TextInput
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
-                  placeholder="e.g. Dad, Mom, Papa"
-                  placeholderTextColor="#9ca3af"
-                  value={nickname}
-                  onChangeText={setNickname}
+                <Controller
+                  control={createForm.control}
+                  name="nickname"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      placeholder="e.g. Dad, Mom, Papa"
+                      placeholderTextColor="#9ca3af"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                    />
+                  )}
                 />
+                {createForm.formState.errors.nickname && (
+                  <Text className="mt-1 text-sm text-red-500">
+                    {createForm.formState.errors.nickname.message}
+                  </Text>
+                )}
               </View>
               <Pressable
-                className="w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
-                onPress={handleCreate}
+                className={`w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700 ${isSubmitting ? "opacity-50" : ""}`}
+                onPress={createForm.handleSubmit(handleCreate)}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -147,8 +190,10 @@ export default function FamilySetupScreen() {
                   </Text>
                 )}
               </Pressable>
-              <Pressable onPress={() => { setMode("choose"); setError(null); }}>
-                <Text className="text-center text-base text-blue-600">Back</Text>
+              <Pressable onPress={() => switchMode("choose")}>
+                <Text className="text-center text-base text-blue-600">
+                  Back
+                </Text>
               </Pressable>
             </>
           )}
@@ -159,31 +204,55 @@ export default function FamilySetupScreen() {
                 <Text className="mb-1 text-sm font-medium text-gray-700">
                   Invite Code
                 </Text>
-                <TextInput
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
-                  placeholder="Paste your invite code"
-                  placeholderTextColor="#9ca3af"
-                  value={inviteCode}
-                  onChangeText={setInviteCode}
-                  autoFocus
-                  autoCapitalize="none"
+                <Controller
+                  control={joinForm.control}
+                  name="inviteCode"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      placeholder="Paste your invite code"
+                      placeholderTextColor="#9ca3af"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      autoFocus
+                      autoCapitalize="none"
+                    />
+                  )}
                 />
+                {joinForm.formState.errors.inviteCode && (
+                  <Text className="mt-1 text-sm text-red-500">
+                    {joinForm.formState.errors.inviteCode.message}
+                  </Text>
+                )}
               </View>
               <View>
                 <Text className="mb-1 text-sm font-medium text-gray-700">
                   Your Nickname
                 </Text>
-                <TextInput
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
-                  placeholder="e.g. Kiddo, Junior"
-                  placeholderTextColor="#9ca3af"
-                  value={nickname}
-                  onChangeText={setNickname}
+                <Controller
+                  control={joinForm.control}
+                  name="nickname"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
+                      placeholder="e.g. Kiddo, Junior"
+                      placeholderTextColor="#9ca3af"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                    />
+                  )}
                 />
+                {joinForm.formState.errors.nickname && (
+                  <Text className="mt-1 text-sm text-red-500">
+                    {joinForm.formState.errors.nickname.message}
+                  </Text>
+                )}
               </View>
               <Pressable
-                className="w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
-                onPress={handleJoin}
+                className={`w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700 ${isSubmitting ? "opacity-50" : ""}`}
+                onPress={joinForm.handleSubmit(handleJoin)}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -194,8 +263,10 @@ export default function FamilySetupScreen() {
                   </Text>
                 )}
               </Pressable>
-              <Pressable onPress={() => { setMode("choose"); setError(null); }}>
-                <Text className="text-center text-base text-blue-600">Back</Text>
+              <Pressable onPress={() => switchMode("choose")}>
+                <Text className="text-center text-base text-blue-600">
+                  Back
+                </Text>
               </Pressable>
             </>
           )}

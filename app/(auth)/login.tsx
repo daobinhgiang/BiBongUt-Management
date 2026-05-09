@@ -26,12 +26,11 @@ export default function LoginScreen() {
   const { signInWithEmail } = useSession();
   const passwordRef = useRef<React.ElementRef<typeof TextInput>>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -39,13 +38,10 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: LoginForm) => {
     setError(null);
-    setIsSubmitting(true);
     try {
       await signInWithEmail(data.email, data.password);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Sign in failed");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -134,7 +130,7 @@ export default function LoginScreen() {
           </View>
 
           <Pressable
-            className="mt-2 w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
+            className={`mt-2 w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700 ${isSubmitting ? "opacity-50" : ""}`}
             onPress={submitForm}
             disabled={isSubmitting}
           >
