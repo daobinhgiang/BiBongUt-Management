@@ -3,9 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
+import { usePushNotifications } from "@/features/notifications";
 
 export default function AppLayout() {
   const { data: familyMember, isLoading, error } = useFamily();
+
+  // Register push token + handle notification taps
+  usePushNotifications();
   const router = useRouter();
   const segments = useSegments();
   const segmentsRef = useRef(segments);
