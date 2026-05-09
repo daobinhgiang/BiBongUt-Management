@@ -24,6 +24,11 @@ export function XpToast({ points, coins, visible, onDismiss }: Props) {
   useEffect(() => {
     if (!visible) return;
 
+    // Reset to initial state before animating (handles rapid re-shows)
+    opacity.value = 0;
+    scale.value = 0.8;
+    translateY.value = 20;
+
     // Enter: fade in + scale up + slide up
     opacity.value = withTiming(1, { duration: 200 });
     scale.value = withSequence(
