@@ -108,8 +108,50 @@ export type Database = {
         }
         Relationships: []
       }
+      bucket_list_completions: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          item_id: string
+          location: string | null
+          notes: string | null
+          participants: string[]
+          photos: string[]
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          item_id: string
+          location?: string | null
+          notes?: string | null
+          participants?: string[]
+          photos?: string[]
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          location?: string | null
+          notes?: string | null
+          participants?: string[]
+          photos?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bucket_list_completions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "bucket_list_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bucket_list_items: {
         Row: {
+          category: Database["public"]["Enums"]["bucket_list_category"]
           completed_at: string | null
           created_at: string
           created_by: string
@@ -117,10 +159,13 @@ export type Database = {
           family_id: string
           id: string
           points: number
-          status: Database["public"]["Enums"]["bucket_status"]
+          priority: Database["public"]["Enums"]["bucket_list_priority"]
+          status: Database["public"]["Enums"]["bucket_list_status"]
+          target_date: string | null
           title: string
         }
         Insert: {
+          category?: Database["public"]["Enums"]["bucket_list_category"]
           completed_at?: string | null
           created_at?: string
           created_by: string
@@ -128,10 +173,13 @@ export type Database = {
           family_id: string
           id?: string
           points?: number
-          status?: Database["public"]["Enums"]["bucket_status"]
+          priority?: Database["public"]["Enums"]["bucket_list_priority"]
+          status?: Database["public"]["Enums"]["bucket_list_status"]
+          target_date?: string | null
           title: string
         }
         Update: {
+          category?: Database["public"]["Enums"]["bucket_list_category"]
           completed_at?: string | null
           created_at?: string
           created_by?: string
@@ -139,7 +187,9 @@ export type Database = {
           family_id?: string
           id?: string
           points?: number
-          status?: Database["public"]["Enums"]["bucket_status"]
+          priority?: Database["public"]["Enums"]["bucket_list_priority"]
+          status?: Database["public"]["Enums"]["bucket_list_status"]
+          target_date?: string | null
           title?: string
         }
         Relationships: [
@@ -941,6 +991,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      check_badges: { Args: { p_member_id: string }; Returns: string[] }
+      complete_bucket_list_item: {
+        Args: {
+          p_item_id: string
+          p_location?: string
+          p_notes?: string
+          p_participants?: string[]
+          p_photos?: string[]
+        }
+        Returns: string
+      }
       complete_task: {
         Args: { p_member_id: string; p_task_id: string }
         Returns: Json
@@ -965,7 +1026,9 @@ export type Database = {
     }
     Enums: {
       attendance_status: "going" | "maybe" | "declined"
-      bucket_status: "pending" | "done"
+      bucket_list_category: "travel" | "experience" | "skill" | "other"
+      bucket_list_priority: "small" | "medium" | "large"
+      bucket_list_status: "open" | "in_progress" | "completed"
       challenge_status: "active" | "completed" | "cancelled"
       family_role: "parent" | "child"
       movie_status: "want_to_watch" | "watched"
@@ -1102,7 +1165,9 @@ export const Constants = {
   public: {
     Enums: {
       attendance_status: ["going", "maybe", "declined"],
-      bucket_status: ["pending", "done"],
+      bucket_list_category: ["travel", "experience", "skill", "other"],
+      bucket_list_priority: ["small", "medium", "large"],
+      bucket_list_status: ["open", "in_progress", "completed"],
       challenge_status: ["active", "completed", "cancelled"],
       family_role: ["parent", "child"],
       movie_status: ["want_to_watch", "watched"],
