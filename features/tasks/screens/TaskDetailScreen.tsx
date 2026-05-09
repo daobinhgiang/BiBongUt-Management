@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -18,8 +18,10 @@ import {
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTask, useTaskCompletions } from "../api/queries";
-import { useCompleteTask, useDeleteTask } from "../api/mutations";
+import { useCompleteTask, useDeleteTask, type CompleteTaskResult } from "../api/mutations";
 import { XpToast } from "../components/XpToast";
+import { LevelUpModal } from "@/features/gamification/components/LevelUpModal";
+import { BadgeToast } from "@/features/gamification/components/BadgeToast";
 import { localToday, type TaskCompletionWithMember } from "../types";
 
 const DIFFICULTY_LABEL = {
@@ -38,9 +40,21 @@ export function TaskDetailScreen() {
   const deleteTask = useDeleteTask();
   const isParent = family?.role === "parent";
   const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const [badgeToast, setBadgeToast] = useState<string | null>(null);
+  const pendingCelebration = useRef<{ level: number | null; badge: string | null }>({ level: null, badge: null });
   const dismissToast = useCallback(() => {
     setToast(null);
-    router.back();
+    const { level, badge } = pendingCelebration.current;
+    if (level) {
+      setLevelUp(level);
+      pendingCelebration.current.level = null;
+    } else if (badge) {
+      setBadgeToast(badge);
+      pendingCelebration.current.badge = null;
+    } else {
+      router.back();
+    }
   }, [router]);
 
   if (isLoading || !task) {
@@ -58,7 +72,13 @@ export function TaskDetailScreen() {
     completeTask.mutate(
       { task, memberId: family.id },
       {
-        onSuccess: (result) => setToast(result),
+        onSuccess: (result: CompleteTaskResult) => {
+          pendingCelebration.current = {
+            level: result.new_level,
+            badge: result.new_badges[0] ?? null,
+          };
+          setToast(result);
+        },
         onError: (err) =>
           Alert.alert("Error", err.message ?? "Could not complete task"),
       },
@@ -92,6 +112,28 @@ export function TaskDetailScreen() {
         coins={toast?.coins ?? 0}
         visible={toast !== null}
         onDismiss={dismissToast}
+      />
+      <LevelUpModal
+        level={levelUp ?? 0}
+        visible={levelUp !== null}
+        onDismiss={() => {
+          setLevelUp(null);
+          const { badge } = pendingCelebration.current;
+          if (badge) {
+            setBadgeToast(badge);
+            pendingCelebration.current.badge = null;
+          } else {
+            router.back();
+          }
+        }}
+      />
+      <BadgeToast
+        badgeName={badgeToast ?? ""}
+        visible={badgeToast !== null}
+        onDismiss={() => {
+          setBadgeToast(null);
+          router.back();
+        }}
       />
       <ScrollView
         className="flex-1"

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,10 +11,12 @@ import { ClipboardText, PlusIcon } from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTasks, useCompletedTasks } from "../api/queries";
-import { useCompleteTask } from "../api/mutations";
+import { useCompleteTask, type CompleteTaskResult } from "../api/mutations";
 import { TaskCard } from "../components/TaskCard";
 import { TaskFilterBar } from "../components/TaskFilterBar";
 import { XpToast } from "../components/XpToast";
+import { LevelUpModal } from "@/features/gamification/components/LevelUpModal";
+import { BadgeToast } from "@/features/gamification/components/BadgeToast";
 import { localToday, type TaskFilter, type TaskWithAssignee } from "../types";
 
 function filterTasks(
@@ -46,7 +48,20 @@ export function TaskListScreen() {
   const completeTask = useCompleteTask();
   const [filter, setFilter] = useState<TaskFilter>("all");
   const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
-  const dismissToast = useCallback(() => setToast(null), []);
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const [badgeToast, setBadgeToast] = useState<string | null>(null);
+  const pendingCelebration = useRef<{ level: number | null; badge: string | null }>({ level: null, badge: null });
+  const dismissToast = useCallback(() => {
+    setToast(null);
+    const { level, badge } = pendingCelebration.current;
+    if (level) {
+      setLevelUp(level);
+      pendingCelebration.current.level = null;
+    } else if (badge) {
+      setBadgeToast(badge);
+      pendingCelebration.current.badge = null;
+    }
+  }, []);
 
   const isDoneFilter = filter === "done";
   const sourceData = isDoneFilter ? completedTasks : tasks;
@@ -58,6 +73,14 @@ export function TaskListScreen() {
         : filterTasks(tasks ?? [], filter, family?.id),
     [tasks, completedTasks, filter, family?.id, isDoneFilter],
   );
+
+  const handleCompleteSuccess = useCallback((result: CompleteTaskResult) => {
+    pendingCelebration.current = {
+      level: result.new_level,
+      badge: result.new_badges[0] ?? null,
+    };
+    setToast(result);
+  }, []);
 
   if (isLoading || (isDoneFilter && isLoadingDone)) {
     return (
@@ -95,9 +118,7 @@ export function TaskListScreen() {
                 if (!family || isDoneFilter) return;
                 completeTask.mutate(
                   { task: item, memberId: family.id },
-                  {
-                    onSuccess: (result) => setToast(result),
-                  },
+                  { onSuccess: handleCompleteSuccess },
                 );
               }}
               isCompleting={
@@ -115,6 +136,25 @@ export function TaskListScreen() {
         coins={toast?.coins ?? 0}
         visible={toast !== null}
         onDismiss={dismissToast}
+      />
+
+      <LevelUpModal
+        level={levelUp ?? 0}
+        visible={levelUp !== null}
+        onDismiss={() => {
+          setLevelUp(null);
+          const { badge } = pendingCelebration.current;
+          if (badge) {
+            setBadgeToast(badge);
+            pendingCelebration.current.badge = null;
+          }
+        }}
+      />
+
+      <BadgeToast
+        badgeName={badgeToast ?? ""}
+        visible={badgeToast !== null}
+        onDismiss={() => setBadgeToast(null)}
       />
 
       {/* FAB — any family member can create tasks */}
