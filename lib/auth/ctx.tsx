@@ -81,7 +81,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
     // Listen for auth state changes (login, logout, token refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (__DEV__) console.log("[auth]", event);
       setSession(newSession);
     });
 
@@ -104,8 +105,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await supabase.auth.signOut().catch(() => {});
+    setSession(null);
   };
 
   return (
