@@ -260,10 +260,53 @@ export type Database = {
           },
         ]
       }
+      challenge_logs: {
+        Row: {
+          challenge_id: string
+          delta: number
+          id: string
+          logged_at: string
+          note: string | null
+          participant_id: string
+        }
+        Insert: {
+          challenge_id: string
+          delta: number
+          id?: string
+          logged_at?: string
+          note?: string | null
+          participant_id: string
+        }
+        Update: {
+          challenge_id?: string
+          delta?: number
+          id?: string
+          logged_at?: string
+          note?: string | null
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_logs_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_logs_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_participants: {
         Row: {
           challenge_id: string
           completed_at: string | null
+          current_value: number
           family_member_id: string
           id: string
           joined_at: string
@@ -272,6 +315,7 @@ export type Database = {
         Insert: {
           challenge_id: string
           completed_at?: string | null
+          current_value?: number
           family_member_id: string
           id?: string
           joined_at?: string
@@ -280,6 +324,7 @@ export type Database = {
         Update: {
           challenge_id?: string
           completed_at?: string | null
+          current_value?: number
           family_member_id?: string
           id?: string
           joined_at?: string
@@ -311,9 +356,14 @@ export type Database = {
           family_id: string
           id: string
           points: number
+          reward_coins: number
+          reward_xp: number
           start_date: string | null
           status: Database["public"]["Enums"]["challenge_status"]
+          target_value: number
           title: string
+          type: Database["public"]["Enums"]["challenge_type"]
+          unit: string
         }
         Insert: {
           created_at?: string
@@ -323,9 +373,14 @@ export type Database = {
           family_id: string
           id?: string
           points?: number
+          reward_coins?: number
+          reward_xp?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["challenge_status"]
+          target_value?: number
           title: string
+          type?: Database["public"]["Enums"]["challenge_type"]
+          unit?: string
         }
         Update: {
           created_at?: string
@@ -335,9 +390,14 @@ export type Database = {
           family_id?: string
           id?: string
           points?: number
+          reward_coins?: number
+          reward_xp?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["challenge_status"]
+          target_value?: number
           title?: string
+          type?: Database["public"]["Enums"]["challenge_type"]
+          unit?: string
         }
         Relationships: [
           {
@@ -1010,11 +1070,25 @@ export type Database = {
         Args: { p_name: string; p_nickname: string }
         Returns: string
       }
+      expire_failed_challenges: { Args: never; Returns: undefined }
       is_family_member: { Args: { p_family_id: string }; Returns: boolean }
       is_family_parent: { Args: { p_family_id: string }; Returns: boolean }
+      join_challenge: {
+        Args: { p_challenge_id: string; p_member_id: string }
+        Returns: undefined
+      }
       join_family_with_invite: {
         Args: { p_invite_code: string; p_nickname: string }
         Returns: string
+      }
+      log_challenge_contribution: {
+        Args: {
+          p_challenge_id: string
+          p_delta: number
+          p_member_id: string
+          p_note?: string
+        }
+        Returns: Json
       }
       my_family_ids: { Args: never; Returns: string[] }
       notify_overdue_tasks: { Args: never; Returns: undefined }
@@ -1029,7 +1103,8 @@ export type Database = {
       bucket_list_category: "travel" | "experience" | "skill" | "other"
       bucket_list_priority: "small" | "medium" | "large"
       bucket_list_status: "open" | "in_progress" | "completed"
-      challenge_status: "active" | "completed" | "cancelled"
+      challenge_status: "active" | "completed" | "cancelled" | "failed"
+      challenge_type: "solo" | "collaborative" | "boss_battle"
       family_role: "parent" | "child"
       movie_status: "want_to_watch" | "watched"
       task_difficulty: "easy" | "medium" | "hard"
@@ -1168,7 +1243,8 @@ export const Constants = {
       bucket_list_category: ["travel", "experience", "skill", "other"],
       bucket_list_priority: ["small", "medium", "large"],
       bucket_list_status: ["open", "in_progress", "completed"],
-      challenge_status: ["active", "completed", "cancelled"],
+      challenge_status: ["active", "completed", "cancelled", "failed"],
+      challenge_type: ["solo", "collaborative", "boss_battle"],
       family_role: ["parent", "child"],
       movie_status: ["want_to_watch", "watched"],
       task_difficulty: ["easy", "medium", "hard"],

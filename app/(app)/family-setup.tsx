@@ -211,11 +211,12 @@ export default function FamilySetupScreen() {
                 )}
               </Pressable>
               <Pressable
-                className="flex-row items-center justify-center gap-1"
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+                className="min-h-[44px] items-center justify-center px-2 py-2"
                 onPress={() => switchMode("choose")}
               >
-                <CaretLeft size={16} color="#819067" />
-                <Text className="text-base text-jungle-600">Back</Text>
+                <CaretLeft size={22} color="#819067" weight="bold" />
               </Pressable>
             </>
           )}
@@ -292,11 +293,12 @@ export default function FamilySetupScreen() {
                 )}
               </Pressable>
               <Pressable
-                className="flex-row items-center justify-center gap-1"
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+                className="min-h-[44px] items-center justify-center px-2 py-2"
                 onPress={() => switchMode("choose")}
               >
-                <CaretLeft size={16} color="#819067" />
-                <Text className="text-base text-jungle-600">Back</Text>
+                <CaretLeft size={22} color="#819067" weight="bold" />
               </Pressable>
             </>
           )}

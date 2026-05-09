@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 
 import { TaskEditScreen } from "@/features/tasks/screens/TaskEditScreen";
 
@@ -24,10 +24,9 @@ export default function EditTaskRoute() {
                 if (router.canGoBack()) router.back();
                 else router.replace("/(app)/(tabs)/do");
               }}
-              className="ml-1 flex-row items-center p-1"
+              className="ml-1 min-h-[44px] items-center justify-center px-2 py-2"
             >
               <Ionicons name="chevron-back" size={28} color="#819067" />
-              <Text className="text-base font-normal text-jungle-600">Back</Text>
             </Pressable>
           ),
           headerTitle: "Edit Task",

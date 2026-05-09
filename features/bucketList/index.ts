@@ -1,10 +1,11 @@
 /**
  * bucketList Feature
  *
- * Bucket List — family and personal bucket list items. Members can propose,
- * vote on, and track progress toward shared goals and dreams.
- *
- * This barrel file re-exports hooks, components, and types for this feature.
- * Import from here: import { ... } from "@/features/bucketList";
+ * Bucket List — family goals, dreams, and memories with photo journals.
+ * Members can add items, complete them with photos/notes, and view
+ * a chronological timeline of family memories.
  */
-export {};
+export * from "./types";
+export { useBucketListItems, useBucketListItem, useBucketListCompletion, useTimeline, bucketListKeys } from "./api/queries";
+export { useCreateBucketListItem, useUpdateBucketListItem, useDeleteBucketListItem, useCompleteBucketListItem } from "./api/mutations";
+export { pickImages, uploadPhotos, getPhotoUrl, removePhotos } from "./api/photos";
