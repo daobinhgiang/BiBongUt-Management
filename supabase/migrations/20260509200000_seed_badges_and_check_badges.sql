@@ -168,6 +168,14 @@ begin
            'Badge unlocked: ' || v_badge.name, 'badges', v_badge.id);
       end if;
 
+      -- Refresh member level so subsequent level-badge checks see updated value
+      if v_badge.xp_reward > 0 then
+        select level, current_streak, longest_streak
+          into v_member
+          from public.family_members
+         where id = p_member_id;
+      end if;
+
       v_unlocked := v_unlocked || v_badge.id;
     end if;
   end loop;
