@@ -8,7 +8,6 @@ export const badgeKeys = {
   member: (memberId: string) => ["badges", "member", memberId] as const,
 };
 
-// ── Fetch all badges ──
 async function fetchAllBadges(): Promise<Badge[]> {
   const { data, error } = await supabase
     .from("badges")
@@ -19,32 +18,28 @@ async function fetchAllBadges(): Promise<Badge[]> {
   return data;
 }
 
-// ── Fetch badges with unlock status for a member ──
+// Single query with left join — one round-trip instead of two
 async function fetchMemberBadges(
   memberId: string,
 ): Promise<BadgeWithUnlock[]> {
-  // Get all badges
-  const { data: badges, error: badgesError } = await supabase
+  const { data, error } = await supabase
     .from("badges")
-    .select("*")
+    .select("*, badge_unlocks!left(unlocked_at)")
+    .eq("badge_unlocks.family_member_id", memberId)
     .order("name");
-  if (badgesError) throw badgesError;
 
-  // Get this member's unlocks
-  const { data: unlocks, error: unlocksError } = await supabase
-    .from("badge_unlocks")
-    .select("badge_id, unlocked_at")
-    .eq("family_member_id", memberId);
-  if (unlocksError) throw unlocksError;
+  if (error) throw error;
 
-  const unlockMap = new Map(
-    unlocks.map((u) => [u.badge_id, u.unlocked_at]),
-  );
-
-  return badges.map((b) => ({
-    ...b,
-    unlocked_at: unlockMap.get(b.id) ?? null,
-  }));
+  return data.map((b) => {
+    const unlocks = b.badge_unlocks as
+      | { unlocked_at: string }[]
+      | null;
+    return {
+      ...b,
+      badge_unlocks: undefined,
+      unlocked_at: unlocks?.[0]?.unlocked_at ?? null,
+    } as BadgeWithUnlock;
+  });
 }
 
 export function useAllBadges() {
@@ -54,15 +49,15 @@ export function useAllBadges() {
   });
 }
 
-export function useMemberBadges(memberId: string) {
+export function useMemberBadges(memberId: string | undefined) {
   return useQuery({
-    queryKey: badgeKeys.member(memberId),
-    queryFn: () => fetchMemberBadges(memberId),
+    queryKey: badgeKeys.member(memberId ?? ""),
+    queryFn: () => fetchMemberBadges(memberId!),
     enabled: !!memberId,
   });
 }
 
 export function useMyBadges() {
   const { data: family } = useFamily();
-  return useMemberBadges(family?.id ?? "");
+  return useMemberBadges(family?.id);
 }

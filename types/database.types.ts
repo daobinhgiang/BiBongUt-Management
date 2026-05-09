@@ -466,6 +466,54 @@ export type Database = {
           },
         ]
       }
+      leaderboard_history: {
+        Row: {
+          created_at: string
+          family_id: string
+          family_member_id: string
+          id: string
+          rank: number
+          week_end: string
+          week_start: string
+          xp_earned: number
+        }
+        Insert: {
+          created_at?: string
+          family_id: string
+          family_member_id: string
+          id?: string
+          rank?: number
+          week_end: string
+          week_start: string
+          xp_earned?: number
+        }
+        Update: {
+          created_at?: string
+          family_id?: string
+          family_member_id?: string
+          id?: string
+          rank?: number
+          week_end?: string
+          week_start?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_history_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboard_history_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movie_watches: {
         Row: {
           id: string
@@ -852,6 +900,9 @@ export type Database = {
         Returns: string
       }
       my_family_ids: { Args: never; Returns: string[] }
+      reset_stale_streaks: { Args: never; Returns: undefined }
+      snapshot_weekly_leaderboard: { Args: never; Returns: undefined }
+      update_streak: { Args: { p_member_id: string }; Returns: undefined }
     }
     Enums: {
       attendance_status: "going" | "maybe" | "declined"

@@ -22,5 +22,5 @@ export type LeaderboardEntry = {
   avatar_url: string | null;
   total_xp: number;
   level: number;
-  weekly_xp: number;
+  weekly_xp?: number;
 };

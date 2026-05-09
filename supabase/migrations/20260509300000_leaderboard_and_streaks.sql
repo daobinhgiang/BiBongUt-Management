@@ -78,6 +78,27 @@ begin
 end;
 $$;
 
+-- ── Performance index for weekly leaderboard queries ──
+create index if not exists transactions_member_created
+  on public.transactions (family_member_id, created_at);
+
+-- ── pg_cron schedules ──
+create extension if not exists pg_cron schema pg_catalog;
+
+-- Reset stale streaks daily at midnight UTC
+select cron.schedule(
+  'reset-stale-streaks',
+  '0 0 * * *',
+  $$select public.reset_stale_streaks()$$
+);
+
+-- Snapshot weekly leaderboard every Sunday at 23:59 UTC
+select cron.schedule(
+  'snapshot-weekly-leaderboard',
+  '59 23 * * 0',
+  $$select public.snapshot_weekly_leaderboard()$$
+);
+
 -- ── Update streak on task completion ──
 -- Called from complete_task or as a trigger; updates streak counters
 create or replace function public.update_streak(p_member_id uuid)
