@@ -151,6 +151,42 @@ Each feature folder contains:
 | `npm run format` | Format code with Prettier |
 | `npm run db:types` | Generate Supabase database types |
 
+## Deploying the web build
+
+The web target is a **static export**: `npm run build:web` runs `expo export --platform web` and writes production assets to the **`dist/`** directory (upload everything inside `dist`, not the repo root).
+
+1. **Production environment variables** — `EXPO_PUBLIC_*` values from [`.env.example`](.env.example) are inlined at **build** time. Set them in your CI/hosting provider’s build environment (or export them in the shell) before running the build command; they are not read from a `.env` file on the server after deploy.
+
+2. **Build**
+
+   ```bash
+   npm run build:web
+   ```
+
+3. **Host `dist/`** on any static host (HTTPS in production). Examples: upload `dist` via [Netlify](https://docs.expo.dev/guides/publishing-websites/#hosting-with-netlify-cli), [Firebase Hosting](https://docs.expo.dev/guides/publishing-websites/#hosting-with-firebase-cli), Vercel, S3 + CloudFront, etc.
+
+4. **Smoke-test locally** — after exporting, you can serve the folder with Expo’s static server:
+
+   ```bash
+   npx expo serve
+   ```
+
+5. **Supabase** — In the Supabase dashboard, add your production site URL to **Authentication → URL configuration** (redirect / site URL allowlists) so login and deep links work.
+
+If refreshing a deep link returns 404 on your host, configure **SPA-style fallback** to your entry HTML as described in [Publishing websites](https://docs.expo.dev/guides/publishing-websites/) for your chosen provider (behavior depends on host and Expo Router output).
+
+Official reference: [Deploy Expo web apps](https://docs.expo.dev/deploy/web/).
+
+## Using the app on mobile (browser and PWA)
+
+**Mobile browser:** Open your deployed HTTPS URL in Safari (iOS) or Chrome (Android). Same functionality as desktop web; use your normal login flow.
+
+**Progressive Web App (installable home-screen experience):** Production PWAs require **HTTPS**. This repo’s [`app.json`](app.json) configures web export (`output: "static"`) but does **not** yet ship a web app manifest or service worker—browsers may still offer a minimal “Add to Home Screen” experience, but for a proper installable PWA (icons, `standalone` display, optional offline caching), follow Expo’s guide:
+
+- [Progressive Web Apps](https://docs.expo.dev/guides/progressive-web-apps/) — add `public/manifest.json`, wire `<link rel="manifest" …>` via [`app/+html.tsx`](https://docs.expo.dev/router/reference/static-rendering/#root-html) for static output, and optionally add `public/sw.js` (e.g. via [Workbox](https://developer.chrome.com/docs/workbox)) for offline support.
+
+After that is in place, rebuild with `npm run build:web`, redeploy `dist/`, and use **Add to Home Screen** (iOS Safari share menu) or **Install app** (Chrome) on your device.
+
 ## What's Next
 
 1. **Data Model** - Design and create Supabase tables with RLS policies

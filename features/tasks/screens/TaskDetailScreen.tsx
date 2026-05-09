@@ -6,6 +6,7 @@ import {
   Lightning,
   CurrencyCircleDollar,
   User,
+  PencilLine,
   ArrowsClockwise,
   Warning,
   CalendarBlank,
@@ -117,6 +118,10 @@ export function TaskDetailScreen() {
         <MetaChip
           icon={<CurrencyCircleDollar size={14} color="#ca8a04" />}
           label={`${task.coins_reward} coins`}
+        />
+        <MetaChip
+          icon={<PencilLine size={14} color="#374151" />}
+          label={`by ${task.creator.nickname}`}
         />
         {task.assignee && (
           <MetaChip

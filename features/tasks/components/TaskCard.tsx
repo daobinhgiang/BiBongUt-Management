@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 import {
   User,
+  PencilLine,
   CalendarBlank,
   Warning,
   ArrowsClockwise,
@@ -59,6 +60,16 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
               {task.difficulty}
             </Text>
           </View>
+
+          {/* Creator (hidden when same as assignee) */}
+          {task.creator.id !== task.assignee?.id && (
+            <View className="flex-row items-center gap-0.5">
+              <PencilLine size={12} color="#9ca3af" />
+              <Text className="text-xs text-gray-400">
+                {task.creator.nickname}
+              </Text>
+            </View>
+          )}
 
           {/* Assignee */}
           {task.assignee && (
