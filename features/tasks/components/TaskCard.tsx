@@ -61,13 +61,15 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
             </Text>
           </View>
 
-          {/* Creator */}
-          <View className="flex-row items-center gap-0.5">
-            <PencilLine size={12} color="#9ca3af" />
-            <Text className="text-xs text-gray-400">
-              {task.creator.nickname}
-            </Text>
-          </View>
+          {/* Creator (hidden when same as assignee) */}
+          {task.creator.id !== task.assignee?.id && (
+            <View className="flex-row items-center gap-0.5">
+              <PencilLine size={12} color="#9ca3af" />
+              <Text className="text-xs text-gray-400">
+                {task.creator.nickname}
+              </Text>
+            </View>
+          )}
 
           {/* Assignee */}
           {task.assignee && (
