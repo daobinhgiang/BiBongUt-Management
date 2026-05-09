@@ -7,4 +7,5 @@
  * This barrel file re-exports hooks, components, and types for this feature.
  * Import from here: import { ... } from "@/features/tasks";
  */
-export {};
+export * from "./types";
+export { useTasks, useTask, useTaskCompletions, taskKeys } from "./api/queries";
