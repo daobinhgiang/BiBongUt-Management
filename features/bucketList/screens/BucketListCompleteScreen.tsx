@@ -17,7 +17,7 @@ import { useFamilyMembers } from "@/features/families/api/familyMembers";
 import { XpToast } from "@/features/tasks/components/XpToast";
 import { useBucketListItem } from "../api/queries";
 import { useCompleteBucketListItem } from "../api/mutations";
-import { pickImages, uploadPhotos } from "../api/photos";
+import { pickImages, uploadPhotos, removePhotos } from "../api/photos";
 import { PRIORITY_XP } from "../types";
 
 export function BucketListCompleteScreen() {
@@ -63,10 +63,10 @@ export function BucketListCompleteScreen() {
     }
 
     setIsUploading(true);
+    let photoPaths: string[] = [];
 
     try {
       // Upload photos first
-      let photoPaths: string[] = [];
       if (photoUris.length > 0) {
         photoPaths = await uploadPhotos(photoUris, family.family_id, id);
       }
@@ -83,6 +83,10 @@ export function BucketListCompleteScreen() {
       // Show XP celebration, then navigate back
       setXpToast(PRIORITY_XP[item.priority]);
     } catch (err) {
+      // Clean up orphaned photos if RPC failed after upload
+      if (photoPaths.length > 0) {
+        removePhotos(photoPaths).catch(() => {});
+      }
       Alert.alert("Error", (err as Error).message ?? "Could not complete item");
     } finally {
       setIsUploading(false);
@@ -91,8 +95,7 @@ export function BucketListCompleteScreen() {
 
   const dismissToast = useCallback(() => {
     setXpToast(null);
-    router.back();
-    router.back();
+    router.replace("/(app)/bucket-list");
   }, [router]);
 
   const isPending = isUploading || completeItem.isPending;

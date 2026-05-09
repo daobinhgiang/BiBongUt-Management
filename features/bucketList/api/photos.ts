@@ -4,14 +4,16 @@ import { supabase } from "@/lib/supabase";
 
 const MAX_WIDTH = 1920;
 const COMPRESSION = 0.8;
+const SIGNED_URL_EXPIRY = 60 * 60; // 1 hour
 
-// ── Compress a single image ──
+// ── Compress a single image (only downscale, never upscale) ──
 async function compressImage(uri: string): Promise<string> {
   const result = await manipulateAsync(
     uri,
     [{ resize: { width: MAX_WIDTH } }],
     { compress: COMPRESSION, format: SaveFormat.JPEG },
   );
+  // manipulateAsync won't upscale — if image is smaller, it keeps original dimensions
   return result.uri;
 }
 
@@ -69,10 +71,18 @@ export async function uploadPhotos(
   return paths;
 }
 
-// ── Get public URL for a storage path ──
-export function getPhotoUrl(storagePath: string): string {
-  const { data } = supabase.storage
+// ── Get signed URL for a storage path (private bucket) ──
+export async function getPhotoUrl(storagePath: string): Promise<string> {
+  const { data, error } = await supabase.storage
     .from("bucket-list-photos")
-    .getPublicUrl(storagePath);
-  return data.publicUrl;
+    .createSignedUrl(storagePath, SIGNED_URL_EXPIRY);
+
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+// ── Remove photos from storage (cleanup on failure) ──
+export async function removePhotos(paths: string[]): Promise<void> {
+  if (paths.length === 0) return;
+  await supabase.storage.from("bucket-list-photos").remove(paths);
 }

@@ -8,4 +8,4 @@
 export * from "./types";
 export { useBucketListItems, useBucketListItem, useBucketListCompletion, useTimeline, bucketListKeys } from "./api/queries";
 export { useCreateBucketListItem, useUpdateBucketListItem, useDeleteBucketListItem, useCompleteBucketListItem } from "./api/mutations";
-export { pickImages, uploadPhotos, getPhotoUrl } from "./api/photos";
+export { pickImages, uploadPhotos, getPhotoUrl, removePhotos } from "./api/photos";

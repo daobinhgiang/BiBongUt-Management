@@ -6,7 +6,7 @@ import { Star, PlusIcon } from "phosphor-react-native";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useBucketListItems } from "../api/queries";
 import { BucketListCard } from "../components/BucketListCard";
-import { StatusFilterBar } from "../components/CategoryFilter";
+import { StatusFilterBar } from "../components/StatusFilterBar";
 import {
   CATEGORY_CONFIG,
   type BucketListItemWithCreator,

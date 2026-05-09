@@ -140,6 +140,10 @@ export function useCompleteBucketListItem() {
       qc.invalidateQueries({ queryKey: bucketListKeys.all(family.family_id) });
       qc.invalidateQueries({ queryKey: bucketListKeys.detail(vars.itemId) });
       qc.invalidateQueries({ queryKey: bucketListKeys.timeline(family.family_id) });
+      // Refresh gamification data (XP, level, badges changed)
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["badges"] });
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
     },
   });
 }

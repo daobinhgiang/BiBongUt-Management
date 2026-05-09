@@ -19,7 +19,8 @@ async function fetchBucketListItems(familyId: string): Promise<BucketListItemWit
     .from("bucket_list_items")
     .select(ITEM_SELECT)
     .eq("family_id", familyId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (error) throw error;
   return data as unknown as BucketListItemWithCreator[];
@@ -55,7 +56,8 @@ async function fetchTimeline(familyId: string): Promise<BucketListCompletionWith
     .from("bucket_list_completions")
     .select("*, bucket_list_items!inner(title, category, family_id)")
     .eq("bucket_list_items.family_id", familyId)
-    .order("completed_at", { ascending: false });
+    .order("completed_at", { ascending: false })
+    .limit(100);
 
   if (error) throw error;
   return data as unknown as BucketListCompletionWithItem[];
