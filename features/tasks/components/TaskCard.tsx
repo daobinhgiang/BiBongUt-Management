@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import type { TaskWithAssignee } from "../types";
+import { localToday, type TaskWithAssignee } from "../types";
 
 const DIFFICULTY_COLORS = {
   easy: { bg: "bg-green-100", text: "text-green-700" },
@@ -15,8 +15,7 @@ type Props = {
 };
 
 export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
-  const isOverdue =
-    task.due_date && new Date(task.due_date) < new Date(new Date().toDateString());
+  const isOverdue = task.due_date != null && task.due_date < localToday();
 
   return (
     <Pressable

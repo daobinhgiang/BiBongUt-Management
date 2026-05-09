@@ -2,16 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { Pressable } from "react-native";
 
-import { TaskCreateScreen } from "@/features/tasks/screens/TaskCreateScreen";
+import { TaskEditScreen } from "@/features/tasks/screens/TaskEditScreen";
 
-export default function NewTaskRoute() {
+export default function EditTaskRoute() {
   const router = useRouter();
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: "New Task",
+          title: "Edit Task",
           headerShown: true,
           headerShadowVisible: false,
           headerTintColor: "#2563eb",
@@ -31,7 +31,7 @@ export default function NewTaskRoute() {
           ),
         }}
       />
-      <TaskCreateScreen />
+      <TaskEditScreen />
     </>
   );
 }

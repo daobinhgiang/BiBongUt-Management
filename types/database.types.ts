@@ -837,6 +837,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      complete_task: {
+        Args: { p_member_id: string; p_task_id: string }
+        Returns: Json
+      }
       create_family_with_member: {
         Args: { p_name: string; p_nickname: string }
         Returns: string

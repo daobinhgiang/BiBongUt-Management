@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,18 +9,19 @@ import {
 import { useRouter } from "expo-router";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
-import { useTasks } from "../api/queries";
+import { useTasks, useCompletedTasks } from "../api/queries";
 import { useCompleteTask } from "../api/mutations";
 import { TaskCard } from "../components/TaskCard";
 import { TaskFilterBar } from "../components/TaskFilterBar";
-import type { TaskFilter, TaskWithAssignee } from "../types";
+import { XpToast } from "../components/XpToast";
+import { localToday, type TaskFilter, type TaskWithAssignee } from "../types";
 
 function filterTasks(
   tasks: TaskWithAssignee[],
   filter: TaskFilter,
   myMemberId: string | undefined,
 ): TaskWithAssignee[] {
-  const today = new Date().toISOString().split("T")[0];
+  const today = localToday();
 
   switch (filter) {
     case "mine":
@@ -31,8 +32,6 @@ function filterTasks(
       return tasks.filter(
         (t) => t.due_date != null && t.due_date < today,
       );
-    case "done":
-      return []; // done tasks are is_active=false, not in this query
     default:
       return tasks;
   }
@@ -42,15 +41,24 @@ export function TaskListScreen() {
   const router = useRouter();
   const { data: family } = useFamily();
   const { data: tasks, isLoading } = useTasks();
+  const { data: completedTasks, isLoading: isLoadingDone } = useCompletedTasks();
   const completeTask = useCompleteTask();
   const [filter, setFilter] = useState<TaskFilter>("all");
+  const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
+  const dismissToast = useCallback(() => setToast(null), []);
+
+  const isDoneFilter = filter === "done";
+  const sourceData = isDoneFilter ? completedTasks : tasks;
 
   const filtered = useMemo(
-    () => filterTasks(tasks ?? [], filter, family?.id),
-    [tasks, filter, family?.id],
+    () =>
+      isDoneFilter
+        ? (completedTasks ?? [])
+        : filterTasks(tasks ?? [], filter, family?.id),
+    [tasks, completedTasks, filter, family?.id, isDoneFilter],
   );
 
-  if (isLoading) {
+  if (isLoading || (isDoneFilter && isLoadingDone)) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50">
         <ActivityIndicator size="large" />
@@ -66,9 +74,11 @@ export function TaskListScreen() {
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-4xl">📋</Text>
           <Text className="mt-3 text-center text-base font-medium text-gray-500">
-            {tasks?.length === 0
-              ? "No tasks yet. Tap + to create one."
-              : "Nothing matches that filter."}
+            {isDoneFilter
+              ? "No completed tasks yet."
+              : (sourceData?.length ?? 0) === 0
+                ? "No tasks yet. Tap + to create one."
+                : "Nothing matches that filter."}
           </Text>
         </View>
       ) : (
@@ -81,10 +91,16 @@ export function TaskListScreen() {
               task={item}
               onPress={() => router.push(`/(app)/tasks/${item.id}`)}
               onComplete={() => {
-                if (!family) return;
-                completeTask.mutate({ task: item, memberId: family.id });
+                if (!family || isDoneFilter) return;
+                completeTask.mutate(
+                  { task: item, memberId: family.id },
+                  {
+                    onSuccess: (result) => setToast(result),
+                  },
+                );
               }}
               isCompleting={
+                !isDoneFilter &&
                 completeTask.isPending &&
                 completeTask.variables?.task.id === item.id
               }
@@ -92,6 +108,13 @@ export function TaskListScreen() {
           )}
         />
       )}
+
+      <XpToast
+        points={toast?.points ?? 0}
+        coins={toast?.coins ?? 0}
+        visible={toast !== null}
+        onDismiss={dismissToast}
+      />
 
       {/* FAB */}
       {family?.role === "parent" && (
