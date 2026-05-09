@@ -10,7 +10,7 @@ import {
 } from "../schemas";
 import { DIFFICULTY_DEFAULTS } from "../types";
 import type { TaskDifficulty } from "../types";
-import { useFamilyMembers } from "../api/familyMembers";
+import { useFamilyMembers } from "@/features/families";
 
 const DIFFICULTIES: TaskDifficulty[] = ["easy", "medium", "hard"];
 const RECURRENCES = ["none", "daily", "weekly", "monthly"] as const;

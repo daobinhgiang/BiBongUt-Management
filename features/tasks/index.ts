@@ -8,6 +8,5 @@
  * Import from here: import { ... } from "@/features/tasks";
  */
 export * from "./types";
-export { useTasks, useTask, useTaskCompletions, taskKeys } from "./api/queries";
+export { useTasks, useTask, useCompletedTasks, useTaskCompletions, taskKeys } from "./api/queries";
 export { useCreateTask, useCompleteTask, useUpdateTask, useDeleteTask } from "./api/mutations";
-export { useFamilyMembers } from "./api/familyMembers";

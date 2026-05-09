@@ -5,6 +5,7 @@ import type { TaskWithAssignee, TaskCompletionWithMember } from "../types";
 
 export const taskKeys = {
   all: (familyId: string) => ["tasks", familyId] as const,
+  done: (familyId: string) => ["tasks", "done", familyId] as const,
   detail: (taskId: string) => ["tasks", "detail", taskId] as const,
   completions: (taskId: string) =>
     ["tasks", "completions", taskId] as const,
@@ -18,6 +19,20 @@ async function fetchTasks(familyId: string): Promise<TaskWithAssignee[]> {
     .eq("family_id", familyId)
     .eq("is_active", true)
     .order("due_date", { ascending: true, nullsFirst: false });
+
+  if (error) throw error;
+  return data as unknown as TaskWithAssignee[];
+}
+
+// ── Fetch completed (inactive) tasks for the family ──
+async function fetchCompletedTasks(familyId: string): Promise<TaskWithAssignee[]> {
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("*, assignee:family_members!tasks_assignee_id_fkey(id, nickname)")
+    .eq("family_id", familyId)
+    .eq("is_active", false)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
   if (error) throw error;
   return data as unknown as TaskWithAssignee[];
@@ -55,6 +70,16 @@ export function useTasks() {
   return useQuery({
     queryKey: taskKeys.all(family?.family_id ?? ""),
     queryFn: () => fetchTasks(family!.family_id),
+    enabled: !!family?.family_id,
+  });
+}
+
+export function useCompletedTasks() {
+  const { data: family } = useFamily();
+
+  return useQuery({
+    queryKey: taskKeys.done(family?.family_id ?? ""),
+    queryFn: () => fetchCompletedTasks(family!.family_id),
     enabled: !!family?.family_id,
   });
 }

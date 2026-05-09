@@ -1,9 +1,11 @@
+import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTask, useTaskCompletions } from "../api/queries";
 import { useCompleteTask, useDeleteTask } from "../api/mutations";
+import { XpToast } from "../components/XpToast";
 import { localToday, type TaskCompletionWithMember } from "../types";
 
 const DIFFICULTY_LABEL = {
@@ -21,6 +23,11 @@ export function TaskDetailScreen() {
   const completeTask = useCompleteTask();
   const deleteTask = useDeleteTask();
   const isParent = family?.role === "parent";
+  const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
+  const dismissToast = useCallback(() => {
+    setToast(null);
+    router.back();
+  }, [router]);
 
   if (isLoading || !task) {
     return (
@@ -37,13 +44,7 @@ export function TaskDetailScreen() {
     completeTask.mutate(
       { task, memberId: family.id },
       {
-        onSuccess: (result) => {
-          Alert.alert(
-            "Task Complete!",
-            `+${result.points} XP, +${result.coins} coins`,
-            [{ text: "OK", onPress: () => router.back() }],
-          );
-        },
+        onSuccess: (result) => setToast(result),
         onError: (err) =>
           Alert.alert("Error", err.message ?? "Could not complete task"),
       },
@@ -71,10 +72,17 @@ export function TaskDetailScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-white"
-      contentContainerClassName="px-4 py-6 gap-5"
-    >
+    <View className="flex-1 bg-white">
+      <XpToast
+        points={toast?.points ?? 0}
+        coins={toast?.coins ?? 0}
+        visible={toast !== null}
+        onDismiss={dismissToast}
+      />
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-4 py-6 gap-5"
+      >
       {/* Header */}
       <View className="gap-1">
         <Text className="text-2xl font-bold text-gray-900">{task.title}</Text>
@@ -168,6 +176,7 @@ export function TaskDetailScreen() {
         </View>
       )}
     </ScrollView>
+    </View>
   );
 }
 
