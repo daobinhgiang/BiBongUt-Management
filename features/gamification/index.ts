@@ -34,3 +34,9 @@ export {
   leaderboardKeys,
 } from "./leaderboard";
 export { useRecentActivity, xpKeys } from "./xp";
+export {
+  useMemberProfile,
+  useMyProfile,
+  profileKeys,
+} from "./api/profile";
+export type { MemberProfile } from "./api/profile";

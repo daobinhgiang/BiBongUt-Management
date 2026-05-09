@@ -28,7 +28,7 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
 
   return (
     <Pressable
-      className="flex-row items-center gap-3 rounded-xl bg-white border border-bark-100 p-4 shadow-sm"
+      className="flex-row items-center gap-3 rounded-2xl border border-bark-50 bg-white p-4 shadow-sm"
       onPress={onPress}
     >
       {/* Checkbox */}
@@ -45,7 +45,7 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
 
       {/* Content */}
       <View className="flex-1 gap-1">
-        <Text className="text-base font-medium text-gray-900">
+        <Text className="text-base font-semibold text-gray-900">
           {task.title}
         </Text>
         <View className="flex-row items-center gap-2">
@@ -96,7 +96,7 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
       </View>
 
       {/* Points preview */}
-      <View className="items-end">
+      <View className="items-end gap-1">
         <View className="flex-row items-center gap-0.5">
           <Lightning size={14} color="#819067" weight="fill" />
           <Text className="text-sm font-semibold text-jungle-600">
@@ -105,7 +105,7 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
         </View>
         <View className="flex-row items-center gap-0.5">
           <CurrencyCircleDollar size={12} color="#807200" />
-          <Text className="text-xs text-bark-500">{task.coins_reward}</Text>
+          <Text className="text-xs font-medium text-bark-500">{task.coins_reward}</Text>
         </View>
       </View>
     </Pressable>

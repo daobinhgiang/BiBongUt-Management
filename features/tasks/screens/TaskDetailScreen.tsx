@@ -18,8 +18,10 @@ import {
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTask, useTaskCompletions } from "../api/queries";
-import { useCompleteTask, useDeleteTask } from "../api/mutations";
+import { useCompleteTask, useDeleteTask, type CompleteTaskResult } from "../api/mutations";
 import { XpToast } from "../components/XpToast";
+import { LevelUpModal } from "@/features/gamification/components/LevelUpModal";
+import { BadgeToast } from "@/features/gamification/components/BadgeToast";
 import { localToday, type TaskCompletionWithMember } from "../types";
 
 const DIFFICULTY_LABEL = {
@@ -38,10 +40,13 @@ export function TaskDetailScreen() {
   const deleteTask = useDeleteTask();
   const isParent = family?.role === "parent";
   const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const [badgeToast, setBadgeToast] = useState<string | null>(null);
   const dismissToast = useCallback(() => {
     setToast(null);
-    router.back();
-  }, [router]);
+    // Don't navigate back yet if level-up or badge is queued
+    if (!levelUp && !badgeToast) router.back();
+  }, [router, levelUp, badgeToast]);
 
   if (isLoading || !task) {
     return (
@@ -58,7 +63,16 @@ export function TaskDetailScreen() {
     completeTask.mutate(
       { task, memberId: family.id },
       {
-        onSuccess: (result) => setToast(result),
+        onSuccess: (result: CompleteTaskResult) => {
+          setToast(result);
+          if (result.new_level) {
+            setTimeout(() => setLevelUp(result.new_level), 2500);
+          }
+          if (result.new_badges.length > 0) {
+            const delay = result.new_level ? 5000 : 2500;
+            setTimeout(() => setBadgeToast(result.new_badges[0]), delay);
+          }
+        },
         onError: (err) =>
           Alert.alert("Error", err.message ?? "Could not complete task"),
       },
@@ -92,6 +106,22 @@ export function TaskDetailScreen() {
         coins={toast?.coins ?? 0}
         visible={toast !== null}
         onDismiss={dismissToast}
+      />
+      <LevelUpModal
+        level={levelUp ?? 0}
+        visible={levelUp !== null}
+        onDismiss={() => {
+          setLevelUp(null);
+          if (!badgeToast) router.back();
+        }}
+      />
+      <BadgeToast
+        badgeName={badgeToast ?? ""}
+        visible={badgeToast !== null}
+        onDismiss={() => {
+          setBadgeToast(null);
+          router.back();
+        }}
       />
       <ScrollView
         className="flex-1"

@@ -46,14 +46,29 @@ type CompleteTaskInput = {
   memberId: string;
 };
 
-async function completeTask({ task, memberId }: CompleteTaskInput) {
+export type CompleteTaskResult = {
+  points: number;
+  coins: number;
+  new_level: number | null;
+  new_badges: string[];
+};
+
+async function completeTask({
+  task,
+  memberId,
+}: CompleteTaskInput): Promise<CompleteTaskResult> {
   const { data, error } = await supabase.rpc("complete_task", {
     p_task_id: task.id,
     p_member_id: memberId,
   });
   if (error) throw error;
-  const result = data as { points: number; coins: number };
-  return { points: result.points, coins: result.coins };
+  const result = data as CompleteTaskResult;
+  return {
+    points: result.points,
+    coins: result.coins,
+    new_level: result.new_level ?? null,
+    new_badges: result.new_badges ?? [],
+  };
 }
 
 export function useCompleteTask() {
