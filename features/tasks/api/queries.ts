@@ -15,7 +15,7 @@ export const taskKeys = {
 async function fetchTasks(familyId: string): Promise<TaskWithAssignee[]> {
   const { data, error } = await supabase
     .from("tasks")
-    .select("*, assignee:family_members!tasks_assignee_id_fkey(id, nickname)")
+    .select("*, assignee:family_members!tasks_assignee_id_fkey(id, nickname), creator:family_members!tasks_created_by_fkey(id, nickname)")
     .eq("family_id", familyId)
     .eq("is_active", true)
     .order("due_date", { ascending: true, nullsFirst: false });
@@ -28,7 +28,7 @@ async function fetchTasks(familyId: string): Promise<TaskWithAssignee[]> {
 async function fetchCompletedTasks(familyId: string): Promise<TaskWithAssignee[]> {
   const { data, error } = await supabase
     .from("tasks")
-    .select("*, assignee:family_members!tasks_assignee_id_fkey(id, nickname)")
+    .select("*, assignee:family_members!tasks_assignee_id_fkey(id, nickname), creator:family_members!tasks_created_by_fkey(id, nickname)")
     .eq("family_id", familyId)
     .eq("is_active", false)
     .order("created_at", { ascending: false })
@@ -42,7 +42,7 @@ async function fetchCompletedTasks(familyId: string): Promise<TaskWithAssignee[]
 async function fetchTask(taskId: string): Promise<TaskWithAssignee> {
   const { data, error } = await supabase
     .from("tasks")
-    .select("*, assignee:family_members!tasks_assignee_id_fkey(id, nickname)")
+    .select("*, assignee:family_members!tasks_assignee_id_fkey(id, nickname), creator:family_members!tasks_created_by_fkey(id, nickname)")
     .eq("id", taskId)
     .single();
 

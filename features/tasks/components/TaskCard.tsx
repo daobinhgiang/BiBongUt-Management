@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 import {
   User,
+  PencilLine,
   CalendarBlank,
   Warning,
   ArrowsClockwise,
@@ -57,6 +58,14 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
               className={`text-xs font-medium capitalize ${DIFFICULTY_COLORS[task.difficulty].text}`}
             >
               {task.difficulty}
+            </Text>
+          </View>
+
+          {/* Creator */}
+          <View className="flex-row items-center gap-0.5">
+            <PencilLine size={12} color="#9ca3af" />
+            <Text className="text-xs text-gray-400">
+              {task.creator.nickname}
             </Text>
           </View>
 

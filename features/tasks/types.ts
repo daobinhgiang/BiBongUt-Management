@@ -17,6 +17,7 @@ export type TaskRecurrence = Enums["task_recurrence"];
 // ── Joined query results ──
 export type TaskWithAssignee = Task & {
   assignee: { id: string; nickname: string } | null;
+  creator: { id: string; nickname: string };
 };
 
 export type TaskCompletionWithMember = TaskCompletion & {
