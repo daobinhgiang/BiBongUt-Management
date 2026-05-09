@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -54,8 +54,13 @@ export function ChallengeDetailScreen() {
     xp: number;
     coins: number;
   } | null>(null);
+  // Track completion locally so we don't rely on stale query cache
+  const didComplete = useRef(false);
+  // Pending victory to show after toast dismisses
+  const pendingVictory = useRef<{ xp: number; coins: number } | null>(null);
 
   const isParent = family?.role === "parent";
+  const isCreator = challenge?.created_by === family?.id;
   const participants = challenge?.challenge_participants ?? [];
   const isJoined = participants.some(
     (p) => p.family_member_id === family?.id,
@@ -67,7 +72,7 @@ export function ChallengeDetailScreen() {
     0,
   );
 
-  const handleLog = useCallback(() => {
+  function handleLog() {
     if (!family || !id) return;
     const val = Number(delta);
     if (!val || val <= 0) {
@@ -90,35 +95,49 @@ export function ChallengeDetailScreen() {
             Alert.alert("Challenge", result.error);
             return;
           }
+          if (result.challenge_complete) {
+            didComplete.current = true;
+          }
           if (result.reward_xp > 0 || result.reward_coins > 0) {
+            // Show toast first; queue victory for after toast dismisses
+            if (result.challenge_complete) {
+              pendingVictory.current = {
+                xp: result.reward_xp,
+                coins: result.reward_coins,
+              };
+            }
             setToast({
               points: result.reward_xp,
               coins: result.reward_coins,
             });
-          }
-          if (result.challenge_complete) {
-            setTimeout(() => {
-              setVictory({
-                xp: result.reward_xp,
-                coins: result.reward_coins,
-              });
-            }, 2500);
+          } else if (result.challenge_complete) {
+            // No reward to toast — show victory directly
+            setVictory({ xp: 0, coins: 0 });
           }
         },
         onError: (err) => Alert.alert("Error", err.message),
       },
     );
-  }, [family, id, delta, note, logContribution]);
+  }
 
-  const handleJoin = useCallback(() => {
+  function handleToastDismiss() {
+    setToast(null);
+    // Chain: toast dismissed → show victory if pending
+    if (pendingVictory.current) {
+      setVictory(pendingVictory.current);
+      pendingVictory.current = null;
+    }
+  }
+
+  function handleJoin() {
     if (!family || !id) return;
     joinChallenge.mutate(
       { challengeId: id, memberId: family.id },
       { onError: (err) => Alert.alert("Error", err.message) },
     );
-  }, [family, id, joinChallenge]);
+  }
 
-  const handleDelete = useCallback(() => {
+  function handleDelete() {
     if (!id) return;
     Alert.alert("Delete Challenge", "This cannot be undone.", [
       { text: "Cancel", style: "cancel" },
@@ -131,7 +150,7 @@ export function ChallengeDetailScreen() {
           }),
       },
     ]);
-  }, [id, deleteChallenge, router]);
+  }
 
   if (isLoading || !challenge) {
     return (
@@ -345,8 +364,8 @@ export function ChallengeDetailScreen() {
           </View>
         )}
 
-        {/* Delete — parents only */}
-        {isParent && isActive && (
+        {/* Delete — parents or creator */}
+        {(isParent || isCreator) && isActive && (
           <Pressable
             className="flex-row items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 py-3"
             onPress={handleDelete}
@@ -363,7 +382,7 @@ export function ChallengeDetailScreen() {
         points={toast?.points ?? 0}
         coins={toast?.coins ?? 0}
         visible={toast !== null}
-        onDismiss={() => setToast(null)}
+        onDismiss={handleToastDismiss}
       />
 
       <VictoryModal
@@ -372,7 +391,7 @@ export function ChallengeDetailScreen() {
         rewardCoins={victory?.coins ?? 0}
         onDismiss={() => {
           setVictory(null);
-          if (challenge.status !== "active") {
+          if (didComplete.current) {
             router.back();
           }
         }}
