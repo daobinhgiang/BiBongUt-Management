@@ -20,6 +20,7 @@ import { Tabs } from "expo-router";
 import {
   House,
   CheckCircle,
+  Sword,
   CalendarBlank,
   ListBullets,
   UserCircle,
@@ -48,6 +49,15 @@ export default function TabLayout() {
           title: "Do",
           tabBarIcon: ({ color, size }) => (
             <CheckCircle size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="challenges"
+        options={{
+          title: "Challenges",
+          tabBarIcon: ({ color, size }) => (
+            <Sword size={size} color={color} />
           ),
         }}
       />

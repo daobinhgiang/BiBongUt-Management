@@ -1,10 +1,17 @@
-/**
- * challenges Feature
- *
- * Challenges — time-bound challenges (daily, weekly, monthly) that family
- * members can participate in for bonus XP and rewards.
- *
- * This barrel file re-exports hooks, components, and types for this feature.
- * Import from here: import { ... } from "@/features/challenges";
- */
-export {};
+export * from "./types";
+export {
+  useChallenges,
+  useCompletedChallenges,
+  useChallenge,
+  useChallengeLogs,
+  challengeKeys,
+} from "./api/queries";
+export {
+  useCreateChallenge,
+  useJoinChallenge,
+  useLogContribution,
+  useDeleteChallenge,
+} from "./api/mutations";
+export { ChallengeListScreen } from "./screens/ChallengeListScreen";
+export { ChallengeDetailScreen } from "./screens/ChallengeDetailScreen";
+export { ChallengeCreateScreen } from "./screens/ChallengeCreateScreen";

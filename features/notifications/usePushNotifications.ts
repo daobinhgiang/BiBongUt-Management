@@ -107,6 +107,7 @@ export function usePushNotifications() {
           screen?: string;
           taskId?: string;
           memberId?: string;
+          challengeId?: string;
         };
 
         if (!data?.screen) return;
@@ -125,6 +126,11 @@ export function usePushNotifications() {
             break;
           case "leaderboard":
             router.push("/(app)/leaderboard");
+            break;
+          case "challenge":
+            if (data.challengeId)
+              router.push(`/(app)/challenges/${data.challengeId}`);
+            else router.push("/(app)/challenges");
             break;
         }
       });
