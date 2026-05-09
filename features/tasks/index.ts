@@ -9,5 +9,5 @@
  */
 export * from "./types";
 export { useTasks, useTask, useTaskCompletions, taskKeys } from "./api/queries";
-export { useCreateTask, useCompleteTask } from "./api/mutations";
+export { useCreateTask, useCompleteTask, useUpdateTask, useDeleteTask } from "./api/mutations";
 export { useFamilyMembers } from "./api/familyMembers";

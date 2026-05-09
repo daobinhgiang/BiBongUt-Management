@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTask, useTaskCompletions } from "../api/queries";
-import { useCompleteTask } from "../api/mutations";
+import { useCompleteTask, useDeleteTask } from "../api/mutations";
 import type { TaskCompletionWithMember } from "../types";
 
 const DIFFICULTY_LABEL = {
@@ -19,6 +19,8 @@ export function TaskDetailScreen() {
   const { data: task, isLoading } = useTask(id);
   const { data: completions } = useTaskCompletions(id);
   const completeTask = useCompleteTask();
+  const deleteTask = useDeleteTask();
+  const isParent = family?.role === "parent";
 
   if (isLoading || !task) {
     return (
@@ -46,6 +48,26 @@ export function TaskDetailScreen() {
         onError: (err) =>
           Alert.alert("Error", err.message ?? "Could not complete task"),
       },
+    );
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Task",
+      `Delete "${task.title}"? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () =>
+            deleteTask.mutate(task.id, {
+              onSuccess: () => router.back(),
+              onError: (err) =>
+                Alert.alert("Error", err.message ?? "Could not delete task"),
+            }),
+        },
+      ],
     );
   };
 
@@ -96,6 +118,28 @@ export function TaskDetailScreen() {
             {completeTask.isPending ? "Completing..." : "Mark Complete"}
           </Text>
         </Pressable>
+      )}
+
+      {/* Edit / Delete (parent only) */}
+      {isParent && task.is_active && (
+        <View className="flex-row gap-3">
+          <Pressable
+            className="flex-1 rounded-lg border border-blue-600 py-3"
+            onPress={() => router.push(`/(app)/tasks/${task.id}/edit`)}
+          >
+            <Text className="text-center text-base font-semibold text-blue-600">
+              Edit
+            </Text>
+          </Pressable>
+          <Pressable
+            className="flex-1 rounded-lg border border-red-500 py-3"
+            onPress={handleDelete}
+          >
+            <Text className="text-center text-base font-semibold text-red-500">
+              Delete
+            </Text>
+          </Pressable>
+        </View>
       )}
 
       {/* Completion history */}

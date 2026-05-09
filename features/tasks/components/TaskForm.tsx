@@ -1,9 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useState } from "react";
 
 import {
   createTaskSchema,
@@ -19,11 +18,22 @@ const RECURRENCES = ["none", "daily", "weekly", "monthly"] as const;
 type Props = {
   onSubmit: (values: CreateTaskFormValues) => void;
   isPending: boolean;
+  initialValues?: Partial<CreateTaskFormValues>;
+  submitLabel?: string;
+  pendingLabel?: string;
 };
 
-export function TaskForm({ onSubmit, isPending }: Props) {
+export function TaskForm({
+  onSubmit,
+  isPending,
+  initialValues,
+  submitLabel = "Create Task",
+  pendingLabel = "Saving...",
+}: Props) {
   const { data: members = [] } = useFamilyMembers();
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const isEdit = !!initialValues;
+  const [userChangedDifficulty, setUserChangedDifficulty] = useState(false);
 
   const {
     control,
@@ -42,17 +52,18 @@ export function TaskForm({ onSubmit, isPending }: Props) {
       coins_reward: DIFFICULTY_DEFAULTS.easy.coins,
       due_date: null,
       recurrence: "none",
+      ...initialValues,
     },
   });
 
   const difficulty = watch("difficulty");
 
-  // Auto-set points/coins when difficulty changes
   useEffect(() => {
+    if (isEdit && !userChangedDifficulty) return;
     const defaults = DIFFICULTY_DEFAULTS[difficulty];
     setValue("points", defaults.points);
     setValue("coins_reward", defaults.coins);
-  }, [difficulty, setValue]);
+  }, [difficulty, setValue, isEdit, userChangedDifficulty]);
 
   return (
     <ScrollView
@@ -73,7 +84,7 @@ export function TaskForm({ onSubmit, isPending }: Props) {
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
-              autoFocus
+              autoFocus={!isEdit}
             />
           )}
         />
@@ -115,9 +126,7 @@ export function TaskForm({ onSubmit, isPending }: Props) {
             <View className="flex-row flex-wrap gap-2">
               <Pressable
                 className={`rounded-full px-3 py-1.5 ${
-                  value === null
-                    ? "bg-blue-600"
-                    : "bg-gray-100"
+                  value === null ? "bg-blue-600" : "bg-gray-100"
                 }`}
                 onPress={() => onChange(null)}
               >
@@ -133,9 +142,7 @@ export function TaskForm({ onSubmit, isPending }: Props) {
                 <Pressable
                   key={m.id}
                   className={`rounded-full px-3 py-1.5 ${
-                    value === m.id
-                      ? "bg-blue-600"
-                      : "bg-gray-100"
+                    value === m.id ? "bg-blue-600" : "bg-gray-100"
                   }`}
                   onPress={() => onChange(m.id)}
                 >
@@ -167,7 +174,10 @@ export function TaskForm({ onSubmit, isPending }: Props) {
                   className={`flex-1 items-center rounded-lg py-2 ${
                     value === d ? "bg-blue-600" : "bg-gray-100"
                   }`}
-                  onPress={() => onChange(d)}
+                  onPress={() => {
+                    onChange(d);
+                    setUserChangedDifficulty(true);
+                  }}
                 >
                   <Text
                     className={`text-sm font-semibold capitalize ${
@@ -202,7 +212,10 @@ export function TaskForm({ onSubmit, isPending }: Props) {
                 className="rounded-lg border border-gray-300 px-3 py-2"
                 keyboardType="number-pad"
                 value={String(value)}
-                onChangeText={(t) => { const n = Number(t); onChange(Number.isNaN(n) ? 0 : n); }}
+                onChangeText={(t) => {
+                  const n = Number(t);
+                  onChange(Number.isNaN(n) ? 0 : n);
+                }}
               />
             )}
           />
@@ -217,7 +230,10 @@ export function TaskForm({ onSubmit, isPending }: Props) {
                 className="rounded-lg border border-gray-300 px-3 py-2"
                 keyboardType="number-pad"
                 value={String(value)}
-                onChangeText={(t) => { const n = Number(t); onChange(Number.isNaN(n) ? 0 : n); }}
+                onChangeText={(t) => {
+                  const n = Number(t);
+                  onChange(Number.isNaN(n) ? 0 : n);
+                }}
               />
             )}
           />
@@ -297,7 +313,7 @@ export function TaskForm({ onSubmit, isPending }: Props) {
         disabled={isPending}
       >
         <Text className="text-center text-base font-semibold text-white">
-          {isPending ? "Creating..." : "Create Task"}
+          {isPending ? pendingLabel : submitLabel}
         </Text>
       </Pressable>
     </ScrollView>
