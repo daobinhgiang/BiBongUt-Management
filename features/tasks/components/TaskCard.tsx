@@ -2,9 +2,9 @@ import { Pressable, Text, View } from "react-native";
 import type { TaskWithAssignee } from "../types";
 
 const DIFFICULTY_COLORS = {
-  easy: "bg-green-100 text-green-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  hard: "bg-red-100 text-red-700",
+  easy: { bg: "bg-green-100", text: "text-green-700" },
+  medium: { bg: "bg-yellow-100", text: "text-yellow-700" },
+  hard: { bg: "bg-red-100", text: "text-red-700" },
 } as const;
 
 type Props = {
@@ -45,10 +45,10 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
         <View className="flex-row items-center gap-2">
           {/* Difficulty badge */}
           <View
-            className={`rounded-full px-2 py-0.5 ${DIFFICULTY_COLORS[task.difficulty].split(" ")[0]}`}
+            className={`rounded-full px-2 py-0.5 ${DIFFICULTY_COLORS[task.difficulty].bg}`}
           >
             <Text
-              className={`text-xs font-medium capitalize ${DIFFICULTY_COLORS[task.difficulty].split(" ")[1]}`}
+              className={`text-xs font-medium capitalize ${DIFFICULTY_COLORS[task.difficulty].text}`}
             >
               {task.difficulty}
             </Text>
