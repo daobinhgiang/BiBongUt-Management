@@ -1,37 +1,34 @@
+import { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   TextT,
   FileText,
-  Target,
   Lightning,
   CurrencyCircleDollar,
   CalendarBlank,
   Sword,
   Users,
-  User,
   CheckCircle,
+  Plus,
+  Trash,
+  Target,
 } from "phosphor-react-native";
 
 import { DueDateField } from "@/features/tasks/components/DueDateField";
-import { useFamilyMembers } from "@/features/families";
+import { useSelectableMembers } from "@/features/families";
 import {
   createChallengeSchema,
   type CreateChallengeFormValues,
 } from "../schemas";
-import type { ChallengeType } from "../types";
+import { BOSS_TEMPLATES, type BossTemplate } from "../templates";
+import type { TaskDifficulty } from "@/features/tasks/types";
 
-const TYPES: { key: ChallengeType; label: string; desc: string }[] = [
-  { key: "solo", label: "Solo", desc: "Each hits own target" },
-  { key: "collaborative", label: "Team", desc: "All contribute together" },
-  { key: "boss_battle", label: "Boss Battle", desc: "Defeat the boss as a team" },
-];
-
-const TYPE_DEFAULTS: Record<ChallengeType, { xp: number; coins: number }> = {
-  solo: { xp: 30, coins: 15 },
-  collaborative: { xp: 50, coins: 25 },
-  boss_battle: { xp: 100, coins: 50 },
+const DAMAGE_BY_DIFFICULTY: Record<TaskDifficulty, number> = {
+  easy: 1,
+  medium: 2,
+  hard: 3,
 };
 
 type Props = {
@@ -41,32 +38,149 @@ type Props = {
   creatorMemberId: string | undefined;
 };
 
-export function ChallengeForm({ onSubmit, isPending, familyId, creatorMemberId }: Props) {
-  const { data: members = [] } = useFamilyMembers(familyId);
+export function ChallengeForm({
+  onSubmit,
+  isPending,
+  familyId,
+  creatorMemberId,
+}: Props) {
+  const { data: members = [] } = useSelectableMembers(familyId);
+  const [mode, setMode] = useState<"pick" | "custom" | "template">("pick");
+  const [selectedTemplate, setSelectedTemplate] = useState<BossTemplate | null>(
+    null,
+  );
 
   const {
     control,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<CreateChallengeFormValues>({
     resolver: zodResolver(createChallengeSchema),
     defaultValues: {
       title: "",
       description: "",
-      type: "collaborative",
-      target_value: 10,
-      unit: "times",
+      boss_name: "",
+      boss_emoji: "👹",
+      reward_xp: 100,
+      reward_coins: 50,
       end_date: null,
-      reward_xp: TYPE_DEFAULTS.collaborative.xp,
-      reward_coins: TYPE_DEFAULTS.collaborative.coins,
       participant_ids: [],
+      tasks: [],
     },
   });
 
-  const challengeType = watch("type");
-  const isTeamMode = challengeType !== "solo";
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "tasks",
+  });
+
+  const tasks = watch("tasks");
+  const totalDamage = tasks.reduce((sum, t) => sum + (t.damage || 0), 0);
+
+  function selectTemplate(template: BossTemplate) {
+    setSelectedTemplate(template);
+    setMode("template");
+    reset({
+      title: template.title,
+      description: template.description,
+      boss_name: template.bossName,
+      boss_emoji: template.bossEmoji,
+      reward_xp: template.rewardXp,
+      reward_coins: template.rewardCoins,
+      end_date: null,
+      participant_ids: [],
+      tasks: template.tasks.map((t) => ({
+        title: t.title,
+        difficulty: t.difficulty,
+        damage: t.damage,
+      })),
+    });
+  }
+
+  function startCustom() {
+    setMode("custom");
+    setSelectedTemplate(null);
+    reset({
+      title: "",
+      description: "",
+      boss_name: "",
+      boss_emoji: "👹",
+      reward_xp: 100,
+      reward_coins: 50,
+      end_date: null,
+      participant_ids: [],
+      tasks: [],
+    });
+  }
+
+  // ── Mode: Pick template or custom ──
+  if (mode === "pick") {
+    return (
+      <ScrollView
+        className="flex-1 bg-white"
+        contentContainerClassName="px-4 py-6 gap-4"
+      >
+        <Text className="text-lg font-bold text-gray-900">
+          Choose a Boss Battle
+        </Text>
+        <Text className="text-sm text-gray-500">
+          Pick a pre-made boss or create your own.
+        </Text>
+
+        {BOSS_TEMPLATES.map((t) => (
+          <Pressable
+            key={t.id}
+            className="flex-row items-center gap-3 rounded-2xl border border-bark-200 bg-white p-4"
+            onPress={() => selectTemplate(t)}
+          >
+            <Text className="text-4xl">{t.bossEmoji}</Text>
+            <View className="flex-1 gap-1">
+              <Text className="text-base font-semibold text-gray-900">
+                {t.bossName}
+              </Text>
+              <Text className="text-xs text-gray-500" numberOfLines={2}>
+                {t.description}
+              </Text>
+              <View className="flex-row items-center gap-2">
+                <View className="flex-row items-center gap-0.5">
+                  <Sword size={12} color="#dc2626" />
+                  <Text className="text-xs font-medium text-red-600">
+                    {t.tasks.reduce((s, tk) => s + tk.damage, 0)} HP
+                  </Text>
+                </View>
+                <View className="flex-row items-center gap-0.5">
+                  <Target size={12} color="#6b7280" />
+                  <Text className="text-xs text-gray-500">
+                    {t.tasks.length} tasks
+                  </Text>
+                </View>
+                <View className="flex-row items-center gap-0.5">
+                  <Lightning size={12} color="#819067" weight="fill" />
+                  <Text className="text-xs text-jungle-600">{t.rewardXp} XP</Text>
+                </View>
+              </View>
+            </View>
+          </Pressable>
+        ))}
+
+        <Pressable
+          className="flex-row items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-bark-200 py-6"
+          onPress={startCustom}
+        >
+          <Plus size={20} color="#819067" />
+          <Text className="text-base font-semibold text-jungle-600">
+            Create Custom Boss
+          </Text>
+        </Pressable>
+      </ScrollView>
+    );
+  }
+
+  // ── Mode: Template or Custom form ──
+  const isTemplate = mode === "template";
 
   return (
     <ScrollView
@@ -74,203 +188,254 @@ export function ChallengeForm({ onSubmit, isPending, familyId, creatorMemberId }
       contentContainerClassName="px-4 py-6 gap-5"
       keyboardShouldPersistTaps="handled"
     >
-      {/* Title */}
-      <View className="gap-1">
-        <FieldLabel icon={<TextT size={14} color="#6b7a54" />} label="Title" />
-        <Controller
-          control={control}
-          name="title"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              className="rounded-lg border border-bark-200 px-3 py-2"
-              placeholder="e.g. Family Reading Challenge"
-              onChangeText={onChange}
-              onBlur={onBlur}
-              value={value}
-              autoFocus
+      {/* Back to picker */}
+      <Pressable onPress={() => setMode("pick")}>
+        <Text className="text-sm font-medium text-jungle-600">
+          ← Choose a different boss
+        </Text>
+      </Pressable>
+
+      {/* Boss preview */}
+      <View className="items-center gap-2 rounded-2xl bg-red-50 p-4">
+        <Text className="text-5xl">{watch("boss_emoji")}</Text>
+        <Text className="text-lg font-bold text-red-700">
+          {watch("boss_name") || "Your Boss"}
+        </Text>
+        <View className="flex-row items-center gap-1">
+          <Sword size={14} color="#dc2626" />
+          <Text className="text-sm font-semibold text-red-600">
+            {totalDamage} HP
+          </Text>
+        </View>
+      </View>
+
+      {/* Boss Name + Emoji (editable for custom, read-only for template) */}
+      {!isTemplate && (
+        <>
+          <View className="gap-1">
+            <FieldLabel
+              icon={<Sword size={14} color="#6b7a54" />}
+              label="Boss Name"
             />
-          )}
+            <Controller
+              control={control}
+              name="boss_name"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="rounded-lg border border-bark-200 px-3 py-2"
+                  placeholder="e.g. Homework Hydra"
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  value={value}
+                  autoFocus
+                />
+              )}
+            />
+            {errors.boss_name && (
+              <Text className="text-xs text-red-500">
+                {errors.boss_name.message}
+              </Text>
+            )}
+          </View>
+
+          <View className="gap-1">
+            <FieldLabel
+              icon={<TextT size={14} color="#6b7a54" />}
+              label="Challenge Title"
+            />
+            <Controller
+              control={control}
+              name="title"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="rounded-lg border border-bark-200 px-3 py-2"
+                  placeholder="e.g. Defeat the Homework Hydra"
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  value={value}
+                />
+              )}
+            />
+            {errors.title && (
+              <Text className="text-xs text-red-500">
+                {errors.title.message}
+              </Text>
+            )}
+          </View>
+
+          <View className="gap-1">
+            <FieldLabel
+              icon={<FileText size={14} color="#6b7a54" />}
+              label="Description (optional)"
+            />
+            <Controller
+              control={control}
+              name="description"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="rounded-lg border border-bark-200 px-3 py-2"
+                  placeholder="What's this challenge about?"
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  value={value ?? ""}
+                  multiline
+                  numberOfLines={2}
+                  textAlignVertical="top"
+                />
+              )}
+            />
+          </View>
+        </>
+      )}
+
+      {/* Tasks / Quest List */}
+      <View className="gap-2">
+        <FieldLabel
+          icon={<Target size={14} color="#6b7a54" />}
+          label={`Quests (${fields.length})`}
         />
-        {errors.title && (
-          <Text className="text-xs text-red-500">{errors.title.message}</Text>
+
+        {fields.map((field, index) => (
+          <View
+            key={field.id}
+            className="flex-row items-center gap-2 rounded-lg border border-bark-200 bg-bark-50 p-3"
+          >
+            <View className="flex-1 gap-1">
+              {isTemplate ? (
+                <Text className="text-sm font-medium text-gray-800">
+                  {tasks[index]?.title}
+                </Text>
+              ) : (
+                <Controller
+                  control={control}
+                  name={`tasks.${index}.title`}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      className="rounded border border-bark-200 bg-white px-2 py-1 text-sm"
+                      placeholder="Task name"
+                      value={value}
+                      onChangeText={onChange}
+                    />
+                  )}
+                />
+              )}
+              <View className="flex-row items-center gap-2">
+                {/* Difficulty chips */}
+                <Controller
+                  control={control}
+                  name={`tasks.${index}.difficulty`}
+                  render={({ field: { onChange, value } }) => (
+                    <View className="flex-row gap-1">
+                      {(["easy", "medium", "hard"] as const).map((d) => (
+                        <Pressable
+                          key={d}
+                          className={`rounded-full px-2 py-0.5 ${
+                            value === d ? "bg-jungle-500" : "bg-bark-100"
+                          }`}
+                          onPress={() => {
+                            onChange(d);
+                            setValue(
+                              `tasks.${index}.damage`,
+                              DAMAGE_BY_DIFFICULTY[d],
+                            );
+                          }}
+                          disabled={isTemplate}
+                        >
+                          <Text
+                            className={`text-[10px] font-semibold capitalize ${
+                              value === d ? "text-white" : "text-gray-500"
+                            }`}
+                          >
+                            {d}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                />
+                <Text className="text-xs font-medium text-red-500">
+                  {tasks[index]?.damage ?? 1} dmg
+                </Text>
+              </View>
+            </View>
+            {!isTemplate && (
+              <Pressable onPress={() => remove(index)} hitSlop={8}>
+                <Trash size={18} color="#dc2626" />
+              </Pressable>
+            )}
+          </View>
+        ))}
+
+        {errors.tasks && typeof errors.tasks.message === "string" && (
+          <Text className="text-xs text-red-500">{errors.tasks.message}</Text>
+        )}
+
+        {/* Add task button (custom only) */}
+        {!isTemplate && (
+          <Pressable
+            className="flex-row items-center justify-center gap-1 rounded-lg border border-dashed border-bark-300 py-2"
+            onPress={() =>
+              append({ title: "", difficulty: "easy", damage: 1 })
+            }
+          >
+            <Plus size={16} color="#819067" />
+            <Text className="text-sm font-medium text-jungle-600">
+              Add Quest
+            </Text>
+          </Pressable>
         )}
       </View>
 
-      {/* Description */}
+      {/* Participants */}
       <View className="gap-1">
         <FieldLabel
-          icon={<FileText size={14} color="#6b7a54" />}
-          label="Description (optional)"
+          icon={<Users size={14} color="#6b7a54" />}
+          label="Participants"
         />
+        <Text className="text-xs text-gray-400">
+          You are automatically included. Select others to add.
+        </Text>
         <Controller
           control={control}
-          name="description"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              className="rounded-lg border border-bark-200 px-3 py-2"
-              placeholder="What's this challenge about?"
-              onChangeText={onChange}
-              onBlur={onBlur}
-              value={value ?? ""}
-              multiline
-              numberOfLines={3}
-              textAlignVertical="top"
-            />
-          )}
-        />
-      </View>
-
-      {/* Challenge Type */}
-      <View className="gap-1">
-        <FieldLabel
-          icon={<Sword size={14} color="#6b7a54" />}
-          label="Challenge Type"
-        />
-        <Controller
-          control={control}
-          name="type"
+          name="participant_ids"
           render={({ field: { onChange, value } }) => (
-            <View className="gap-2">
-              {TYPES.map((t) => (
-                <Pressable
-                  key={t.key}
-                  className={`flex-row items-center gap-3 rounded-lg border p-3 ${
-                    value === t.key
-                      ? "border-jungle-500 bg-jungle-50"
-                      : "border-bark-200 bg-white"
-                  }`}
-                  onPress={() => {
-                    onChange(t.key);
-                    const defaults = TYPE_DEFAULTS[t.key];
-                    setValue("reward_xp", defaults.xp);
-                    setValue("reward_coins", defaults.coins);
-                  }}
-                >
-                  {t.key === "solo" ? (
-                    <User size={20} color={value === t.key ? "#2c351f" : "#9ca3af"} />
-                  ) : t.key === "collaborative" ? (
-                    <Users size={20} color={value === t.key ? "#2c351f" : "#9ca3af"} />
-                  ) : (
-                    <Sword size={20} color={value === t.key ? "#dc2626" : "#9ca3af"} />
-                  )}
-                  <View>
+            <View className="mt-1 flex-row flex-wrap gap-2">
+              {members.map((m) => {
+                const isCreator = m.id === creatorMemberId;
+                const isSelected = isCreator || value.includes(m.id);
+                return (
+                  <Pressable
+                    key={m.id}
+                    className={`flex-row items-center gap-1.5 rounded-full px-3 py-1.5 ${
+                      isSelected ? "bg-jungle-500" : "bg-bark-100"
+                    }`}
+                    onPress={() => {
+                      if (isCreator) return;
+                      if (value.includes(m.id)) {
+                        onChange(value.filter((id) => id !== m.id));
+                      } else {
+                        onChange([...value, m.id]);
+                      }
+                    }}
+                    disabled={isCreator}
+                  >
+                    {isSelected && (
+                      <CheckCircle size={14} color="#fff" weight="fill" />
+                    )}
                     <Text
-                      className={`text-sm font-semibold ${
-                        value === t.key ? "text-jungle-900" : "text-gray-700"
+                      className={`text-sm font-medium ${
+                        isSelected ? "text-white" : "text-gray-700"
                       }`}
                     >
-                      {t.label}
+                      {m.nickname}
+                      {isCreator ? " (you)" : ""}
                     </Text>
-                    <Text className="text-xs text-gray-400">{t.desc}</Text>
-                  </View>
-                </Pressable>
-              ))}
+                  </Pressable>
+                );
+              })}
             </View>
           )}
         />
-      </View>
-
-      {/* Participants — shown for team modes (collaborative / boss_battle) */}
-      {isTeamMode && (
-        <View className="gap-1">
-          <FieldLabel
-            icon={<Users size={14} color="#6b7a54" />}
-            label="Participants"
-          />
-          <Text className="text-xs text-gray-400">
-            You are automatically included. Select others to add.
-          </Text>
-          <Controller
-            control={control}
-            name="participant_ids"
-            render={({ field: { onChange, value } }) => (
-              <View className="mt-1 flex-row flex-wrap gap-2">
-                {members.map((m) => {
-                  const isCreator = m.id === creatorMemberId;
-                  const isSelected = isCreator || value.includes(m.id);
-                  return (
-                    <Pressable
-                      key={m.id}
-                      className={`flex-row items-center gap-1.5 rounded-full px-3 py-1.5 ${
-                        isSelected ? "bg-jungle-500" : "bg-bark-100"
-                      }`}
-                      onPress={() => {
-                        if (isCreator) return; // can't deselect yourself
-                        if (value.includes(m.id)) {
-                          onChange(value.filter((id) => id !== m.id));
-                        } else {
-                          onChange([...value, m.id]);
-                        }
-                      }}
-                      disabled={isCreator}
-                    >
-                      {isSelected && (
-                        <CheckCircle size={14} color="#fff" weight="fill" />
-                      )}
-                      <Text
-                        className={`text-sm font-medium ${
-                          isSelected ? "text-white" : "text-gray-700"
-                        }`}
-                      >
-                        {m.nickname}
-                        {isCreator ? " (you)" : ""}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
-          />
-        </View>
-      )}
-
-      {/* Target & Unit */}
-      <View className="flex-row gap-3">
-        <View className="flex-1 gap-1">
-          <FieldLabel
-            icon={<Target size={14} color="#6b7a54" />}
-            label="Target"
-          />
-          <Controller
-            control={control}
-            name="target_value"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                className="rounded-lg border border-bark-200 px-3 py-2"
-                keyboardType="number-pad"
-                value={String(value)}
-                onChangeText={(t) => {
-                  const n = Number(t);
-                  onChange(Number.isNaN(n) ? 1 : Math.max(1, n));
-                }}
-              />
-            )}
-          />
-          {errors.target_value && (
-            <Text className="text-xs text-red-500">
-              {errors.target_value.message}
-            </Text>
-          )}
-        </View>
-        <View className="flex-1 gap-1">
-          <FieldLabel
-            icon={<TextT size={14} color="#6b7a54" />}
-            label="Unit"
-          />
-          <Controller
-            control={control}
-            name="unit"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="rounded-lg border border-bark-200 px-3 py-2"
-                placeholder="e.g. books, push-ups"
-                onChangeText={onChange}
-                onBlur={onBlur}
-                value={value}
-              />
-            )}
-          />
-        </View>
       </View>
 
       {/* Deadline */}
@@ -334,17 +499,6 @@ export function ChallengeForm({ onSubmit, isPending, familyId, creatorMemberId }
         </View>
       </View>
 
-      {/* Info note based on type */}
-      <View className="rounded-lg bg-bark-50 p-3">
-        <Text className="text-xs text-gray-500">
-          {challengeType === "solo"
-            ? "Each participant must reach the target individually. Anyone can join later."
-            : challengeType === "boss_battle"
-              ? "Everyone works together to defeat the boss! HP bar shows remaining challenge."
-              : "All participants contribute to a shared total."}
-        </Text>
-      </View>
-
       {/* Submit */}
       <Pressable
         className={`mt-2 rounded-lg py-3 ${
@@ -354,7 +508,7 @@ export function ChallengeForm({ onSubmit, isPending, familyId, creatorMemberId }
         disabled={isPending}
       >
         <Text className="text-center text-base font-semibold text-white">
-          {isPending ? "Creating..." : "Create Challenge"}
+          {isPending ? "Creating..." : "Start Boss Battle"}
         </Text>
       </Pressable>
     </ScrollView>

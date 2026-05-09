@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import type {
-  ChallengeWithParticipants,
+  ChallengeWithDetails,
   ChallengeLogWithParticipant,
 } from "../types";
 
@@ -12,6 +12,10 @@ const CHALLENGE_SELECT = `
   challenge_participants(
     *,
     member:family_members!challenge_participants_family_member_id_fkey(id, nickname, avatar_url)
+  ),
+  challenge_tasks(
+    *,
+    task:tasks!challenge_tasks_task_id_fkey(*)
   )
 `;
 
@@ -27,7 +31,7 @@ export const challengeKeys = {
 
 async function fetchChallenges(
   familyId: string,
-): Promise<ChallengeWithParticipants[]> {
+): Promise<ChallengeWithDetails[]> {
   const { data, error } = await supabase
     .from("challenges")
     .select(CHALLENGE_SELECT)
@@ -36,12 +40,12 @@ async function fetchChallenges(
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data as unknown as ChallengeWithParticipants[];
+  return data as unknown as ChallengeWithDetails[];
 }
 
 async function fetchCompletedChallenges(
   familyId: string,
-): Promise<ChallengeWithParticipants[]> {
+): Promise<ChallengeWithDetails[]> {
   const { data, error } = await supabase
     .from("challenges")
     .select(CHALLENGE_SELECT)
@@ -51,12 +55,12 @@ async function fetchCompletedChallenges(
     .limit(50);
 
   if (error) throw error;
-  return data as unknown as ChallengeWithParticipants[];
+  return data as unknown as ChallengeWithDetails[];
 }
 
 async function fetchChallenge(
   challengeId: string,
-): Promise<ChallengeWithParticipants> {
+): Promise<ChallengeWithDetails> {
   const { data, error } = await supabase
     .from("challenges")
     .select(CHALLENGE_SELECT)
@@ -64,7 +68,7 @@ async function fetchChallenge(
     .single();
 
   if (error) throw error;
-  return data as unknown as ChallengeWithParticipants;
+  return data as unknown as ChallengeWithDetails;
 }
 
 async function fetchChallengeLogs(

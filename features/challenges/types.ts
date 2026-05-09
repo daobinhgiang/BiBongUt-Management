@@ -1,4 +1,5 @@
 import type { Database } from "@/types/database.types";
+import type { Task } from "@/features/tasks/types";
 
 type Tables = Database["public"]["Tables"];
 type Enums = Database["public"]["Enums"];
@@ -9,6 +10,7 @@ export type ChallengeInsert = Tables["challenges"]["Insert"];
 export type ChallengeUpdate = Tables["challenges"]["Update"];
 export type ChallengeParticipant = Tables["challenge_participants"]["Row"];
 export type ChallengeLog = Tables["challenge_logs"]["Row"];
+export type ChallengeTask = Tables["challenge_tasks"]["Row"];
 
 // ── Enums ──
 export type ChallengeType = Enums["challenge_type"];
@@ -19,9 +21,14 @@ export type ParticipantWithMember = ChallengeParticipant & {
   member: { id: string; nickname: string; avatar_url: string | null };
 };
 
-export type ChallengeWithParticipants = Challenge & {
+export type ChallengeTaskWithTask = ChallengeTask & {
+  task: Task;
+};
+
+export type ChallengeWithDetails = Challenge & {
   creator: { id: string; nickname: string };
   challenge_participants: ParticipantWithMember[];
+  challenge_tasks: ChallengeTaskWithTask[];
 };
 
 export type ChallengeLogWithParticipant = ChallengeLog & {
