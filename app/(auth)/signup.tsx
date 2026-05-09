@@ -61,7 +61,7 @@ export default function SignupScreen() {
     >
       <View className="flex-1 items-center justify-center bg-white px-6">
         <Text className="mb-2 text-3xl font-bold text-gray-900">
-          Join BiBongUt
+          {"🎉 Join BiBongUt"}
         </Text>
         <Text className="mb-8 text-base text-gray-500">
           Create your account
@@ -76,7 +76,7 @@ export default function SignupScreen() {
 
           <View>
             <Text className="mb-1 text-sm font-medium text-gray-700">
-              Email
+              {"📧 Email"}
             </Text>
             <Controller
               control={control}
@@ -107,7 +107,7 @@ export default function SignupScreen() {
 
           <View>
             <Text className="mb-1 text-sm font-medium text-gray-700">
-              Password
+              {"🔒 Password"}
             </Text>
             <Controller
               control={control}
@@ -137,7 +137,7 @@ export default function SignupScreen() {
 
           <View>
             <Text className="mb-1 text-sm font-medium text-gray-700">
-              Confirm Password
+              {"🔒 Confirm Password"}
             </Text>
             <Controller
               control={control}

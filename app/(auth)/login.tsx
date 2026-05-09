@@ -54,7 +54,7 @@ export default function LoginScreen() {
     >
       <View className="flex-1 items-center justify-center bg-white px-6">
         <Text className="mb-2 text-3xl font-bold text-gray-900">
-          BiBongUt
+          {"🏠 BiBongUt"}
         </Text>
         <Text className="mb-8 text-base text-gray-500">
           Sign in to your family
@@ -69,7 +69,7 @@ export default function LoginScreen() {
 
           <View>
             <Text className="mb-1 text-sm font-medium text-gray-700">
-              Email
+              {"📧 Email"}
             </Text>
             <Controller
               control={control}
@@ -100,7 +100,7 @@ export default function LoginScreen() {
 
           <View>
             <Text className="mb-1 text-sm font-medium text-gray-700">
-              Password
+              {"🔒 Password"}
             </Text>
             <Controller
               control={control}

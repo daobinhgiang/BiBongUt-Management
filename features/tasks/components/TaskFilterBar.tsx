@@ -2,11 +2,11 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import type { TaskFilter } from "../types";
 
 const FILTERS: { key: TaskFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "mine", label: "Mine" },
-  { key: "today", label: "Today" },
-  { key: "overdue", label: "Overdue" },
-  { key: "done", label: "Done" },
+  { key: "all", label: "📋 All" },
+  { key: "mine", label: "👤 Mine" },
+  { key: "today", label: "📅 Today" },
+  { key: "overdue", label: "⚠️ Overdue" },
+  { key: "done", label: "✅ Done" },
 ];
 
 type Props = {
