@@ -9,6 +9,7 @@ export const createChallengeSchema = z.object({
   end_date: z.string().nullable(),
   reward_xp: z.number().int().min(0).max(9999),
   reward_coins: z.number().int().min(0).max(9999),
+  participant_ids: z.array(z.string()),
 });
 
 export type CreateChallengeFormValues = z.infer<typeof createChallengeSchema>;

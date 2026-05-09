@@ -61,6 +61,11 @@ create policy challenge_logs_insert on public.challenge_logs for insert
 create index challenge_logs_by_challenge
   on public.challenge_logs (challenge_id, logged_at desc);
 
+-- ── 5b. Allow all family members to create challenges (not just parents) ──
+drop policy if exists challenges_insert on public.challenges;
+create policy challenges_insert on public.challenges for insert
+  with check (is_family_member(family_id));
+
 -- ── 6. Fix RLS: children can join challenges and update their own participation ──
 drop policy if exists challenge_participants_insert on public.challenge_participants;
 drop policy if exists challenge_participants_update on public.challenge_participants;

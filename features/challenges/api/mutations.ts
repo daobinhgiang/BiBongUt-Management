@@ -10,19 +10,27 @@ import type {
 
 // ── Create challenge ──
 
-async function createChallenge(
-  challenge: ChallengeInsert,
-): Promise<ChallengeWithParticipants> {
+type CreateChallengeInput = {
+  challenge: ChallengeInsert;
+  participantIds: string[]; // additional member IDs to auto-join (creator is always joined)
+};
+
+const CHALLENGE_FULL_SELECT = `
+  *, creator:family_members!challenges_created_by_fkey(id, nickname),
+  challenge_participants(
+    *, member:family_members!challenge_participants_family_member_id_fkey(id, nickname, avatar_url)
+  )
+`;
+
+async function createChallenge({
+  challenge,
+  participantIds,
+}: CreateChallengeInput): Promise<ChallengeWithParticipants> {
   // 1. Insert the challenge
   const { data, error } = await supabase
     .from("challenges")
     .insert(challenge)
-    .select(
-      `*, creator:family_members!challenges_created_by_fkey(id, nickname),
-       challenge_participants(
-         *, member:family_members!challenge_participants_family_member_id_fkey(id, nickname, avatar_url)
-       )`,
-    )
+    .select(CHALLENGE_FULL_SELECT)
     .single();
 
   if (error) throw error;
@@ -33,15 +41,19 @@ async function createChallenge(
     p_member_id: challenge.created_by,
   });
 
-  // 3. Re-fetch to get the participant
+  // 3. Join additional selected participants
+  for (const memberId of participantIds) {
+    if (memberId === challenge.created_by) continue; // already joined
+    await supabase.rpc("join_challenge", {
+      p_challenge_id: data.id,
+      p_member_id: memberId,
+    });
+  }
+
+  // 4. Re-fetch to get all participants
   const { data: full, error: err2 } = await supabase
     .from("challenges")
-    .select(
-      `*, creator:family_members!challenges_created_by_fkey(id, nickname),
-       challenge_participants(
-         *, member:family_members!challenge_participants_family_member_id_fkey(id, nickname, avatar_url)
-       )`,
-    )
+    .select(CHALLENGE_FULL_SELECT)
     .eq("id", data.id)
     .single();
 
