@@ -11,13 +11,19 @@
  * | Lists | lists.tsx  | Shopping + Pantry + Bucket List + Movies              |
  * | Me    | me.tsx     | Profile, level, badges, streaks, rewards, leaderboard|
  *
- * Icons use @expo/vector-icons (Ionicons). Tab bar styling will be
+ * Icons use phosphor-react-native. Tab bar styling will be
  * customized with NativeWind once the design system is established.
  *
  * @see https://docs.expo.dev/router/advanced/tabs/
  */
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  House,
+  CheckCircle,
+  CalendarBlank,
+  ListBullets,
+  UserCircle,
+} from "phosphor-react-native";
 
 export default function TabLayout() {
   return (
@@ -32,7 +38,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <House size={size} color={color} />
           ),
         }}
       />
@@ -41,7 +47,7 @@ export default function TabLayout() {
         options={{
           title: "Do",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="checkmark-circle-outline" size={size} color={color} />
+            <CheckCircle size={size} color={color} />
           ),
         }}
       />
@@ -50,7 +56,7 @@ export default function TabLayout() {
         options={{
           title: "Plan",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={color} />
+            <CalendarBlank size={size} color={color} />
           ),
         }}
       />
@@ -59,7 +65,7 @@ export default function TabLayout() {
         options={{
           title: "Lists",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
+            <ListBullets size={size} color={color} />
           ),
         }}
       />
@@ -68,7 +74,7 @@ export default function TabLayout() {
         options={{
           title: "Me",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <UserCircle size={size} color={color} />
           ),
         }}
       />

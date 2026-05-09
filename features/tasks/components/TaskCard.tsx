@@ -1,4 +1,13 @@
 import { Pressable, Text, View } from "react-native";
+import {
+  User,
+  CalendarBlank,
+  Warning,
+  ArrowsClockwise,
+  Lightning,
+  CurrencyCircleDollar,
+  Check,
+} from "phosphor-react-native";
 import { localToday, type TaskWithAssignee } from "../types";
 
 const DIFFICULTY_COLORS = {
@@ -31,9 +40,7 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
         disabled={isCompleting}
         hitSlop={8}
       >
-        {isCompleting && (
-          <Text className="text-xs font-bold text-white">✓</Text>
-        )}
+        {isCompleting && <Check size={14} color="#fff" weight="bold" />}
       </Pressable>
 
       {/* Content */}
@@ -55,35 +62,51 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
 
           {/* Assignee */}
           {task.assignee && (
-            <Text className="text-xs text-gray-500">
-              👤 {task.assignee.nickname}
-            </Text>
+            <View className="flex-row items-center gap-0.5">
+              <User size={12} color="#6b7280" />
+              <Text className="text-xs text-gray-500">
+                {task.assignee.nickname}
+              </Text>
+            </View>
           )}
 
           {/* Due date */}
           {task.due_date && (
-            <Text
-              className={`text-xs ${isOverdue ? "font-semibold text-red-500" : "text-gray-400"}`}
-            >
-              {isOverdue ? "⚠️ Overdue" : `📅 ${new Date(task.due_date).toLocaleDateString()}`}
-            </Text>
+            <View className="flex-row items-center gap-0.5">
+              {isOverdue ? (
+                <Warning size={12} color="#ef4444" weight="fill" />
+              ) : (
+                <CalendarBlank size={12} color="#9ca3af" />
+              )}
+              <Text
+                className={`text-xs ${isOverdue ? "font-semibold text-red-500" : "text-gray-400"}`}
+              >
+                {isOverdue
+                  ? "Overdue"
+                  : new Date(task.due_date).toLocaleDateString()}
+              </Text>
+            </View>
           )}
 
           {/* Recurrence indicator */}
           {task.recurrence !== "none" && (
-            <Text className="text-xs text-gray-400">🔁</Text>
+            <ArrowsClockwise size={12} color="#9ca3af" />
           )}
         </View>
       </View>
 
       {/* Points preview */}
       <View className="items-end">
-        <Text className="text-sm font-semibold text-blue-600">
-          ⚡ {task.points} XP
-        </Text>
-        <Text className="text-xs text-yellow-600">
-          💰 {task.coins_reward}
-        </Text>
+        <View className="flex-row items-center gap-0.5">
+          <Lightning size={14} color="#2563eb" weight="fill" />
+          <Text className="text-sm font-semibold text-blue-600">
+            {task.points} XP
+          </Text>
+        </View>
+        <View className="flex-row items-center gap-0.5">
+          <CurrencyCircleDollar size={12} color="#ca8a04" />
+          <Text className="text-xs text-yellow-600">{task.coins_reward}</Text>
+        </View>
       </View>
     </Pressable>
   );

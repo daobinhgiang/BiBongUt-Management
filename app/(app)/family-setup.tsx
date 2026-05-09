@@ -12,6 +12,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import {
+  HandWaving,
+  House,
+  Link as LinkIcon,
+  UsersThree,
+  Smiley,
+  Ticket,
+  CaretLeft,
+} from "phosphor-react-native";
 
 import { useSession } from "@/lib/auth/ctx";
 import { createFamily, joinFamily } from "@/features/families";
@@ -90,9 +99,12 @@ export default function FamilySetupScreen() {
       className="flex-1"
     >
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="mb-2 text-3xl font-bold text-gray-900">
-          {"👋 Welcome to BiBongUt"}
-        </Text>
+        <View className="mb-2 flex-row items-center gap-2">
+          <HandWaving size={32} color="#f59e0b" weight="duotone" />
+          <Text className="text-3xl font-bold text-gray-900">
+            Welcome to BiBongUt
+          </Text>
+        </View>
         <Text className="mb-8 text-base text-gray-500">
           Set up your family to get started
         </Text>
@@ -107,20 +119,22 @@ export default function FamilySetupScreen() {
           {mode === "choose" && (
             <>
               <Pressable
-                className="w-full items-center rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
+                className="w-full flex-row items-center justify-center gap-2 rounded-lg bg-blue-600 py-3.5 active:bg-blue-700"
                 onPress={() => switchMode("create")}
               >
+                <House size={20} color="#fff" weight="bold" />
                 <Text className="text-base font-semibold text-white">
-                  {"🏡 Create a Family"}
+                  Create a Family
                 </Text>
               </Pressable>
 
               <Pressable
-                className="w-full items-center rounded-lg border border-blue-600 bg-white py-3.5 active:bg-blue-50"
+                className="w-full flex-row items-center justify-center gap-2 rounded-lg border border-blue-600 bg-white py-3.5 active:bg-blue-50"
                 onPress={() => switchMode("join")}
               >
+                <LinkIcon size={20} color="#2563eb" weight="bold" />
                 <Text className="text-base font-semibold text-blue-600">
-                  {"🔗 Join with Invite Code"}
+                  Join with Invite Code
                 </Text>
               </Pressable>
             </>
@@ -129,9 +143,12 @@ export default function FamilySetupScreen() {
           {mode === "create" && (
             <>
               <View>
-                <Text className="mb-1 text-sm font-medium text-gray-700">
-                  {"👨‍👩‍👧‍👦 Family Name"}
-                </Text>
+                <View className="mb-1 flex-row items-center gap-1.5">
+                  <UsersThree size={14} color="#374151" />
+                  <Text className="text-sm font-medium text-gray-700">
+                    Family Name
+                  </Text>
+                </View>
                 <Controller
                   control={createForm.control}
                   name="familyName"
@@ -154,9 +171,12 @@ export default function FamilySetupScreen() {
                 )}
               </View>
               <View>
-                <Text className="mb-1 text-sm font-medium text-gray-700">
-                  {"😊 Your Nickname"}
-                </Text>
+                <View className="mb-1 flex-row items-center gap-1.5">
+                  <Smiley size={14} color="#374151" />
+                  <Text className="text-sm font-medium text-gray-700">
+                    Your Nickname
+                  </Text>
+                </View>
                 <Controller
                   control={createForm.control}
                   name="nickname"
@@ -190,10 +210,12 @@ export default function FamilySetupScreen() {
                   </Text>
                 )}
               </Pressable>
-              <Pressable onPress={() => switchMode("choose")}>
-                <Text className="text-center text-base text-blue-600">
-                  {"← Back"}
-                </Text>
+              <Pressable
+                className="flex-row items-center justify-center gap-1"
+                onPress={() => switchMode("choose")}
+              >
+                <CaretLeft size={16} color="#2563eb" />
+                <Text className="text-base text-blue-600">Back</Text>
               </Pressable>
             </>
           )}
@@ -201,9 +223,12 @@ export default function FamilySetupScreen() {
           {mode === "join" && (
             <>
               <View>
-                <Text className="mb-1 text-sm font-medium text-gray-700">
-                  {"🎟️ Invite Code"}
-                </Text>
+                <View className="mb-1 flex-row items-center gap-1.5">
+                  <Ticket size={14} color="#374151" />
+                  <Text className="text-sm font-medium text-gray-700">
+                    Invite Code
+                  </Text>
+                </View>
                 <Controller
                   control={joinForm.control}
                   name="inviteCode"
@@ -227,9 +252,12 @@ export default function FamilySetupScreen() {
                 )}
               </View>
               <View>
-                <Text className="mb-1 text-sm font-medium text-gray-700">
-                  {"😊 Your Nickname"}
-                </Text>
+                <View className="mb-1 flex-row items-center gap-1.5">
+                  <Smiley size={14} color="#374151" />
+                  <Text className="text-sm font-medium text-gray-700">
+                    Your Nickname
+                  </Text>
+                </View>
                 <Controller
                   control={joinForm.control}
                   name="nickname"
@@ -263,10 +291,12 @@ export default function FamilySetupScreen() {
                   </Text>
                 )}
               </Pressable>
-              <Pressable onPress={() => switchMode("choose")}>
-                <Text className="text-center text-base text-blue-600">
-                  {"← Back"}
-                </Text>
+              <Pressable
+                className="flex-row items-center justify-center gap-1"
+                onPress={() => switchMode("choose")}
+              >
+                <CaretLeft size={16} color="#2563eb" />
+                <Text className="text-base text-blue-600">Back</Text>
               </Pressable>
             </>
           )}

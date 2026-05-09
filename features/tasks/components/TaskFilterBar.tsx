@@ -1,12 +1,20 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import type { ReactNode } from "react";
+import { Pressable, ScrollView, View, Text } from "react-native";
+import {
+  ListChecks,
+  User,
+  CalendarBlank,
+  Warning,
+  CheckCircle,
+} from "phosphor-react-native";
 import type { TaskFilter } from "../types";
 
-const FILTERS: { key: TaskFilter; label: string }[] = [
-  { key: "all", label: "📋 All" },
-  { key: "mine", label: "👤 Mine" },
-  { key: "today", label: "📅 Today" },
-  { key: "overdue", label: "⚠️ Overdue" },
-  { key: "done", label: "✅ Done" },
+const FILTERS: { key: TaskFilter; label: string; icon: (color: string) => ReactNode }[] = [
+  { key: "all", label: "All", icon: (c) => <ListChecks size={14} color={c} /> },
+  { key: "mine", label: "Mine", icon: (c) => <User size={14} color={c} /> },
+  { key: "today", label: "Today", icon: (c) => <CalendarBlank size={14} color={c} /> },
+  { key: "overdue", label: "Overdue", icon: (c) => <Warning size={14} color={c} /> },
+  { key: "done", label: "Done", icon: (c) => <CheckCircle size={14} color={c} /> },
 ];
 
 type Props = {
@@ -22,16 +30,17 @@ export function TaskFilterBar({ active, onChange }: Props) {
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="flex-row items-center gap-0.5 rounded-lg bg-gray-100 p-0.5"
       >
-        {FILTERS.map(({ key, label }) => {
+        {FILTERS.map(({ key, label, icon }) => {
           const selected = active === key;
           return (
             <Pressable
               key={key}
-              className={`rounded-md px-2.5 py-1 ${
+              className={`flex-row items-center gap-1 rounded-md px-2.5 py-1 ${
                 selected ? "bg-white shadow-sm" : "bg-transparent"
               }`}
               onPress={() => onChange(key)}
             >
+              {icon(selected ? "#111827" : "#6b7280")}
               <Text
                 className={`text-xs ${
                   selected
