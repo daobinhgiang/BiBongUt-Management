@@ -1,5 +1,5 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
@@ -10,7 +10,7 @@ export default function AppLayout() {
   const segments = useSegments();
   const segmentsRef = useRef(segments);
   segmentsRef.current = segments;
-  const hasNavigated = useRef(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -23,10 +23,10 @@ export default function AppLayout() {
       router.replace("/(app)/(tabs)");
     }
 
-    hasNavigated.current = true;
+    setReady(true);
   }, [familyMember, isLoading, router]);
 
-  if (isLoading || !hasNavigated.current) {
+  if (isLoading || !ready) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
