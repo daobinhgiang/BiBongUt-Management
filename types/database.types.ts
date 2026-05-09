@@ -347,8 +347,46 @@ export type Database = {
           },
         ]
       }
+      challenge_tasks: {
+        Row: {
+          challenge_id: string
+          damage: number
+          id: string
+          task_id: string
+        }
+        Insert: {
+          challenge_id: string
+          damage?: number
+          id?: string
+          task_id: string
+        }
+        Update: {
+          challenge_id?: string
+          damage?: number
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_tasks_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenges: {
         Row: {
+          boss_emoji: string
+          boss_name: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -361,11 +399,14 @@ export type Database = {
           start_date: string | null
           status: Database["public"]["Enums"]["challenge_status"]
           target_value: number
+          template_id: string | null
           title: string
           type: Database["public"]["Enums"]["challenge_type"]
           unit: string
         }
         Insert: {
+          boss_emoji?: string
+          boss_name?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -378,11 +419,14 @@ export type Database = {
           start_date?: string | null
           status?: Database["public"]["Enums"]["challenge_status"]
           target_value?: number
+          template_id?: string | null
           title: string
           type?: Database["public"]["Enums"]["challenge_type"]
           unit?: string
         }
         Update: {
+          boss_emoji?: string
+          boss_name?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -395,6 +439,7 @@ export type Database = {
           start_date?: string | null
           status?: Database["public"]["Enums"]["challenge_status"]
           target_value?: number
+          template_id?: string | null
           title?: string
           type?: Database["public"]["Enums"]["challenge_type"]
           unit?: string
@@ -409,6 +454,102 @@ export type Database = {
           },
           {
             foreignKeyName: "challenges_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chore_chart_slots: {
+        Row: {
+          assignee_id: string
+          chart_id: string
+          day_of_week: number
+          id: string
+        }
+        Insert: {
+          assignee_id: string
+          chart_id: string
+          day_of_week: number
+          id?: string
+        }
+        Update: {
+          assignee_id?: string
+          chart_id?: string
+          day_of_week?: number
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chore_chart_slots_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chore_chart_slots_chart_id_fkey"
+            columns: ["chart_id"]
+            isOneToOne: false
+            referencedRelation: "chore_charts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chore_charts: {
+        Row: {
+          coins_reward: number
+          created_at: string
+          created_by: string
+          description: string | null
+          difficulty: Database["public"]["Enums"]["task_difficulty"]
+          family_id: string
+          id: string
+          is_active: boolean
+          points: number
+          rotation_members: string[]
+          schedule_type: Database["public"]["Enums"]["chore_schedule_type"]
+          title: string
+        }
+        Insert: {
+          coins_reward?: number
+          created_at?: string
+          created_by: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          family_id: string
+          id?: string
+          is_active?: boolean
+          points?: number
+          rotation_members?: string[]
+          schedule_type?: Database["public"]["Enums"]["chore_schedule_type"]
+          title: string
+        }
+        Update: {
+          coins_reward?: number
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          family_id?: string
+          id?: string
+          is_active?: boolean
+          points?: number
+          rotation_members?: string[]
+          schedule_type?: Database["public"]["Enums"]["chore_schedule_type"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chore_charts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chore_charts_family_id_fkey"
             columns: ["family_id"]
             isOneToOne: false
             referencedRelation: "families"
@@ -938,6 +1079,7 @@ export type Database = {
           is_active: boolean
           points: number
           recurrence: Database["public"]["Enums"]["task_recurrence"]
+          source_chart_id: string | null
           title: string
         }
         Insert: {
@@ -953,6 +1095,7 @@ export type Database = {
           is_active?: boolean
           points?: number
           recurrence?: Database["public"]["Enums"]["task_recurrence"]
+          source_chart_id?: string | null
           title: string
         }
         Update: {
@@ -968,6 +1111,7 @@ export type Database = {
           is_active?: boolean
           points?: number
           recurrence?: Database["public"]["Enums"]["task_recurrence"]
+          source_chart_id?: string | null
           title?: string
         }
         Relationships: [
@@ -990,6 +1134,13 @@ export type Database = {
             columns: ["family_id"]
             isOneToOne: false
             referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_source_chart_id_fkey"
+            columns: ["source_chart_id"]
+            isOneToOne: false
+            referencedRelation: "chore_charts"
             referencedColumns: ["id"]
           },
         ]
@@ -1066,11 +1217,27 @@ export type Database = {
         Args: { p_member_id: string; p_task_id: string }
         Returns: Json
       }
+      create_chore_chart: {
+        Args: {
+          p_coins_reward?: number
+          p_created_by?: string
+          p_description?: string
+          p_difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          p_family_id: string
+          p_points?: number
+          p_rotation_members?: string[]
+          p_schedule_type?: Database["public"]["Enums"]["chore_schedule_type"]
+          p_slots?: Json
+          p_title: string
+        }
+        Returns: string
+      }
       create_family_with_member: {
         Args: { p_name: string; p_nickname: string }
         Returns: string
       }
       expire_failed_challenges: { Args: never; Returns: undefined }
+      generate_chore_tasks: { Args: never; Returns: undefined }
       is_family_member: { Args: { p_family_id: string }; Returns: boolean }
       is_family_parent: { Args: { p_family_id: string }; Returns: boolean }
       join_challenge: {
@@ -1081,21 +1248,47 @@ export type Database = {
         Args: { p_invite_code: string; p_nickname: string }
         Returns: string
       }
-      log_challenge_contribution: {
-        Args: {
-          p_challenge_id: string
-          p_delta: number
-          p_member_id: string
-          p_note?: string
-        }
-        Returns: Json
-      }
+      log_challenge_contribution:
+        | {
+            Args: {
+              p_challenge_id: string
+              p_delta: number
+              p_member_id: string
+              p_note?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_challenge_id: string
+              p_delta: number
+              p_from_trigger?: boolean
+              p_member_id: string
+              p_note?: string
+            }
+            Returns: Json
+          }
       my_family_ids: { Args: never; Returns: string[] }
       notify_overdue_tasks: { Args: never; Returns: undefined }
       notify_streak_at_risk: { Args: never; Returns: undefined }
       reset_stale_streaks: { Args: never; Returns: undefined }
       retry_failed_notifications: { Args: never; Returns: undefined }
       snapshot_weekly_leaderboard: { Args: never; Returns: undefined }
+      update_chore_chart: {
+        Args: {
+          p_chart_id: string
+          p_coins_reward?: number
+          p_description?: string
+          p_difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          p_is_active?: boolean
+          p_points?: number
+          p_rotation_members?: string[]
+          p_schedule_type?: Database["public"]["Enums"]["chore_schedule_type"]
+          p_slots?: Json
+          p_title: string
+        }
+        Returns: undefined
+      }
       update_streak: { Args: { p_member_id: string }; Returns: undefined }
     }
     Enums: {
@@ -1105,7 +1298,8 @@ export type Database = {
       bucket_list_status: "open" | "in_progress" | "completed"
       challenge_status: "active" | "completed" | "cancelled" | "failed"
       challenge_type: "solo" | "collaborative" | "boss_battle"
-      family_role: "parent" | "child"
+      chore_schedule_type: "fixed" | "rotate_weekly"
+      family_role: "parent" | "child" | "admin"
       movie_status: "want_to_watch" | "watched"
       task_difficulty: "easy" | "medium" | "hard"
       task_recurrence: "none" | "daily" | "weekly" | "monthly"
@@ -1245,7 +1439,8 @@ export const Constants = {
       bucket_list_status: ["open", "in_progress", "completed"],
       challenge_status: ["active", "completed", "cancelled", "failed"],
       challenge_type: ["solo", "collaborative", "boss_battle"],
-      family_role: ["parent", "child"],
+      chore_schedule_type: ["fixed", "rotate_weekly"],
+      family_role: ["parent", "child", "admin"],
       movie_status: ["want_to_watch", "watched"],
       task_difficulty: ["easy", "medium", "hard"],
       task_recurrence: ["none", "daily", "weekly", "monthly"],

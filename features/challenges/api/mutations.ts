@@ -1,64 +1,113 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useFamily } from "@/features/auth/hooks/useFamily";
+import { taskKeys } from "@/features/tasks/api/queries";
 import { challengeKeys } from "./queries";
 import type {
   ChallengeInsert,
-  ChallengeWithParticipants,
+  ChallengeWithDetails,
   LogContributionResult,
 } from "../types";
+import type { TaskDifficulty } from "@/features/tasks/types";
+import { DIFFICULTY_DEFAULTS } from "@/features/tasks/types";
 
-// ── Create challenge ──
+// ── Create challenge with tasks ──
+
+type TaskInput = {
+  title: string;
+  difficulty: TaskDifficulty;
+  damage: number;
+};
 
 type CreateChallengeInput = {
   challenge: ChallengeInsert;
-  participantIds: string[]; // additional member IDs to auto-join (creator is always joined)
+  participantIds: string[];
+  tasks: TaskInput[];
 };
 
 const CHALLENGE_FULL_SELECT = `
   *, creator:family_members!challenges_created_by_fkey(id, nickname),
   challenge_participants(
     *, member:family_members!challenge_participants_family_member_id_fkey(id, nickname, avatar_url)
+  ),
+  challenge_tasks(
+    *, task:tasks!challenge_tasks_task_id_fkey(*)
   )
 `;
 
 async function createChallenge({
   challenge,
   participantIds,
-}: CreateChallengeInput): Promise<ChallengeWithParticipants> {
+  tasks,
+}: CreateChallengeInput): Promise<ChallengeWithDetails> {
   // 1. Insert the challenge
   const { data, error } = await supabase
     .from("challenges")
-    .insert(challenge)
-    .select(CHALLENGE_FULL_SELECT)
+    .insert({
+      ...challenge,
+      type: "boss_battle" as const,
+      target_value: tasks.reduce((sum, t) => sum + t.damage, 0),
+    })
+    .select("id")
     .single();
 
   if (error) throw error;
+  const challengeId = data.id;
 
-  // 2. Auto-join the creator
+  // 2. Join creator + selected participants
   await supabase.rpc("join_challenge", {
-    p_challenge_id: data.id,
+    p_challenge_id: challengeId,
     p_member_id: challenge.created_by,
   });
 
-  // 3. Join additional selected participants
   for (const memberId of participantIds) {
-    if (memberId === challenge.created_by) continue; // already joined
+    if (memberId === challenge.created_by) continue;
     await supabase.rpc("join_challenge", {
-      p_challenge_id: data.id,
+      p_challenge_id: challengeId,
       p_member_id: memberId,
     });
   }
 
-  // 4. Re-fetch to get all participants
+  // 3. Create tasks and link them to the challenge
+  for (const taskInput of tasks) {
+    const defaults = DIFFICULTY_DEFAULTS[taskInput.difficulty];
+    const { data: taskData, error: taskErr } = await supabase
+      .from("tasks")
+      .insert({
+        title: taskInput.title,
+        difficulty: taskInput.difficulty,
+        points: defaults.points,
+        coins_reward: defaults.coins,
+        family_id: challenge.family_id,
+        created_by: challenge.created_by,
+        recurrence: "none" as const,
+      })
+      .select("id")
+      .single();
+
+    if (taskErr) throw taskErr;
+
+    // Link task to challenge
+    const { error: linkErr } = await supabase
+      .from("challenge_tasks")
+      .insert({
+        challenge_id: challengeId,
+        task_id: taskData.id,
+        damage: taskInput.damage,
+      });
+
+    if (linkErr) throw linkErr;
+  }
+
+  // 4. Re-fetch full challenge
   const { data: full, error: err2 } = await supabase
     .from("challenges")
     .select(CHALLENGE_FULL_SELECT)
-    .eq("id", data.id)
+    .eq("id", challengeId)
     .single();
 
   if (err2) throw err2;
-  return full as unknown as ChallengeWithParticipants;
+  return full as unknown as ChallengeWithDetails;
 }
 
 export function useCreateChallenge() {
@@ -69,7 +118,7 @@ export function useCreateChallenge() {
     mutationFn: createChallenge,
     onSuccess: (newChallenge) => {
       if (!family?.family_id) return;
-      qc.setQueryData<ChallengeWithParticipants[]>(
+      qc.setQueryData<ChallengeWithDetails[]>(
         challengeKeys.all(family.family_id),
         (old) => (old ? [newChallenge, ...old] : [newChallenge]),
       );
@@ -103,43 +152,39 @@ export function useJoinChallenge() {
   });
 }
 
-// ── Log contribution ──
+// ── Complete a challenge task (reuses complete_task RPC) ──
 
-type LogContributionInput = {
-  challengeId: string;
+type CompleteTaskInput = {
+  taskId: string;
   memberId: string;
-  delta: number;
-  note?: string;
+  challengeId: string;
 };
 
-async function logContribution({
-  challengeId,
-  memberId,
-  delta,
-  note,
-}: LogContributionInput): Promise<LogContributionResult> {
-  const { data, error } = await supabase.rpc("log_challenge_contribution", {
-    p_challenge_id: challengeId,
+async function completeChallengeTask({ taskId, memberId }: CompleteTaskInput) {
+  const { data, error } = await supabase.rpc("complete_task", {
+    p_task_id: taskId,
     p_member_id: memberId,
-    p_delta: delta,
-    p_note: note,
   });
   if (error) throw error;
-  return data as unknown as LogContributionResult;
+  return data;
 }
 
-export function useLogContribution() {
+export function useCompleteChallengeTask() {
   const qc = useQueryClient();
   const { data: family } = useFamily();
 
   return useMutation({
-    mutationFn: logContribution,
+    mutationFn: completeChallengeTask,
     onSuccess: (_data, { challengeId }) => {
+      // Invalidate both challenge and task caches
       qc.invalidateQueries({ queryKey: challengeKeys.detail(challengeId) });
       qc.invalidateQueries({ queryKey: challengeKeys.logs(challengeId) });
       if (family?.family_id) {
         qc.invalidateQueries({
           queryKey: challengeKeys.all(family.family_id),
+        });
+        qc.invalidateQueries({
+          queryKey: taskKeys.all(family.family_id),
         });
       }
     },
@@ -167,10 +212,10 @@ export function useDeleteChallenge() {
       await qc.cancelQueries({
         queryKey: challengeKeys.all(family.family_id),
       });
-      const previous = qc.getQueryData<ChallengeWithParticipants[]>(
+      const previous = qc.getQueryData<ChallengeWithDetails[]>(
         challengeKeys.all(family.family_id),
       );
-      qc.setQueryData<ChallengeWithParticipants[]>(
+      qc.setQueryData<ChallengeWithDetails[]>(
         challengeKeys.all(family.family_id),
         (old) => old?.filter((c) => c.id !== challengeId) ?? [],
       );

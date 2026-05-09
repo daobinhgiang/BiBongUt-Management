@@ -1,4 +1,6 @@
 export * from "./types";
+export { BOSS_TEMPLATES, getBossTaunt } from "./templates";
+export type { BossTemplate } from "./templates";
 export {
   useChallenges,
   useCompletedChallenges,
@@ -9,7 +11,7 @@ export {
 export {
   useCreateChallenge,
   useJoinChallenge,
-  useLogContribution,
+  useCompleteChallengeTask,
   useDeleteChallenge,
 } from "./api/mutations";
 export { ChallengeListScreen } from "./screens/ChallengeListScreen";

@@ -13,13 +13,13 @@ import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useChallenges, useCompletedChallenges } from "../api/queries";
 import { ChallengeCard } from "../components/ChallengeCard";
 import { ChallengeFilterBar } from "../components/ChallengeFilterBar";
-import type { ChallengeFilter, ChallengeWithParticipants } from "../types";
+import type { ChallengeFilter, ChallengeWithDetails } from "../types";
 
 function filterChallenges(
-  challenges: ChallengeWithParticipants[],
+  challenges: ChallengeWithDetails[],
   filter: ChallengeFilter,
   myMemberId: string | undefined,
-): ChallengeWithParticipants[] {
+): ChallengeWithDetails[] {
   if (filter === "mine") {
     return challenges.filter((c) =>
       c.challenge_participants?.some(

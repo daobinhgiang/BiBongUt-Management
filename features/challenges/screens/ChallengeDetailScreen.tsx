@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -16,24 +15,21 @@ import {
   CalendarBlank,
   Trash,
   SignIn,
-  PaperPlaneTilt,
+  Check,
+  Sword,
 } from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useChallenge, useChallengeLogs } from "../api/queries";
 import {
   useJoinChallenge,
-  useLogContribution,
+  useCompleteChallengeTask,
   useDeleteChallenge,
 } from "../api/mutations";
-import { ProgressBar } from "../components/ProgressBar";
 import { BossHPBar } from "../components/BossHPBar";
 import { VictoryModal } from "../components/VictoryModal";
 import { XpToast } from "@/features/tasks/components/XpToast";
-import {
-  CHALLENGE_TYPE_LABELS,
-  type LogContributionResult,
-} from "../types";
+import { getBossTaunt, BOSS_TEMPLATES } from "../templates";
 
 export function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -42,78 +38,62 @@ export function ChallengeDetailScreen() {
   const { data: challenge, isLoading } = useChallenge(id ?? "");
   const { data: logs } = useChallengeLogs(id ?? "");
   const joinChallenge = useJoinChallenge();
-  const logContribution = useLogContribution();
+  const completeTask = useCompleteChallengeTask();
   const deleteChallenge = useDeleteChallenge();
 
-  const [delta, setDelta] = useState("");
-  const [note, setNote] = useState("");
-  const [toast, setToast] = useState<{ points: number; coins: number } | null>(
-    null,
-  );
+  const [toast, setToast] = useState<{
+    points: number;
+    coins: number;
+  } | null>(null);
   const [victory, setVictory] = useState<{
     xp: number;
     coins: number;
   } | null>(null);
-  // Track completion locally so we don't rely on stale query cache
   const didComplete = useRef(false);
-  // Pending victory to show after toast dismisses
   const pendingVictory = useRef<{ xp: number; coins: number } | null>(null);
 
   const isParent = family?.role === "parent";
   const isCreator = challenge?.created_by === family?.id;
   const participants = challenge?.challenge_participants ?? [];
+  const challengeTasks = challenge?.challenge_tasks ?? [];
   const isJoined = participants.some(
     (p) => p.family_member_id === family?.id,
   );
   const isActive = challenge?.status === "active";
 
-  const totalValue = participants.reduce(
+  const totalDamage = participants.reduce(
     (sum, p) => sum + p.current_value,
     0,
   );
+  const totalHP = challenge?.target_value ?? 0;
 
-  function handleLog() {
+  // Get taunt text from template or use default
+  const template = BOSS_TEMPLATES.find(
+    (t) => t.id === challenge?.template_id,
+  );
+  const hpPercent = totalHP > 0 ? Math.max(totalHP - totalDamage, 0) / totalHP : 0;
+  const tauntText = template
+    ? getBossTaunt(hpPercent, template.taunts)
+    : hpPercent > 0.5
+      ? "You'll never defeat me!"
+      : hpPercent > 0
+        ? "This can't be happening..."
+        : "I'm... defeated...";
+
+  function handleCompleteTask(taskId: string) {
     if (!family || !id) return;
-    const val = Number(delta);
-    if (!val || val <= 0) {
-      Alert.alert("Invalid", "Enter a positive number");
-      return;
-    }
-
-    logContribution.mutate(
+    completeTask.mutate(
+      { taskId, memberId: family.id, challengeId: id },
       {
-        challengeId: id,
-        memberId: family.id,
-        delta: val,
-        note: note.trim() || undefined,
-      },
-      {
-        onSuccess: (result: LogContributionResult) => {
-          setDelta("");
-          setNote("");
-          if (result.error) {
-            Alert.alert("Challenge", result.error);
-            return;
+        onSuccess: (result) => {
+          const r = result as { points: number; coins: number; new_level: number | null };
+          if (r.points > 0 || r.coins > 0) {
+            setToast({ points: r.points, coins: r.coins });
           }
-          if (result.challenge_complete) {
-            didComplete.current = true;
-          }
-          if (result.reward_xp > 0 || result.reward_coins > 0) {
-            // Show toast first; queue victory for after toast dismisses
-            if (result.challenge_complete) {
-              pendingVictory.current = {
-                xp: result.reward_xp,
-                coins: result.reward_coins,
-              };
-            }
-            setToast({
-              points: result.reward_xp,
-              coins: result.reward_coins,
-            });
-          } else if (result.challenge_complete) {
-            // No reward to toast — show victory directly
-            setVictory({ xp: 0, coins: 0 });
-          }
+          // Check if the challenge completed after a short delay for cache to update
+          setTimeout(() => {
+            // Re-check challenge status via refetch
+          }, 500);
         },
         onError: (err) => Alert.alert("Error", err.message),
       },
@@ -122,7 +102,6 @@ export function ChallengeDetailScreen() {
 
   function handleToastDismiss() {
     setToast(null);
-    // Chain: toast dismissed → show victory if pending
     if (pendingVictory.current) {
       setVictory(pendingVictory.current);
       pendingVictory.current = null;
@@ -145,11 +124,24 @@ export function ChallengeDetailScreen() {
         text: "Delete",
         style: "destructive",
         onPress: () =>
-          deleteChallenge.mutate(id, {
-            onSuccess: () => router.back(),
-          }),
+          deleteChallenge.mutate(id, { onSuccess: () => router.back() }),
       },
     ]);
+  }
+
+  // Detect challenge completion from cache update
+  if (
+    challenge?.status === "completed" &&
+    !didComplete.current &&
+    !victory
+  ) {
+    didComplete.current = true;
+    setTimeout(() => {
+      setVictory({
+        xp: challenge.reward_xp,
+        coins: challenge.reward_coins,
+      });
+    }, 500);
   }
 
   if (isLoading || !challenge) {
@@ -163,113 +155,109 @@ export function ChallengeDetailScreen() {
   return (
     <View className="flex-1 bg-bark-100">
       <ScrollView contentContainerClassName="px-4 py-4 gap-4 pb-32">
-        {/* Header */}
-        <View className="gap-2 rounded-2xl bg-white p-4 shadow-sm">
-          <Text className="text-xl font-bold text-gray-900">
-            {challenge.title}
-          </Text>
-          {challenge.description && (
-            <Text className="text-sm text-gray-500">
-              {challenge.description}
-            </Text>
-          )}
-          <View className="flex-row flex-wrap items-center gap-3">
-            <View className="rounded-full bg-jungle-100 px-2 py-0.5">
-              <Text className="text-xs font-semibold text-jungle-700">
-                {CHALLENGE_TYPE_LABELS[challenge.type]}
-              </Text>
-            </View>
-            <View className="rounded-full bg-bark-100 px-2 py-0.5">
-              <Text className="text-xs font-medium capitalize text-gray-600">
-                {challenge.status}
-              </Text>
-            </View>
-            {challenge.end_date && (
-              <View className="flex-row items-center gap-1">
-                <CalendarBlank size={14} color="#9ca3af" />
-                <Text className="text-xs text-gray-400">
-                  {new Date(challenge.end_date).toLocaleDateString()}
-                </Text>
-              </View>
-            )}
-          </View>
-          <View className="flex-row items-center gap-4">
-            <View className="flex-row items-center gap-1">
-              <Lightning size={16} color="#819067" weight="fill" />
-              <Text className="text-sm font-semibold text-jungle-600">
-                {challenge.reward_xp} XP
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-1">
-              <CurrencyCircleDollar size={16} color="#807200" />
-              <Text className="text-sm font-medium text-bark-500">
-                {challenge.reward_coins} coins
-              </Text>
-            </View>
-          </View>
-        </View>
+        {/* Boss Section */}
+        <BossHPBar
+          current={totalDamage}
+          target={totalHP}
+          bossName={challenge.boss_name ?? "Boss"}
+          bossEmoji={challenge.boss_emoji}
+          tauntText={isActive ? tauntText : undefined}
+        />
 
-        {/* Progress — different UI per type */}
-        <View className="rounded-2xl bg-white p-4 shadow-sm">
-          {challenge.type === "boss_battle" ? (
-            <BossHPBar
-              current={totalValue}
-              target={challenge.target_value}
-              unit={challenge.unit}
-            />
-          ) : challenge.type === "collaborative" ? (
-            <View className="gap-3">
-              <Text className="text-sm font-semibold text-gray-700">
-                Team Progress
-              </Text>
-              <ProgressBar
-                current={totalValue}
-                target={challenge.target_value}
-                unit={challenge.unit}
-              />
-              {/* Individual breakdown */}
-              {participants.map((p) => (
-                <View
-                  key={p.id}
-                  className="flex-row items-center justify-between"
+        {/* Quest Board */}
+        <View className="gap-2 rounded-2xl bg-white p-4 shadow-sm">
+          <View className="flex-row items-center gap-2">
+            <Sword size={16} color="#dc2626" />
+            <Text className="text-sm font-semibold text-gray-700">
+              Quests ({challengeTasks.filter((ct) => !ct.task.is_active).length}/
+              {challengeTasks.length})
+            </Text>
+          </View>
+
+          {challengeTasks.map((ct) => {
+            const task = ct.task;
+            const isDone = !task.is_active;
+            const isMyTask =
+              !task.assignee_id || task.assignee_id === family?.id;
+            const canComplete = isActive && isJoined && !isDone && isMyTask;
+
+            return (
+              <View
+                key={ct.id}
+                className={`flex-row items-center gap-3 rounded-lg border p-3 ${
+                  isDone
+                    ? "border-jungle-200 bg-jungle-50"
+                    : "border-bark-200 bg-white"
+                }`}
+              >
+                {/* Checkbox */}
+                <Pressable
+                  className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
+                    isDone
+                      ? "border-jungle-400 bg-jungle-400"
+                      : canComplete
+                        ? "border-bark-300"
+                        : "border-bark-200 opacity-50"
+                  }`}
+                  onPress={() => canComplete && handleCompleteTask(task.id)}
+                  disabled={!canComplete || completeTask.isPending}
+                  hitSlop={8}
                 >
-                  <Text className="text-xs text-gray-500">
-                    {p.member?.nickname ?? "Unknown"}
+                  {isDone && <Check size={14} color="#fff" weight="bold" />}
+                </Pressable>
+
+                {/* Task info */}
+                <View className="flex-1 gap-0.5">
+                  <Text
+                    className={`text-sm font-medium ${
+                      isDone
+                        ? "text-gray-400 line-through"
+                        : "text-gray-800"
+                    }`}
+                  >
+                    {task.title}
                   </Text>
-                  <Text className="text-xs font-medium text-jungle-600">
-                    {p.current_value} {challenge.unit}
+                  <View className="flex-row items-center gap-2">
+                    <Text
+                      className={`text-[10px] font-semibold capitalize ${
+                        isDone ? "text-gray-300" : "text-gray-500"
+                      }`}
+                    >
+                      {task.difficulty}
+                    </Text>
+                    {task.assignee_id && (
+                      <Text className="text-[10px] text-gray-400">
+                        Assigned
+                      </Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Damage badge */}
+                <View
+                  className={`rounded-full px-2 py-0.5 ${
+                    isDone ? "bg-jungle-100" : "bg-red-100"
+                  }`}
+                >
+                  <Text
+                    className={`text-xs font-bold ${
+                      isDone ? "text-jungle-600" : "text-red-600"
+                    }`}
+                  >
+                    {isDone ? "✓" : ct.damage} dmg
                   </Text>
                 </View>
-              ))}
-            </View>
-          ) : (
-            /* Solo — individual bars */
-            <View className="gap-3">
-              <Text className="text-sm font-semibold text-gray-700">
-                Individual Progress
-              </Text>
-              {participants.map((p) => (
-                <ProgressBar
-                  key={p.id}
-                  current={p.current_value}
-                  target={challenge.target_value}
-                  unit={challenge.unit}
-                  label={p.member?.nickname ?? "Unknown"}
-                  color={
-                    p.completed_at ? "bg-amber-500" : "bg-jungle-500"
-                  }
-                />
-              ))}
-            </View>
-          )}
+              </View>
+            );
+          })}
         </View>
 
-        {/* Participants */}
+        {/* Participants & Damage */}
         <View className="gap-2 rounded-2xl bg-white p-4 shadow-sm">
           <View className="flex-row items-center gap-2">
             <Users size={16} color="#6b7280" />
             <Text className="text-sm font-semibold text-gray-700">
-              Participants ({participants.length})
+              Damage Dealt
             </Text>
           </View>
           {participants.map((p) => (
@@ -280,48 +268,39 @@ export function ChallengeDetailScreen() {
               <Text className="text-sm text-gray-700">
                 {p.member?.nickname ?? "Unknown"}
               </Text>
-              <Text className="text-xs text-gray-400">
-                {p.current_value} {challenge.unit}
-                {p.completed_at && " - Done"}
-              </Text>
+              <View className="flex-row items-center gap-1">
+                <Sword size={12} color="#dc2626" />
+                <Text className="text-xs font-semibold text-red-600">
+                  {p.current_value} dmg
+                </Text>
+              </View>
             </View>
           ))}
         </View>
 
-        {/* Log contribution form (inline) */}
-        {isActive && isJoined && (
-          <View className="gap-3 rounded-2xl bg-white p-4 shadow-sm">
-            <Text className="text-sm font-semibold text-gray-700">
-              Log Progress
+        {/* Rewards info */}
+        <View className="flex-row items-center justify-center gap-4 rounded-2xl bg-white p-3 shadow-sm">
+          <View className="flex-row items-center gap-1">
+            <Lightning size={16} color="#819067" weight="fill" />
+            <Text className="text-sm font-semibold text-jungle-600">
+              {challenge.reward_xp} XP
             </Text>
-            <View className="flex-row items-center gap-2">
-              <TextInput
-                className="flex-1 rounded-lg border border-bark-200 px-3 py-2"
-                placeholder={`How many ${challenge.unit}?`}
-                keyboardType="number-pad"
-                value={delta}
-                onChangeText={setDelta}
-              />
-              <Pressable
-                className={`h-10 w-10 items-center justify-center rounded-full ${
-                  logContribution.isPending
-                    ? "bg-jungle-400"
-                    : "bg-jungle-500"
-                }`}
-                onPress={handleLog}
-                disabled={logContribution.isPending}
-              >
-                <PaperPlaneTilt size={18} color="#fff" weight="fill" />
-              </Pressable>
-            </View>
-            <TextInput
-              className="rounded-lg border border-bark-200 px-3 py-2"
-              placeholder="Note (optional)"
-              value={note}
-              onChangeText={setNote}
-            />
           </View>
-        )}
+          <View className="flex-row items-center gap-1">
+            <CurrencyCircleDollar size={16} color="#807200" />
+            <Text className="text-sm font-medium text-bark-500">
+              {challenge.reward_coins} coins
+            </Text>
+          </View>
+          {challenge.end_date && (
+            <View className="flex-row items-center gap-1">
+              <CalendarBlank size={14} color="#9ca3af" />
+              <Text className="text-xs text-gray-400">
+                {new Date(challenge.end_date).toLocaleDateString()}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* Join button */}
         {isActive && !isJoined && (
@@ -332,7 +311,7 @@ export function ChallengeDetailScreen() {
           >
             <SignIn size={20} color="#fff" />
             <Text className="text-base font-semibold text-white">
-              {joinChallenge.isPending ? "Joining..." : "Join Challenge"}
+              {joinChallenge.isPending ? "Joining..." : "Join Battle"}
             </Text>
           </Pressable>
         )}
@@ -341,21 +320,20 @@ export function ChallengeDetailScreen() {
         {(logs?.length ?? 0) > 0 && (
           <View className="gap-2 rounded-2xl bg-white p-4 shadow-sm">
             <Text className="text-sm font-semibold text-gray-700">
-              Recent Activity
+              Battle Log
             </Text>
             {logs?.slice(0, 20).map((log) => (
-              <View key={log.id} className="flex-row items-center gap-2 py-1">
+              <View
+                key={log.id}
+                className="flex-row items-center gap-2 py-1"
+              >
+                <Sword size={10} color="#dc2626" />
                 <Text className="text-xs font-medium text-jungle-600">
                   {log.participant?.member?.nickname ?? "Someone"}
                 </Text>
-                <Text className="text-xs text-gray-500">
-                  +{log.delta} {challenge.unit}
+                <Text className="flex-1 text-xs text-gray-500" numberOfLines={1}>
+                  {log.note ?? `dealt ${log.delta} damage`}
                 </Text>
-                {log.note && (
-                  <Text className="flex-1 text-xs text-gray-400" numberOfLines={1}>
-                    - {log.note}
-                  </Text>
-                )}
                 <Text className="text-[10px] text-gray-300">
                   {new Date(log.logged_at).toLocaleDateString()}
                 </Text>
@@ -391,9 +369,7 @@ export function ChallengeDetailScreen() {
         rewardCoins={victory?.coins ?? 0}
         onDismiss={() => {
           setVictory(null);
-          if (didComplete.current) {
-            router.back();
-          }
+          router.back();
         }}
       />
     </View>

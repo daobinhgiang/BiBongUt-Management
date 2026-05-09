@@ -20,7 +20,7 @@ import {
 } from "../schemas";
 import { DIFFICULTY_DEFAULTS } from "../types";
 import type { TaskDifficulty } from "../types";
-import { useFamilyMembers } from "@/features/families";
+import { useSelectableMembers } from "@/features/families";
 
 const DIFFICULTIES: TaskDifficulty[] = ["easy", "medium", "hard"];
 const RECURRENCES = ["none", "daily", "weekly", "monthly"] as const;
@@ -42,7 +42,7 @@ export function TaskForm({
   submitLabel = "Create Task",
   pendingLabel = "Saving...",
 }: Props) {
-  const { data: members = [] } = useFamilyMembers(familyId);
+  const { data: members = [] } = useSelectableMembers(familyId);
   const isEdit = !!initialValues;
   const [userChangedDifficulty, setUserChangedDifficulty] = useState(false);
 
