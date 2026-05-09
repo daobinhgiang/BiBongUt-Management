@@ -19,8 +19,7 @@ async function pickAndUploadAvatar(memberId: string): Promise<string> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  const ext = asset.uri.split(".").pop()?.toLowerCase() ?? "jpg";
-  const path = `${user.id}/avatar.${ext}`;
+  const path = `${user.id}/avatar`;
 
   const response = await fetch(asset.uri);
   const blob = await response.blob();
@@ -29,7 +28,7 @@ async function pickAndUploadAvatar(memberId: string): Promise<string> {
   const { error: uploadError } = await supabase.storage
     .from("avatars")
     .upload(path, arrayBuffer, {
-      contentType: asset.mimeType ?? `image/${ext}`,
+      contentType: asset.mimeType ?? "image/jpeg",
       upsert: true,
     });
 

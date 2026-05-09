@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -42,11 +42,20 @@ export function TaskDetailScreen() {
   const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [badgeToast, setBadgeToast] = useState<string | null>(null);
+  const pendingCelebration = useRef<{ level: number | null; badge: string | null }>({ level: null, badge: null });
   const dismissToast = useCallback(() => {
     setToast(null);
-    // Don't navigate back yet if level-up or badge is queued
-    if (!levelUp && !badgeToast) router.back();
-  }, [router, levelUp, badgeToast]);
+    const { level, badge } = pendingCelebration.current;
+    if (level) {
+      setLevelUp(level);
+      pendingCelebration.current.level = null;
+    } else if (badge) {
+      setBadgeToast(badge);
+      pendingCelebration.current.badge = null;
+    } else {
+      router.back();
+    }
+  }, [router]);
 
   if (isLoading || !task) {
     return (
@@ -64,14 +73,11 @@ export function TaskDetailScreen() {
       { task, memberId: family.id },
       {
         onSuccess: (result: CompleteTaskResult) => {
+          pendingCelebration.current = {
+            level: result.new_level,
+            badge: result.new_badges[0] ?? null,
+          };
           setToast(result);
-          if (result.new_level) {
-            setTimeout(() => setLevelUp(result.new_level), 2500);
-          }
-          if (result.new_badges.length > 0) {
-            const delay = result.new_level ? 5000 : 2500;
-            setTimeout(() => setBadgeToast(result.new_badges[0]), delay);
-          }
         },
         onError: (err) =>
           Alert.alert("Error", err.message ?? "Could not complete task"),
@@ -112,7 +118,13 @@ export function TaskDetailScreen() {
         visible={levelUp !== null}
         onDismiss={() => {
           setLevelUp(null);
-          if (!badgeToast) router.back();
+          const { badge } = pendingCelebration.current;
+          if (badge) {
+            setBadgeToast(badge);
+            pendingCelebration.current.badge = null;
+          } else {
+            router.back();
+          }
         }}
       />
       <BadgeToast

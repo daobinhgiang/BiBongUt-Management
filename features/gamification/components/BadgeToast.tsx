@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import Animated, {
   useSharedValue,
@@ -20,16 +20,16 @@ export function BadgeToast({ badgeName, visible, onDismiss }: Props) {
   const opacity = useSharedValue(0);
   const translateX = useSharedValue(80);
   const scale = useSharedValue(0.5);
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
 
   useEffect(() => {
     if (!visible) return;
 
-    // Reset
     opacity.value = 0;
     translateX.value = 80;
     scale.value = 0.5;
 
-    // Badge icon flies in from right
     translateX.value = withTiming(0, { duration: 400 });
     opacity.value = withTiming(1, { duration: 300 });
     scale.value = withSequence(
@@ -41,11 +41,11 @@ export function BadgeToast({ badgeName, visible, onDismiss }: Props) {
     opacity.value = withDelay(
       3000,
       withTiming(0, { duration: 300 }, (finished) => {
-        if (finished) runOnJS(onDismiss)();
+        if (finished) runOnJS(() => onDismissRef.current())();
       }),
     );
     translateX.value = withDelay(3000, withTiming(80, { duration: 300 }));
-  }, [visible, opacity, translateX, scale, onDismiss]);
+  }, [visible, opacity, translateX, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

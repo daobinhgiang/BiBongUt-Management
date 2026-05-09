@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -50,7 +50,18 @@ export function TaskListScreen() {
   const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [badgeToast, setBadgeToast] = useState<string | null>(null);
-  const dismissToast = useCallback(() => setToast(null), []);
+  const pendingCelebration = useRef<{ level: number | null; badge: string | null }>({ level: null, badge: null });
+  const dismissToast = useCallback(() => {
+    setToast(null);
+    const { level, badge } = pendingCelebration.current;
+    if (level) {
+      setLevelUp(level);
+      pendingCelebration.current.level = null;
+    } else if (badge) {
+      setBadgeToast(badge);
+      pendingCelebration.current.badge = null;
+    }
+  }, []);
 
   const isDoneFilter = filter === "done";
   const sourceData = isDoneFilter ? completedTasks : tasks;
@@ -64,18 +75,11 @@ export function TaskListScreen() {
   );
 
   const handleCompleteSuccess = useCallback((result: CompleteTaskResult) => {
+    pendingCelebration.current = {
+      level: result.new_level,
+      badge: result.new_badges[0] ?? null,
+    };
     setToast(result);
-
-    if (result.new_level) {
-      // Show level-up after XP toast auto-dismisses
-      setTimeout(() => setLevelUp(result.new_level), 2500);
-    }
-
-    if (result.new_badges.length > 0) {
-      // Show first badge after XP toast
-      const delay = result.new_level ? 5000 : 2500;
-      setTimeout(() => setBadgeToast(result.new_badges[0]), delay);
-    }
   }, []);
 
   if (isLoading || (isDoneFilter && isLoadingDone)) {
@@ -137,7 +141,14 @@ export function TaskListScreen() {
       <LevelUpModal
         level={levelUp ?? 0}
         visible={levelUp !== null}
-        onDismiss={() => setLevelUp(null)}
+        onDismiss={() => {
+          setLevelUp(null);
+          const { badge } = pendingCelebration.current;
+          if (badge) {
+            setBadgeToast(badge);
+            pendingCelebration.current.badge = null;
+          }
+        }}
       />
 
       <BadgeToast

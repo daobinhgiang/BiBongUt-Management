@@ -11,6 +11,7 @@ import {
   Lightning,
   Crown,
 } from "phosphor-react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
 import { useWeeklyLeaderboard, useAllTimeLeaderboard } from "../leaderboard";
@@ -151,10 +152,18 @@ function LeaderboardRow({
       </View>
 
       {/* Avatar */}
-      <View className="h-10 w-10 items-center justify-center rounded-full bg-jungle-100">
-        <Text className="text-sm font-bold text-jungle-700">
-          {entry.nickname.charAt(0).toUpperCase()}
-        </Text>
+      <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-jungle-100">
+        {entry.avatar_url ? (
+          <Image
+            source={{ uri: entry.avatar_url }}
+            style={{ width: 40, height: 40 }}
+            contentFit="cover"
+          />
+        ) : (
+          <Text className="text-sm font-bold text-jungle-700">
+            {entry.nickname.charAt(0).toUpperCase()}
+          </Text>
+        )}
       </View>
 
       {/* Name + level */}
