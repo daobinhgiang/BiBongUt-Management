@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 
 import { ProfileScreen } from "@/features/gamification/screens/ProfileScreen";
 
@@ -25,10 +25,9 @@ export default function MemberProfileRoute() {
                 if (router.canGoBack()) router.back();
                 else router.replace("/(app)/(tabs)/me");
               }}
-              className="ml-1 flex-row items-center p-1"
+              className="ml-1 min-h-[44px] items-center justify-center px-2 py-2"
             >
               <Ionicons name="chevron-back" size={28} color="#819067" />
-              <Text className="text-base font-normal text-jungle-600">Back</Text>
             </Pressable>
           ),
           headerTitle: "",
