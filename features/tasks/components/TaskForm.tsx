@@ -3,6 +3,16 @@ import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  TextT,
+  FileText,
+  User,
+  Target,
+  Lightning,
+  CurrencyCircleDollar,
+  CalendarBlank,
+  ArrowsClockwise,
+} from "phosphor-react-native";
 
 import {
   createTaskSchema,
@@ -73,7 +83,7 @@ export function TaskForm({
     >
       {/* Title */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">{"📝 Title"}</Text>
+        <FieldLabel icon={<TextT size={14} color="#374151" />} label="Title" />
         <Controller
           control={control}
           name="title"
@@ -95,9 +105,10 @@ export function TaskForm({
 
       {/* Description */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">
-          {"📄 Description (optional)"}
-        </Text>
+        <FieldLabel
+          icon={<FileText size={14} color="#374151" />}
+          label="Description (optional)"
+        />
         <Controller
           control={control}
           name="description"
@@ -118,7 +129,7 @@ export function TaskForm({
 
       {/* Assignee */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">{"👤 Assign to"}</Text>
+        <FieldLabel icon={<User size={14} color="#374151" />} label="Assign to" />
         <Controller
           control={control}
           name="assignee_id"
@@ -162,7 +173,10 @@ export function TaskForm({
 
       {/* Difficulty */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">{"🎯 Difficulty"}</Text>
+        <FieldLabel
+          icon={<Target size={14} color="#374151" />}
+          label="Difficulty"
+        />
         <Controller
           control={control}
           name="difficulty"
@@ -203,7 +217,10 @@ export function TaskForm({
       {/* Points & Coins (editable) */}
       <View className="flex-row gap-3">
         <View className="flex-1 gap-1">
-          <Text className="text-sm font-medium text-gray-700">{"⚡ XP"}</Text>
+          <FieldLabel
+            icon={<Lightning size={14} color="#2563eb" weight="fill" />}
+            label="XP"
+          />
           <Controller
             control={control}
             name="points"
@@ -221,7 +238,10 @@ export function TaskForm({
           />
         </View>
         <View className="flex-1 gap-1">
-          <Text className="text-sm font-medium text-gray-700">{"💰 Coins"}</Text>
+          <FieldLabel
+            icon={<CurrencyCircleDollar size={14} color="#ca8a04" />}
+            label="Coins"
+          />
           <Controller
             control={control}
             name="coins_reward"
@@ -242,7 +262,10 @@ export function TaskForm({
 
       {/* Due Date */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">{"📅 Due date"}</Text>
+        <FieldLabel
+          icon={<CalendarBlank size={14} color="#374151" />}
+          label="Due date"
+        />
         <Controller
           control={control}
           name="due_date"
@@ -276,7 +299,10 @@ export function TaskForm({
 
       {/* Recurrence */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">{"🔁 Recurrence"}</Text>
+        <FieldLabel
+          icon={<ArrowsClockwise size={14} color="#374151" />}
+          label="Recurrence"
+        />
         <Controller
           control={control}
           name="recurrence"
@@ -317,5 +343,14 @@ export function TaskForm({
         </Text>
       </Pressable>
     </ScrollView>
+  );
+}
+
+function FieldLabel({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <View className="flex-row items-center gap-1.5">
+      {icon}
+      <Text className="text-sm font-medium text-gray-700">{label}</Text>
+    </View>
   );
 }

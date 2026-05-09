@@ -12,6 +12,7 @@ import { Link } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Confetti, Envelope, Lock } from "phosphor-react-native";
 
 import { useSession } from "@/lib/auth/ctx";
 
@@ -60,9 +61,12 @@ export default function SignupScreen() {
       className="flex-1"
     >
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="mb-2 text-3xl font-bold text-gray-900">
-          {"🎉 Join BiBongUt"}
-        </Text>
+        <View className="mb-2 flex-row items-center gap-2">
+          <Confetti size={32} color="#2563eb" weight="duotone" />
+          <Text className="text-3xl font-bold text-gray-900">
+            Join BiBongUt
+          </Text>
+        </View>
         <Text className="mb-8 text-base text-gray-500">
           Create your account
         </Text>
@@ -75,9 +79,10 @@ export default function SignupScreen() {
           )}
 
           <View>
-            <Text className="mb-1 text-sm font-medium text-gray-700">
-              {"📧 Email"}
-            </Text>
+            <View className="mb-1 flex-row items-center gap-1.5">
+              <Envelope size={14} color="#374151" />
+              <Text className="text-sm font-medium text-gray-700">Email</Text>
+            </View>
             <Controller
               control={control}
               name="email"
@@ -106,9 +111,12 @@ export default function SignupScreen() {
           </View>
 
           <View>
-            <Text className="mb-1 text-sm font-medium text-gray-700">
-              {"🔒 Password"}
-            </Text>
+            <View className="mb-1 flex-row items-center gap-1.5">
+              <Lock size={14} color="#374151" />
+              <Text className="text-sm font-medium text-gray-700">
+                Password
+              </Text>
+            </View>
             <Controller
               control={control}
               name="password"
@@ -136,9 +144,12 @@ export default function SignupScreen() {
           </View>
 
           <View>
-            <Text className="mb-1 text-sm font-medium text-gray-700">
-              {"🔒 Confirm Password"}
-            </Text>
+            <View className="mb-1 flex-row items-center gap-1.5">
+              <Lock size={14} color="#374151" />
+              <Text className="text-sm font-medium text-gray-700">
+                Confirm Password
+              </Text>
+            </View>
             <Controller
               control={control}
               name="confirmPassword"

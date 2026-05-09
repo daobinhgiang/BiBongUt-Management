@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { ClipboardText, PlusIcon } from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTasks, useCompletedTasks } from "../api/queries";
@@ -72,7 +73,7 @@ export function TaskListScreen() {
 
       {filtered.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-4xl">📋</Text>
+          <ClipboardText size={48} color="#9ca3af" weight="duotone" />
           <Text className="mt-3 text-center text-base font-medium text-gray-500">
             {isDoneFilter
               ? "No completed tasks yet."
@@ -122,7 +123,7 @@ export function TaskListScreen() {
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-blue-600 shadow-lg"
           onPress={() => router.push("/(app)/tasks/new")}
         >
-          <Text className="text-2xl font-bold text-white">+</Text>
+          <PlusIcon size={28} color="#fff" weight="bold" />
         </Pressable>
       )}
     </View>

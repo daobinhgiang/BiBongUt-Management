@@ -1,6 +1,19 @@
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  Target,
+  Lightning,
+  CurrencyCircleDollar,
+  User,
+  ArrowsClockwise,
+  Warning,
+  CalendarBlank,
+  CheckCircle,
+  PencilSimple,
+  Trash,
+  ClockCounterClockwise,
+} from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTask, useTaskCompletions } from "../api/queries";
@@ -93,19 +106,43 @@ export function TaskDetailScreen() {
 
       {/* Meta */}
       <View className="flex-row flex-wrap gap-3">
-        <MetaChip label={`🎯 ${DIFFICULTY_LABEL[task.difficulty]}`} />
-        <MetaChip label={`⚡ ${task.points} XP`} />
-        <MetaChip label={`💰 ${task.coins_reward} coins`} />
-        {task.assignee && <MetaChip label={`👤 ${task.assignee.nickname}`} />}
+        <MetaChip
+          icon={<Target size={14} color="#374151" />}
+          label={DIFFICULTY_LABEL[task.difficulty]}
+        />
+        <MetaChip
+          icon={<Lightning size={14} color="#2563eb" weight="fill" />}
+          label={`${task.points} XP`}
+        />
+        <MetaChip
+          icon={<CurrencyCircleDollar size={14} color="#ca8a04" />}
+          label={`${task.coins_reward} coins`}
+        />
+        {task.assignee && (
+          <MetaChip
+            icon={<User size={14} color="#374151" />}
+            label={task.assignee.nickname}
+          />
+        )}
         {task.recurrence !== "none" && (
-          <MetaChip label={`🔁 ${task.recurrence}`} />
+          <MetaChip
+            icon={<ArrowsClockwise size={14} color="#374151" />}
+            label={task.recurrence}
+          />
         )}
         {task.due_date && (
           <MetaChip
+            icon={
+              isOverdue ? (
+                <Warning size={14} color="#b91c1c" weight="fill" />
+              ) : (
+                <CalendarBlank size={14} color="#374151" />
+              )
+            }
             label={
               isOverdue
-                ? `⚠️ Overdue: ${task.due_date}`
-                : `📅 Due: ${task.due_date}`
+                ? `Overdue: ${task.due_date}`
+                : `Due: ${task.due_date}`
             }
             variant={isOverdue ? "danger" : "default"}
           />
@@ -115,14 +152,15 @@ export function TaskDetailScreen() {
       {/* Complete button */}
       {task.is_active && (
         <Pressable
-          className={`rounded-lg py-3 ${
+          className={`flex-row items-center justify-center gap-2 rounded-lg py-3 ${
             completeTask.isPending ? "bg-green-400" : "bg-green-600"
           }`}
           onPress={handleComplete}
           disabled={completeTask.isPending}
         >
+          <CheckCircle size={20} color="#fff" weight="bold" />
           <Text className="text-center text-base font-semibold text-white">
-            {completeTask.isPending ? "Completing..." : "✅ Mark Complete"}
+            {completeTask.isPending ? "Completing..." : "Mark Complete"}
           </Text>
         </Pressable>
       )}
@@ -131,19 +169,19 @@ export function TaskDetailScreen() {
       {isParent && task.is_active && (
         <View className="flex-row gap-3">
           <Pressable
-            className="flex-1 rounded-lg border border-blue-600 py-3"
+            className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-blue-600 py-3"
             onPress={() => router.push(`/(app)/tasks/${task.id}/edit`)}
           >
-            <Text className="text-center text-base font-semibold text-blue-600">
-              ✏️ Edit
-            </Text>
+            <PencilSimple size={18} color="#2563eb" />
+            <Text className="text-base font-semibold text-blue-600">Edit</Text>
           </Pressable>
           <Pressable
-            className="flex-1 rounded-lg border border-red-500 py-3"
+            className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-red-500 py-3"
             onPress={handleDelete}
           >
-            <Text className="text-center text-base font-semibold text-red-500">
-              🗑️ Delete
+            <Trash size={18} color="#ef4444" />
+            <Text className="text-base font-semibold text-red-500">
+              Delete
             </Text>
           </Pressable>
         </View>
@@ -152,9 +190,12 @@ export function TaskDetailScreen() {
       {/* Completion history */}
       {completions && completions.length > 0 && (
         <View className="gap-2">
-          <Text className="text-lg font-semibold text-gray-900">
-            📜 Completion History
-          </Text>
+          <View className="flex-row items-center gap-1.5">
+            <ClockCounterClockwise size={20} color="#111827" />
+            <Text className="text-lg font-semibold text-gray-900">
+              Completion History
+            </Text>
+          </View>
           {completions.map((c: TaskCompletionWithMember) => (
             <View
               key={c.id}
@@ -164,9 +205,12 @@ export function TaskDetailScreen() {
                 {c.completed_by_member?.nickname ?? "Unknown"}
               </Text>
               <View className="flex-row items-center gap-2">
-                <Text className="text-xs text-blue-600">
-                  +{c.points_awarded} ⚡
-                </Text>
+                <View className="flex-row items-center gap-0.5">
+                  <Lightning size={12} color="#2563eb" weight="fill" />
+                  <Text className="text-xs text-blue-600">
+                    +{c.points_awarded}
+                  </Text>
+                </View>
                 <Text className="text-xs text-gray-400">
                   {new Date(c.completed_at).toLocaleDateString()}
                 </Text>
@@ -181,18 +225,21 @@ export function TaskDetailScreen() {
 }
 
 function MetaChip({
+  icon,
   label,
   variant = "default",
 }: {
+  icon: React.ReactNode;
   label: string;
   variant?: "default" | "danger";
 }) {
   return (
     <View
-      className={`rounded-full px-3 py-1 ${
+      className={`flex-row items-center gap-1 rounded-full px-3 py-1 ${
         variant === "danger" ? "bg-red-100" : "bg-gray-100"
       }`}
     >
+      {icon}
       <Text
         className={`text-xs font-medium ${
           variant === "danger" ? "text-red-700" : "text-gray-700"

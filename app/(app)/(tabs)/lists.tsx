@@ -11,13 +11,36 @@
  * TODO: Implement sub-navigation and list views
  */
 import { View, Text } from "react-native";
+import {
+  ListBullets,
+  ShoppingCart,
+  Package,
+  Star,
+  FilmSlate,
+} from "phosphor-react-native";
 
 export default function ListsScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-4xl">📝</Text>
+      <ListBullets size={48} color="#2563eb" weight="duotone" />
       <Text className="mt-3 text-xl font-semibold">Lists</Text>
-      <Text className="mt-2 text-center text-gray-500">🛒 Shopping · 🥫 Pantry · ✨ Bucket List · 🎬 Movies{"\n"}coming soon</Text>
+      <View className="mt-3 gap-2">
+        <View className="flex-row items-center gap-2">
+          <ShoppingCart size={16} color="#6b7280" />
+          <Text className="text-gray-500">Shopping</Text>
+          <Text className="text-gray-300">·</Text>
+          <Package size={16} color="#6b7280" />
+          <Text className="text-gray-500">Pantry</Text>
+        </View>
+        <View className="flex-row items-center justify-center gap-2">
+          <Star size={16} color="#6b7280" />
+          <Text className="text-gray-500">Bucket List</Text>
+          <Text className="text-gray-300">·</Text>
+          <FilmSlate size={16} color="#6b7280" />
+          <Text className="text-gray-500">Movies</Text>
+        </View>
+        <Text className="text-center text-gray-400">coming soon</Text>
+      </View>
     </View>
   );
 }
