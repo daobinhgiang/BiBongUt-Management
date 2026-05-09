@@ -15,8 +15,9 @@ import { View, Text } from "react-native";
 export default function PlanScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-xl font-semibold">Plan</Text>
-      <Text className="mt-2 text-gray-500">Calendar + Meals coming soon</Text>
+      <Text className="text-4xl">📅</Text>
+      <Text className="mt-3 text-xl font-semibold">Plan</Text>
+      <Text className="mt-2 text-gray-500">📆 Calendar + 🍽️ Meals coming soon</Text>
     </View>
   );
 }

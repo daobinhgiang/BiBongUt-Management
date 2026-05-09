@@ -91,7 +91,7 @@ export default function FamilySetupScreen() {
     >
       <View className="flex-1 items-center justify-center bg-white px-6">
         <Text className="mb-2 text-3xl font-bold text-gray-900">
-          Welcome to BiBongUt
+          {"👋 Welcome to BiBongUt"}
         </Text>
         <Text className="mb-8 text-base text-gray-500">
           Set up your family to get started
@@ -111,7 +111,7 @@ export default function FamilySetupScreen() {
                 onPress={() => switchMode("create")}
               >
                 <Text className="text-base font-semibold text-white">
-                  Create a Family
+                  {"🏡 Create a Family"}
                 </Text>
               </Pressable>
 
@@ -120,7 +120,7 @@ export default function FamilySetupScreen() {
                 onPress={() => switchMode("join")}
               >
                 <Text className="text-base font-semibold text-blue-600">
-                  Join with Invite Code
+                  {"🔗 Join with Invite Code"}
                 </Text>
               </Pressable>
             </>
@@ -130,7 +130,7 @@ export default function FamilySetupScreen() {
             <>
               <View>
                 <Text className="mb-1 text-sm font-medium text-gray-700">
-                  Family Name
+                  {"👨‍👩‍👧‍👦 Family Name"}
                 </Text>
                 <Controller
                   control={createForm.control}
@@ -155,7 +155,7 @@ export default function FamilySetupScreen() {
               </View>
               <View>
                 <Text className="mb-1 text-sm font-medium text-gray-700">
-                  Your Nickname
+                  {"😊 Your Nickname"}
                 </Text>
                 <Controller
                   control={createForm.control}
@@ -192,7 +192,7 @@ export default function FamilySetupScreen() {
               </Pressable>
               <Pressable onPress={() => switchMode("choose")}>
                 <Text className="text-center text-base text-blue-600">
-                  Back
+                  {"← Back"}
                 </Text>
               </Pressable>
             </>
@@ -202,7 +202,7 @@ export default function FamilySetupScreen() {
             <>
               <View>
                 <Text className="mb-1 text-sm font-medium text-gray-700">
-                  Invite Code
+                  {"🎟️ Invite Code"}
                 </Text>
                 <Controller
                   control={joinForm.control}
@@ -228,7 +228,7 @@ export default function FamilySetupScreen() {
               </View>
               <View>
                 <Text className="mb-1 text-sm font-medium text-gray-700">
-                  Your Nickname
+                  {"😊 Your Nickname"}
                 </Text>
                 <Controller
                   control={joinForm.control}
@@ -265,7 +265,7 @@ export default function FamilySetupScreen() {
               </Pressable>
               <Pressable onPress={() => switchMode("choose")}>
                 <Text className="text-center text-base text-blue-600">
-                  Back
+                  {"← Back"}
                 </Text>
               </Pressable>
             </>

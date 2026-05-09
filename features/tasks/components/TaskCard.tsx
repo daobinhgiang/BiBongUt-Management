@@ -56,7 +56,7 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
           {/* Assignee */}
           {task.assignee && (
             <Text className="text-xs text-gray-500">
-              {task.assignee.nickname}
+              👤 {task.assignee.nickname}
             </Text>
           )}
 
@@ -65,13 +65,13 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
             <Text
               className={`text-xs ${isOverdue ? "font-semibold text-red-500" : "text-gray-400"}`}
             >
-              {isOverdue ? "Overdue" : new Date(task.due_date).toLocaleDateString()}
+              {isOverdue ? "⚠️ Overdue" : `📅 ${new Date(task.due_date).toLocaleDateString()}`}
             </Text>
           )}
 
           {/* Recurrence indicator */}
           {task.recurrence !== "none" && (
-            <Text className="text-xs text-gray-400">↻</Text>
+            <Text className="text-xs text-gray-400">🔁</Text>
           )}
         </View>
       </View>
@@ -79,10 +79,10 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
       {/* Points preview */}
       <View className="items-end">
         <Text className="text-sm font-semibold text-blue-600">
-          {task.points} XP
+          ⚡ {task.points} XP
         </Text>
         <Text className="text-xs text-yellow-600">
-          {task.coins_reward} coins
+          💰 {task.coins_reward}
         </Text>
       </View>
     </Pressable>

@@ -17,8 +17,9 @@ import { View, Text } from "react-native";
 export default function MeScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-xl font-semibold">Me</Text>
-      <Text className="mt-2 text-gray-500">Profile + Gamification coming soon</Text>
+      <Text className="text-4xl">👤</Text>
+      <Text className="mt-3 text-xl font-semibold">Me</Text>
+      <Text className="mt-2 text-gray-500">🏆 Profile + 🎮 Gamification coming soon</Text>
     </View>
   );
 }

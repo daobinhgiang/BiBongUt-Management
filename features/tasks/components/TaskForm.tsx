@@ -73,7 +73,7 @@ export function TaskForm({
     >
       {/* Title */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">Title</Text>
+        <Text className="text-sm font-medium text-gray-700">{"📝 Title"}</Text>
         <Controller
           control={control}
           name="title"
@@ -96,7 +96,7 @@ export function TaskForm({
       {/* Description */}
       <View className="gap-1">
         <Text className="text-sm font-medium text-gray-700">
-          Description (optional)
+          {"📄 Description (optional)"}
         </Text>
         <Controller
           control={control}
@@ -118,7 +118,7 @@ export function TaskForm({
 
       {/* Assignee */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">Assign to</Text>
+        <Text className="text-sm font-medium text-gray-700">{"👤 Assign to"}</Text>
         <Controller
           control={control}
           name="assignee_id"
@@ -162,7 +162,7 @@ export function TaskForm({
 
       {/* Difficulty */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">Difficulty</Text>
+        <Text className="text-sm font-medium text-gray-700">{"🎯 Difficulty"}</Text>
         <Controller
           control={control}
           name="difficulty"
@@ -203,7 +203,7 @@ export function TaskForm({
       {/* Points & Coins (editable) */}
       <View className="flex-row gap-3">
         <View className="flex-1 gap-1">
-          <Text className="text-sm font-medium text-gray-700">XP</Text>
+          <Text className="text-sm font-medium text-gray-700">{"⚡ XP"}</Text>
           <Controller
             control={control}
             name="points"
@@ -221,7 +221,7 @@ export function TaskForm({
           />
         </View>
         <View className="flex-1 gap-1">
-          <Text className="text-sm font-medium text-gray-700">Coins</Text>
+          <Text className="text-sm font-medium text-gray-700">{"💰 Coins"}</Text>
           <Controller
             control={control}
             name="coins_reward"
@@ -242,7 +242,7 @@ export function TaskForm({
 
       {/* Due Date */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">Due date</Text>
+        <Text className="text-sm font-medium text-gray-700">{"📅 Due date"}</Text>
         <Controller
           control={control}
           name="due_date"
@@ -276,7 +276,7 @@ export function TaskForm({
 
       {/* Recurrence */}
       <View className="gap-1">
-        <Text className="text-sm font-medium text-gray-700">Recurrence</Text>
+        <Text className="text-sm font-medium text-gray-700">{"🔁 Recurrence"}</Text>
         <Controller
           control={control}
           name="recurrence"

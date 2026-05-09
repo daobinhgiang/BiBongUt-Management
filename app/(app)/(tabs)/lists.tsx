@@ -15,8 +15,9 @@ import { View, Text } from "react-native";
 export default function ListsScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-xl font-semibold">Lists</Text>
-      <Text className="mt-2 text-gray-500">Shopping, Pantry, Bucket List, Movies coming soon</Text>
+      <Text className="text-4xl">📝</Text>
+      <Text className="mt-3 text-xl font-semibold">Lists</Text>
+      <Text className="mt-2 text-center text-gray-500">🛒 Shopping · 🥫 Pantry · ✨ Bucket List · 🎬 Movies{"\n"}coming soon</Text>
     </View>
   );
 }

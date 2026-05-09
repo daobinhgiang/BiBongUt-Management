@@ -93,19 +93,19 @@ export function TaskDetailScreen() {
 
       {/* Meta */}
       <View className="flex-row flex-wrap gap-3">
-        <MetaChip label={DIFFICULTY_LABEL[task.difficulty]} />
-        <MetaChip label={`${task.points} XP`} />
-        <MetaChip label={`${task.coins_reward} coins`} />
-        {task.assignee && <MetaChip label={task.assignee.nickname} />}
+        <MetaChip label={`🎯 ${DIFFICULTY_LABEL[task.difficulty]}`} />
+        <MetaChip label={`⚡ ${task.points} XP`} />
+        <MetaChip label={`💰 ${task.coins_reward} coins`} />
+        {task.assignee && <MetaChip label={`👤 ${task.assignee.nickname}`} />}
         {task.recurrence !== "none" && (
-          <MetaChip label={`↻ ${task.recurrence}`} />
+          <MetaChip label={`🔁 ${task.recurrence}`} />
         )}
         {task.due_date && (
           <MetaChip
             label={
               isOverdue
-                ? `Overdue: ${task.due_date}`
-                : `Due: ${task.due_date}`
+                ? `⚠️ Overdue: ${task.due_date}`
+                : `📅 Due: ${task.due_date}`
             }
             variant={isOverdue ? "danger" : "default"}
           />
@@ -122,7 +122,7 @@ export function TaskDetailScreen() {
           disabled={completeTask.isPending}
         >
           <Text className="text-center text-base font-semibold text-white">
-            {completeTask.isPending ? "Completing..." : "Mark Complete"}
+            {completeTask.isPending ? "Completing..." : "✅ Mark Complete"}
           </Text>
         </Pressable>
       )}
@@ -135,7 +135,7 @@ export function TaskDetailScreen() {
             onPress={() => router.push(`/(app)/tasks/${task.id}/edit`)}
           >
             <Text className="text-center text-base font-semibold text-blue-600">
-              Edit
+              ✏️ Edit
             </Text>
           </Pressable>
           <Pressable
@@ -143,7 +143,7 @@ export function TaskDetailScreen() {
             onPress={handleDelete}
           >
             <Text className="text-center text-base font-semibold text-red-500">
-              Delete
+              🗑️ Delete
             </Text>
           </Pressable>
         </View>
@@ -153,7 +153,7 @@ export function TaskDetailScreen() {
       {completions && completions.length > 0 && (
         <View className="gap-2">
           <Text className="text-lg font-semibold text-gray-900">
-            Completion History
+            📜 Completion History
           </Text>
           {completions.map((c: TaskCompletionWithMember) => (
             <View
@@ -165,7 +165,7 @@ export function TaskDetailScreen() {
               </Text>
               <View className="flex-row items-center gap-2">
                 <Text className="text-xs text-blue-600">
-                  +{c.points_awarded} XP
+                  +{c.points_awarded} ⚡
                 </Text>
                 <Text className="text-xs text-gray-400">
                   {new Date(c.completed_at).toLocaleDateString()}
