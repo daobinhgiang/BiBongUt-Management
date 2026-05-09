@@ -14,9 +14,13 @@ export type TaskCompletionInsert = Tables["task_completions"]["Insert"];
 export type TaskDifficulty = Enums["task_difficulty"];
 export type TaskRecurrence = Enums["task_recurrence"];
 
-// ── Joined query result (task + assignee nickname) ──
+// ── Joined query results ──
 export type TaskWithAssignee = Task & {
   assignee: { id: string; nickname: string } | null;
+};
+
+export type TaskCompletionWithMember = TaskCompletion & {
+  completed_by_member: { id: string; nickname: string } | null;
 };
 
 // ── Difficulty → default points/coins mapping ──

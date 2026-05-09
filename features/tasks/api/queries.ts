@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useFamily } from "@/features/auth/hooks/useFamily";
-import type { TaskWithAssignee } from "../types";
+import type { TaskWithAssignee, TaskCompletionWithMember } from "../types";
 
 export const taskKeys = {
   all: (familyId: string) => ["tasks", familyId] as const,
@@ -36,7 +36,7 @@ async function fetchTask(taskId: string): Promise<TaskWithAssignee> {
 }
 
 // ── Fetch completions for a task ──
-async function fetchTaskCompletions(taskId: string) {
+async function fetchTaskCompletions(taskId: string): Promise<TaskCompletionWithMember[]> {
   const { data, error } = await supabase
     .from("task_completions")
     .select("*, completed_by_member:family_members!task_completions_completed_by_fkey(id, nickname)")
@@ -44,7 +44,7 @@ async function fetchTaskCompletions(taskId: string) {
     .order("completed_at", { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data as unknown as TaskCompletionWithMember[];
 }
 
 // ── Hooks ──
