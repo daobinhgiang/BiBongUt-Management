@@ -33,6 +33,12 @@ export const DIFFICULTY_DEFAULTS: Record<
   hard: { points: 50, coins: 25 },
 };
 
+// ── Date helper (local timezone YYYY-MM-DD for consistent overdue checks) ──
+export function localToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 // ── Filter types used by the UI ──
 export type TaskFilter =
   | "all"

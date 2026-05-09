@@ -4,7 +4,6 @@ import { useFamily } from "@/features/auth/hooks/useFamily";
 import { taskKeys } from "./queries";
 import type {
   TaskInsert,
-  TaskRecurrence,
   TaskUpdate,
   TaskWithAssignee,
 } from "../types";
@@ -40,78 +39,21 @@ export function useCreateTask() {
   });
 }
 
-// ── Complete task ──
+// ── Complete task (atomic RPC) ──
 
 type CompleteTaskInput = {
   task: TaskWithAssignee;
   memberId: string;
 };
 
-function getNextDueDate(
-  currentDue: string | null,
-  recurrence: TaskRecurrence,
-): string | null {
-  if (recurrence === "none" || !currentDue) return null;
-  const d = new Date(currentDue);
-  switch (recurrence) {
-    case "daily":
-      d.setDate(d.getDate() + 1);
-      break;
-    case "weekly":
-      d.setDate(d.getDate() + 7);
-      break;
-    case "monthly":
-      d.setMonth(d.getMonth() + 1);
-      break;
-  }
-  return d.toISOString().split("T")[0];
-}
-
 async function completeTask({ task, memberId }: CompleteTaskInput) {
-  const { error: completionError } = await supabase
-    .from("task_completions")
-    .insert({
-      task_id: task.id,
-      completed_by: memberId,
-      points_awarded: task.points,
-      coins_awarded: task.coins_reward,
-    });
-  if (completionError) throw completionError;
-
-  const { error: awardError } = await supabase.rpc("award_points", {
+  const { data, error } = await supabase.rpc("complete_task", {
+    p_task_id: task.id,
     p_member_id: memberId,
-    p_xp: task.points,
-    p_coins: task.coins_reward,
-    p_reason: `Completed task: ${task.title}`,
-    p_ref_table: "tasks",
-    p_ref_id: task.id,
   });
-  if (awardError) throw awardError;
-
-  const { error: deactivateError } = await supabase
-    .from("tasks")
-    .update({ is_active: false })
-    .eq("id", task.id);
-  if (deactivateError) throw deactivateError;
-
-  if (task.recurrence !== "none") {
-    const nextDue = getNextDueDate(task.due_date, task.recurrence);
-    const { error: nextError } = await supabase.from("tasks").insert({
-      title: task.title,
-      description: task.description,
-      assignee_id: task.assignee_id,
-      difficulty: task.difficulty,
-      points: task.points,
-      coins_reward: task.coins_reward,
-      due_date: nextDue,
-      recurrence: task.recurrence,
-      family_id: task.family_id,
-      created_by: task.created_by,
-    });
-    if (nextError) throw nextError;
-  }
-
-  return { points: task.points, coins: task.coins_reward };
+  if (error) throw error;
+  const result = data as { points: number; coins: number };
+  return { points: result.points, coins: result.coins };
 }
 
 export function useCompleteTask() {

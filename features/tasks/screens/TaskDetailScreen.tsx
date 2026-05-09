@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTask, useTaskCompletions } from "../api/queries";
 import { useCompleteTask, useDeleteTask } from "../api/mutations";
-import type { TaskCompletionWithMember } from "../types";
+import { localToday, type TaskCompletionWithMember } from "../types";
 
 const DIFFICULTY_LABEL = {
   easy: "Easy",
@@ -30,8 +30,7 @@ export function TaskDetailScreen() {
     );
   }
 
-  const isOverdue =
-    task.due_date && new Date(task.due_date) < new Date(new Date().toDateString());
+  const isOverdue = task.due_date != null && task.due_date < localToday();
 
   const handleComplete = () => {
     if (!family) return;

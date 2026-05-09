@@ -13,14 +13,14 @@ import { useTasks } from "../api/queries";
 import { useCompleteTask } from "../api/mutations";
 import { TaskCard } from "../components/TaskCard";
 import { TaskFilterBar } from "../components/TaskFilterBar";
-import type { TaskFilter, TaskWithAssignee } from "../types";
+import { localToday, type TaskFilter, type TaskWithAssignee } from "../types";
 
 function filterTasks(
   tasks: TaskWithAssignee[],
   filter: TaskFilter,
   myMemberId: string | undefined,
 ): TaskWithAssignee[] {
-  const today = new Date().toISOString().split("T")[0];
+  const today = localToday();
 
   switch (filter) {
     case "mine":
