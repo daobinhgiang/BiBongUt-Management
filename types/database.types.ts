@@ -417,8 +417,11 @@ export type Database = {
           level: number
           longest_streak: number
           nickname: string
+          notification_prefs: Json
           pin_hash: string | null
+          push_token: string | null
           role: Database["public"]["Enums"]["family_role"]
+          timezone: string
           total_xp: number
           user_id: string | null
         }
@@ -434,8 +437,11 @@ export type Database = {
           level?: number
           longest_streak?: number
           nickname: string
+          notification_prefs?: Json
           pin_hash?: string | null
+          push_token?: string | null
           role?: Database["public"]["Enums"]["family_role"]
+          timezone?: string
           total_xp?: number
           user_id?: string | null
         }
@@ -451,8 +457,11 @@ export type Database = {
           level?: number
           longest_streak?: number
           nickname?: string
+          notification_prefs?: Json
           pin_hash?: string | null
+          push_token?: string | null
           role?: Database["public"]["Enums"]["family_role"]
+          timezone?: string
           total_xp?: number
           user_id?: string | null
         }
@@ -603,6 +612,53 @@ export type Database = {
             columns: ["family_id"]
             isOneToOne: false
             referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          attempts: number
+          body: string
+          created_at: string
+          data: Json | null
+          family_member_id: string
+          id: string
+          sent_at: string | null
+          status: string
+          title: string
+          type: string
+        }
+        Insert: {
+          attempts?: number
+          body: string
+          created_at?: string
+          data?: Json | null
+          family_member_id: string
+          id?: string
+          sent_at?: string | null
+          status?: string
+          title: string
+          type: string
+        }
+        Update: {
+          attempts?: number
+          body?: string
+          created_at?: string
+          data?: Json | null
+          family_member_id?: string
+          id?: string
+          sent_at?: string | null
+          status?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
             referencedColumns: ["id"]
           },
         ]
@@ -900,7 +956,10 @@ export type Database = {
         Returns: string
       }
       my_family_ids: { Args: never; Returns: string[] }
+      notify_overdue_tasks: { Args: never; Returns: undefined }
+      notify_streak_at_risk: { Args: never; Returns: undefined }
       reset_stale_streaks: { Args: never; Returns: undefined }
+      retry_failed_notifications: { Args: never; Returns: undefined }
       snapshot_weekly_leaderboard: { Args: never; Returns: undefined }
       update_streak: { Args: { p_member_id: string }; Returns: undefined }
     }
