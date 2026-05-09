@@ -14,7 +14,7 @@ export default function NewTaskRoute() {
           title: "New Task",
           headerShown: true,
           headerShadowVisible: false,
-          headerTintColor: "#2563eb",
+          headerTintColor: "#819067",
           headerLeft: () => (
             <Pressable
               accessibilityRole="button"
@@ -26,8 +26,8 @@ export default function NewTaskRoute() {
               }}
               className="ml-1 flex-row items-center p-1"
             >
-              <Ionicons name="chevron-back" size={28} color="#2563eb" />
-              <Text className="text-base font-normal text-blue-600">Back</Text>
+              <Ionicons name="chevron-back" size={28} color="#819067" />
+              <Text className="text-base font-normal text-jungle-600">Back</Text>
             </Pressable>
           ),
           headerTitle: "New Task",

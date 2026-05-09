@@ -45,7 +45,7 @@ export function TaskDetailScreen() {
 
   if (isLoading || !task) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-bark-50">
         <ActivityIndicator size="large" />
       </View>
     );
@@ -86,7 +86,7 @@ export function TaskDetailScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-bark-50">
       <XpToast
         points={toast?.points ?? 0}
         coins={toast?.coins ?? 0}
@@ -108,30 +108,30 @@ export function TaskDetailScreen() {
       {/* Meta */}
       <View className="flex-row flex-wrap gap-3">
         <MetaChip
-          icon={<Target size={14} color="#374151" />}
+          icon={<Target size={14} color="#6b7a54" />}
           label={DIFFICULTY_LABEL[task.difficulty]}
         />
         <MetaChip
-          icon={<Lightning size={14} color="#2563eb" weight="fill" />}
+          icon={<Lightning size={14} color="#819067" weight="fill" />}
           label={`${task.points} XP`}
         />
         <MetaChip
-          icon={<CurrencyCircleDollar size={14} color="#ca8a04" />}
+          icon={<CurrencyCircleDollar size={14} color="#807200" />}
           label={`${task.coins_reward} coins`}
         />
         <MetaChip
-          icon={<PencilLine size={14} color="#374151" />}
+          icon={<PencilLine size={14} color="#6b7a54" />}
           label={`by ${task.creator.nickname}`}
         />
         {task.assignee && (
           <MetaChip
-            icon={<User size={14} color="#374151" />}
+            icon={<User size={14} color="#6b7a54" />}
             label={task.assignee.nickname}
           />
         )}
         {task.recurrence !== "none" && (
           <MetaChip
-            icon={<ArrowsClockwise size={14} color="#374151" />}
+            icon={<ArrowsClockwise size={14} color="#6b7a54" />}
             label={task.recurrence}
           />
         )}
@@ -141,7 +141,7 @@ export function TaskDetailScreen() {
               isOverdue ? (
                 <Warning size={14} color="#b91c1c" weight="fill" />
               ) : (
-                <CalendarBlank size={14} color="#374151" />
+                <CalendarBlank size={14} color="#6b7a54" />
               )
             }
             label={
@@ -174,11 +174,11 @@ export function TaskDetailScreen() {
       {isParent && task.is_active && (
         <View className="flex-row gap-3">
           <Pressable
-            className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-blue-600 py-3"
+            className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-jungle-500 py-3"
             onPress={() => router.push(`/(app)/tasks/${task.id}/edit`)}
           >
-            <PencilSimple size={18} color="#2563eb" />
-            <Text className="text-base font-semibold text-blue-600">Edit</Text>
+            <PencilSimple size={18} color="#819067" />
+            <Text className="text-base font-semibold text-jungle-600">Edit</Text>
           </Pressable>
           <Pressable
             className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-red-500 py-3"
@@ -204,15 +204,15 @@ export function TaskDetailScreen() {
           {completions.map((c: TaskCompletionWithMember) => (
             <View
               key={c.id}
-              className="flex-row items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
+              className="flex-row items-center justify-between rounded-lg bg-bark-50 px-3 py-2"
             >
               <Text className="text-sm text-gray-700">
                 {c.completed_by_member?.nickname ?? "Unknown"}
               </Text>
               <View className="flex-row items-center gap-2">
                 <View className="flex-row items-center gap-0.5">
-                  <Lightning size={12} color="#2563eb" weight="fill" />
-                  <Text className="text-xs text-blue-600">
+                  <Lightning size={12} color="#819067" weight="fill" />
+                  <Text className="text-xs text-jungle-600">
                     +{c.points_awarded}
                   </Text>
                 </View>
@@ -241,7 +241,7 @@ function MetaChip({
   return (
     <View
       className={`flex-row items-center gap-1 rounded-full px-3 py-1 ${
-        variant === "danger" ? "bg-red-100" : "bg-gray-100"
+        variant === "danger" ? "bg-red-100" : "bg-bark-100"
       }`}
     >
       {icon}

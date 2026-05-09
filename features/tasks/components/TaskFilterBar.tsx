@@ -24,11 +24,11 @@ type Props = {
 
 export function TaskFilterBar({ active, onChange }: Props) {
   return (
-    <View className="border-b border-gray-100 bg-white px-3 pb-2 pt-2">
+    <View className="border-b border-bark-100 bg-bark-50 px-3 pb-2 pt-2">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="flex-row items-center gap-0.5 rounded-lg bg-gray-100 p-0.5"
+        contentContainerClassName="flex-row items-center gap-0.5 rounded-lg bg-bark-100 p-0.5"
       >
         {FILTERS.map(({ key, label, icon }) => {
           const selected = active === key;
@@ -40,12 +40,12 @@ export function TaskFilterBar({ active, onChange }: Props) {
               }`}
               onPress={() => onChange(key)}
             >
-              {icon(selected ? "#111827" : "#6b7280")}
+              {icon(selected ? "#2c351f" : "#b3a56f")}
               <Text
                 className={`text-xs ${
                   selected
-                    ? "font-semibold text-gray-900"
-                    : "font-medium text-gray-500"
+                    ? "font-semibold text-jungle-900"
+                    : "font-medium text-bark-300"
                 }`}
               >
                 {label}

@@ -12,9 +12,9 @@ export function ProgressBar({ progress = 0 }: { progress?: number }) {
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
 
   return (
-    <View className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+    <View className="h-2 w-full overflow-hidden rounded-full bg-bark-200">
       <View
-        className="h-full rounded-full bg-blue-600"
+        className="h-full rounded-full bg-jungle-500"
         style={{ width: `${clampedProgress}%` }}
       />
     </View>

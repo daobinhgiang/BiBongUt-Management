@@ -83,13 +83,13 @@ export function TaskForm({
     >
       {/* Title */}
       <View className="gap-1">
-        <FieldLabel icon={<TextT size={14} color="#374151" />} label="Title" />
+        <FieldLabel icon={<TextT size={14} color="#6b7a54" />} label="Title" />
         <Controller
           control={control}
           name="title"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              className="rounded-lg border border-gray-300 px-3 py-2"
+              className="rounded-lg border border-bark-200 px-3 py-2"
               placeholder="e.g. Take out the trash"
               onChangeText={onChange}
               onBlur={onBlur}
@@ -106,7 +106,7 @@ export function TaskForm({
       {/* Description */}
       <View className="gap-1">
         <FieldLabel
-          icon={<FileText size={14} color="#374151" />}
+          icon={<FileText size={14} color="#6b7a54" />}
           label="Description (optional)"
         />
         <Controller
@@ -114,7 +114,7 @@ export function TaskForm({
           name="description"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              className="rounded-lg border border-gray-300 px-3 py-2"
+              className="rounded-lg border border-bark-200 px-3 py-2"
               placeholder="Any extra details..."
               onChangeText={onChange}
               onBlur={onBlur}
@@ -129,7 +129,7 @@ export function TaskForm({
 
       {/* Assignee */}
       <View className="gap-1">
-        <FieldLabel icon={<User size={14} color="#374151" />} label="Assign to" />
+        <FieldLabel icon={<User size={14} color="#6b7a54" />} label="Assign to" />
         <Controller
           control={control}
           name="assignee_id"
@@ -137,7 +137,7 @@ export function TaskForm({
             <View className="flex-row flex-wrap gap-2">
               <Pressable
                 className={`rounded-full px-3 py-1.5 ${
-                  value === null ? "bg-blue-600" : "bg-gray-100"
+                  value === null ? "bg-jungle-500" : "bg-bark-100"
                 }`}
                 onPress={() => onChange(null)}
               >
@@ -153,7 +153,7 @@ export function TaskForm({
                 <Pressable
                   key={m.id}
                   className={`rounded-full px-3 py-1.5 ${
-                    value === m.id ? "bg-blue-600" : "bg-gray-100"
+                    value === m.id ? "bg-jungle-500" : "bg-bark-100"
                   }`}
                   onPress={() => onChange(m.id)}
                 >
@@ -174,7 +174,7 @@ export function TaskForm({
       {/* Difficulty */}
       <View className="gap-1">
         <FieldLabel
-          icon={<Target size={14} color="#374151" />}
+          icon={<Target size={14} color="#6b7a54" />}
           label="Difficulty"
         />
         <Controller
@@ -186,7 +186,7 @@ export function TaskForm({
                 <Pressable
                   key={d}
                   className={`flex-1 items-center rounded-lg py-2 ${
-                    value === d ? "bg-blue-600" : "bg-gray-100"
+                    value === d ? "bg-jungle-500" : "bg-bark-100"
                   }`}
                   onPress={() => {
                     onChange(d);
@@ -202,7 +202,7 @@ export function TaskForm({
                   </Text>
                   <Text
                     className={`text-xs ${
-                      value === d ? "text-blue-100" : "text-gray-400"
+                      value === d ? "text-jungle-100" : "text-gray-400"
                     }`}
                   >
                     {DIFFICULTY_DEFAULTS[d].points} XP
@@ -218,7 +218,7 @@ export function TaskForm({
       <View className="flex-row gap-3">
         <View className="flex-1 gap-1">
           <FieldLabel
-            icon={<Lightning size={14} color="#2563eb" weight="fill" />}
+            icon={<Lightning size={14} color="#819067" weight="fill" />}
             label="XP"
           />
           <Controller
@@ -226,7 +226,7 @@ export function TaskForm({
             name="points"
             render={({ field: { onChange, value } }) => (
               <TextInput
-                className="rounded-lg border border-gray-300 px-3 py-2"
+                className="rounded-lg border border-bark-200 px-3 py-2"
                 keyboardType="number-pad"
                 value={String(value)}
                 onChangeText={(t) => {
@@ -239,7 +239,7 @@ export function TaskForm({
         </View>
         <View className="flex-1 gap-1">
           <FieldLabel
-            icon={<CurrencyCircleDollar size={14} color="#ca8a04" />}
+            icon={<CurrencyCircleDollar size={14} color="#807200" />}
             label="Coins"
           />
           <Controller
@@ -247,7 +247,7 @@ export function TaskForm({
             name="coins_reward"
             render={({ field: { onChange, value } }) => (
               <TextInput
-                className="rounded-lg border border-gray-300 px-3 py-2"
+                className="rounded-lg border border-bark-200 px-3 py-2"
                 keyboardType="number-pad"
                 value={String(value)}
                 onChangeText={(t) => {
@@ -263,7 +263,7 @@ export function TaskForm({
       {/* Due Date */}
       <View className="gap-1">
         <FieldLabel
-          icon={<CalendarBlank size={14} color="#374151" />}
+          icon={<CalendarBlank size={14} color="#6b7a54" />}
           label="Due date"
         />
         <Controller
@@ -272,7 +272,7 @@ export function TaskForm({
           render={({ field: { onChange, value } }) => (
             <>
               <Pressable
-                className="rounded-lg border border-gray-300 px-3 py-2"
+                className="rounded-lg border border-bark-200 px-3 py-2"
                 onPress={() => setShowDatePicker(true)}
               >
                 <Text className={value ? "text-gray-900" : "text-gray-400"}>
@@ -300,7 +300,7 @@ export function TaskForm({
       {/* Recurrence */}
       <View className="gap-1">
         <FieldLabel
-          icon={<ArrowsClockwise size={14} color="#374151" />}
+          icon={<ArrowsClockwise size={14} color="#6b7a54" />}
           label="Recurrence"
         />
         <Controller
@@ -312,7 +312,7 @@ export function TaskForm({
                 <Pressable
                   key={r}
                   className={`flex-1 items-center rounded-lg py-2 ${
-                    value === r ? "bg-blue-600" : "bg-gray-100"
+                    value === r ? "bg-jungle-500" : "bg-bark-100"
                   }`}
                   onPress={() => onChange(r)}
                 >
@@ -333,7 +333,7 @@ export function TaskForm({
       {/* Submit */}
       <Pressable
         className={`mt-2 rounded-lg py-3 ${
-          isPending ? "bg-blue-400" : "bg-blue-600"
+          isPending ? "bg-jungle-400" : "bg-jungle-500"
         }`}
         onPress={handleSubmit(onSubmit)}
         disabled={isPending}
@@ -350,7 +350,7 @@ function FieldLabel({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <View className="flex-row items-center gap-1.5">
       {icon}
-      <Text className="text-sm font-medium text-gray-700">{label}</Text>
+      <Text className="text-sm font-medium text-jungle-700">{label}</Text>
     </View>
   );
 }

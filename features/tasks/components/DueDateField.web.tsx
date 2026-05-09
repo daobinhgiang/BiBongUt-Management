@@ -36,7 +36,7 @@ export function DueDateField({ value, onChange }: Props) {
         : "Due date — tap or click to choose a date",
     onChange: handleChange,
     className:
-      "w-full rounded-lg border border-gray-300 px-3 py-2 bg-white box-border text-base outline-none focus-visible:ring-2 focus-visible:ring-blue-600 outline-offset-[-1px] min-h-[44px]",
+      "w-full rounded-lg border border-bark-200 px-3 py-2 bg-white box-border text-base outline-none focus-visible:ring-2 focus-visible:ring-jungle-500 outline-offset-[-1px] min-h-[44px]",
     style:
       value == null || value === ""
         ? { color: "#9ca3af" }

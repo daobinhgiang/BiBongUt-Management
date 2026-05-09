@@ -17,7 +17,7 @@ export function Button({
 }) {
   return (
     <Pressable
-      className="rounded-lg bg-blue-600 px-4 py-3"
+      className="rounded-lg bg-jungle-500 px-4 py-3"
       onPress={onPress}
     >
       <Text className="text-center font-semibold text-white">{title}</Text>
