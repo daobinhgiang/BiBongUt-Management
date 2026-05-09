@@ -96,9 +96,10 @@ export function useDeleteChoreChart() {
 
   return useMutation({
     mutationFn: deleteChart,
-    onSuccess: () => {
+    onSuccess: (_data, chartId) => {
       if (!family?.family_id) return;
       qc.invalidateQueries({ queryKey: choreChartKeys.all(family.family_id) });
+      qc.removeQueries({ queryKey: choreChartKeys.detail(chartId) });
     },
   });
 }

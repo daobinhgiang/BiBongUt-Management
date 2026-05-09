@@ -36,7 +36,7 @@ export function WeeklyGridView({ chart, currentRotationMember }: Props) {
             </View>
           </View>
           <Text className="text-xs text-gray-400">
-            Every day, assigned to whoever's turn it is this week
+            One task per week, assigned to whoever's turn it is
           </Text>
         </View>
       ) : (
