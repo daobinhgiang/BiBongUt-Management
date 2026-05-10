@@ -11,6 +11,7 @@ export const createChallengeSchema = z.object({
   description: z.string().max(1000).optional(),
   boss_name: z.string().min(1, "Boss name is required").max(100),
   boss_emoji: z.string(),
+  template_id: z.string().nullable(),
   reward_xp: z.number().int().min(0).max(9999),
   reward_coins: z.number().int().min(0).max(9999),
   end_date: z.string().nullable(),

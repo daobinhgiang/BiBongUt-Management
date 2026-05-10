@@ -197,7 +197,7 @@ export function TaskDetailScreen() {
       </View>
 
       {/* Complete button */}
-      {task.is_active && (
+      {task.is_active && (!task.assignee_id || task.assignee_id === family?.id) && (
         <Pressable
           className={`flex-row items-center justify-center gap-2 rounded-lg py-3 ${
             completeTask.isPending ? "bg-green-400" : "bg-green-600"

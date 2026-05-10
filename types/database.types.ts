@@ -1271,6 +1271,10 @@ export type Database = {
       my_family_ids: { Args: never; Returns: string[] }
       notify_overdue_tasks: { Args: never; Returns: undefined }
       notify_streak_at_risk: { Args: never; Returns: undefined }
+      redeem_reward: {
+        Args: { p_member_id: string; p_reward_id: string }
+        Returns: Json
+      }
       reset_stale_streaks: { Args: never; Returns: undefined }
       retry_failed_notifications: { Args: never; Returns: undefined }
       snapshot_weekly_leaderboard: { Args: never; Returns: undefined }

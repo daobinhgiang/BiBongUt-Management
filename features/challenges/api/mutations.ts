@@ -54,19 +54,16 @@ async function createChallenge({
   if (error) throw error;
   const challengeId = data.id;
 
-  // 2. Join creator + selected participants
-  await supabase.rpc("join_challenge", {
-    p_challenge_id: challengeId,
-    p_member_id: challenge.created_by,
-  });
-
-  for (const memberId of participantIds) {
-    if (memberId === challenge.created_by) continue;
-    await supabase.rpc("join_challenge", {
-      p_challenge_id: challengeId,
-      p_member_id: memberId,
-    });
-  }
+  // 2. Add creator + selected participants
+  const uniqueIds = [...new Set([challenge.created_by, ...participantIds])];
+  const { error: partErr } = await supabase.from("challenge_participants").insert(
+    uniqueIds.map((memberId) => ({
+      challenge_id: challengeId,
+      family_member_id: memberId,
+      current_value: 0,
+    }))
+  );
+  if (partErr) throw partErr;
 
   // 3. Create tasks and link them to the challenge
   for (const taskInput of tasks) {

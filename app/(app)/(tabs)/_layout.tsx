@@ -16,7 +16,8 @@
  *
  * @see https://docs.expo.dev/router/advanced/tabs/
  */
-import { Tabs } from "expo-router";
+import { View } from "react-native";
+import { Tabs, usePathname } from "expo-router";
 import {
   House,
   CheckCircle,
@@ -26,14 +27,21 @@ import {
   UserCircle,
 } from "phosphor-react-native";
 
+import { StatsHeader } from "@/components/StatsHeader";
+
 export default function TabLayout() {
+  const pathname = usePathname();
+  const isProfileTab = pathname === "/me";
+
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: "#819067",
-        headerShown: false,
-      }}
-    >
+    <View className="flex-1">
+      {!isProfileTab && <StatsHeader />}
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: "#819067",
+          headerShown: false,
+        }}
+      >
       <Tabs.Screen
         name="index"
         options={{
@@ -88,6 +96,7 @@ export default function TabLayout() {
           ),
         }}
       />
-    </Tabs>
+      </Tabs>
+    </View>
   );
 }

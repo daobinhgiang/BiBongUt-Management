@@ -110,7 +110,10 @@ export function TaskListScreen() {
           data={filtered}
           keyExtractor={(item) => item.id}
           contentContainerClassName="gap-2 px-4 pb-24 pt-4"
-          renderItem={({ item }) => (
+          renderItem={({ item }) => {
+            const isAssignedToMe =
+              !item.assignee_id || item.assignee_id === family?.id;
+            return (
             <TaskCard
               task={item}
               onPress={() => router.push(`/(app)/tasks/${item.id}`)}
@@ -126,8 +129,10 @@ export function TaskListScreen() {
                 completeTask.isPending &&
                 completeTask.variables?.task.id === item.id
               }
+              canComplete={!isDoneFilter && isAssignedToMe}
             />
-          )}
+          );
+          }}
         />
       )}
 
