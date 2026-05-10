@@ -28,7 +28,7 @@ export function TaskFilterBar({ active, onChange }: Props) {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="flex-row items-center gap-0.5 rounded-lg bg-bark-100 p-0.5"
+        contentContainerClassName="min-w-full flex-row items-center justify-end gap-0.5 rounded-lg bg-bark-100 p-0.5"
       >
         {FILTERS.map(({ key, label, icon }) => {
           const selected = active === key;

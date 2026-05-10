@@ -16,60 +16,64 @@ export function WeeklyGridView({ chart, currentRotationMember }: Props) {
 
   return (
     <View className="rounded-2xl bg-white p-4 shadow-sm">
-      <Text className="mb-3 text-sm font-semibold text-gray-700">
-        Weekly Schedule
-      </Text>
-
-      {isRotating ? (
-        <View className="gap-2">
-          <View className="flex-row items-center gap-2 rounded-xl bg-purple-50 p-3">
-            <ArrowsClockwise size={18} color="#7e22ce" />
-            <View>
-              <Text className="text-sm font-medium text-purple-800">
-                Rotates weekly
-              </Text>
-              {currentRotationMember && (
-                <Text className="text-xs text-purple-600">
-                  This week: {currentRotationMember.nickname}
+      {[
+        <Text
+          key="weekly-schedule-label"
+          className="mb-3 text-sm font-semibold text-gray-700"
+        >
+          Weekly Schedule
+        </Text>,
+        isRotating ? (
+          <View key="rotate-weekly-body" className="gap-2">
+            <View className="flex-row items-center gap-2 rounded-xl bg-purple-50 p-3">
+              <ArrowsClockwise size={18} color="#7e22ce" />
+              <View>
+                <Text className="text-sm font-medium text-purple-800">
+                  Rotates weekly
                 </Text>
-              )}
+                {currentRotationMember ? (
+                  <Text className="text-xs text-purple-600">
+                    This week: {currentRotationMember.nickname}
+                  </Text>
+                ) : null}
+              </View>
             </View>
+            <Text className="text-xs text-gray-400">
+              {"One task per week, assigned to whoever's turn it is"}
+            </Text>
           </View>
-          <Text className="text-xs text-gray-400">
-            One task per week, assigned to whoever's turn it is
-          </Text>
-        </View>
-      ) : (
-        <View className="flex-row gap-1">
-          {DAY_LABELS.map((label, dayIndex) => {
-            const slot = slotsByDay.get(dayIndex);
-            return (
-              <View
-                key={dayIndex}
-                className={`flex-1 items-center rounded-lg py-2 ${
-                  slot ? "bg-jungle-50" : "bg-bark-50"
-                }`}
-              >
-                <Text
-                  className={`text-xs font-medium ${
-                    slot ? "text-jungle-700" : "text-gray-400"
+        ) : (
+          <View key="fixed-weekly-body" className="flex-row gap-1">
+            {DAY_LABELS.map((label, dayIndex) => {
+              const slot = slotsByDay.get(dayIndex);
+              return (
+                <View
+                  key={dayIndex}
+                  className={`flex-1 items-center rounded-lg py-2 ${
+                    slot ? "bg-jungle-50" : "bg-bark-50"
                   }`}
                 >
-                  {label}
-                </Text>
-                {slot && (
                   <Text
-                    className="mt-0.5 text-[10px] text-jungle-600"
-                    numberOfLines={1}
+                    className={`text-xs font-medium ${
+                      slot ? "text-jungle-700" : "text-gray-400"
+                    }`}
                   >
-                    {slot.assignee.nickname}
+                    {label}
                   </Text>
-                )}
-              </View>
-            );
-          })}
-        </View>
-      )}
+                  {slot ? (
+                    <Text
+                      className="mt-0.5 text-[10px] text-jungle-600"
+                      numberOfLines={1}
+                    >
+                      {slot.assignee.nickname}
+                    </Text>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        ),
+      ]}
     </View>
   );
 }

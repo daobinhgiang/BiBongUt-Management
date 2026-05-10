@@ -21,9 +21,10 @@ type Props = {
   onPress: () => void;
   onComplete: () => void;
   isCompleting: boolean;
+  canComplete?: boolean;
 };
 
-export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
+export function TaskCard({ task, onPress, onComplete, isCompleting, canComplete = true }: Props) {
   const isOverdue = task.due_date != null && task.due_date < localToday();
 
   return (
@@ -32,16 +33,18 @@ export function TaskCard({ task, onPress, onComplete, isCompleting }: Props) {
       onPress={onPress}
     >
       {/* Checkbox */}
-      <Pressable
-        className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
-          isCompleting ? "border-jungle-400 bg-jungle-400" : "border-bark-200"
-        }`}
-        onPress={onComplete}
-        disabled={isCompleting}
-        hitSlop={8}
-      >
-        {isCompleting && <Check size={14} color="#fff" weight="bold" />}
-      </Pressable>
+      {canComplete && (
+        <Pressable
+          className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
+            isCompleting ? "border-jungle-400 bg-jungle-400" : "border-bark-200"
+          }`}
+          onPress={onComplete}
+          disabled={isCompleting}
+          hitSlop={8}
+        >
+          {isCompleting && <Check size={14} color="#fff" weight="bold" />}
+        </Pressable>
+      )}
 
       {/* Content */}
       <View className="flex-1 gap-1">
