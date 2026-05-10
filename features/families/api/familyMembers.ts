@@ -18,6 +18,7 @@ async function fetchFamilyMembers(
     .from("family_members")
     .select("id, nickname, role")
     .eq("family_id", familyId)
+    .neq("role", "admin")
     .order("nickname");
 
   if (error) throw error;

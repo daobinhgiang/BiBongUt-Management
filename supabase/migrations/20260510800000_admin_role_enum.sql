@@ -1,1 +1,1 @@
-ALTER TYPE family_role ADD VALUE 'admin';
+ALTER TYPE family_role ADD VALUE IF NOT EXISTS 'admin';

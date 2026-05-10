@@ -119,6 +119,7 @@ begin
 end;
 $$;
 
+drop trigger if exists notify_reward_redeemed on public.reward_redemptions;
 create trigger notify_reward_redeemed
   after insert on public.reward_redemptions
   for each row
