@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Sword, PlusIcon } from "phosphor-react-native";
+import { Sword, Plus } from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useChallenges, useCompletedChallenges } from "../api/queries";
@@ -76,7 +76,7 @@ export function ChallengeListScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-2 px-4 pb-24 pt-4"
+          contentContainerClassName="gap-2 px-4 pb-24"
           renderItem={({ item }) => (
             <ChallengeCard
               challenge={item}
@@ -95,7 +95,7 @@ export function ChallengeListScreen() {
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
           onPress={() => router.push("/(app)/challenges/new")}
         >
-          <PlusIcon size={28} color="#fff" weight="bold" />
+          <Plus size={28} color="#fff" weight="bold" />
         </Pressable>
       )}
     </View>

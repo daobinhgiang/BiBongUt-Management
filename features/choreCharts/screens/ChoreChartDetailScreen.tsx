@@ -77,28 +77,23 @@ export function ChoreChartDetailScreen() {
       {/* Rotation order */}
       {chart.schedule_type === "rotate_weekly" && members ? (
         <View className="gap-2 rounded-2xl bg-white p-4 shadow-sm">
-          {[
-            <Text
-              key="rotation-order-heading"
-              className="text-sm font-semibold text-gray-700"
-            >
-              Rotation Order
-            </Text>,
-            ...chart.rotation_members.map((memberId, i) => {
-              const member = members.find((m) => m.id === memberId);
-              return (
-                <View key={memberId} className="flex-row items-center gap-2">
-                  <Text className="text-sm font-medium text-gray-400">
-                    {`${i + 1}.`}
-                  </Text>
-                  <User size={14} color="#6b7280" />
-                  <Text className="text-sm text-gray-700">
-                    {member?.nickname ?? "Unknown"}
-                  </Text>
-                </View>
-              );
-            }),
-          ]}
+          <Text className="text-sm font-semibold text-gray-700">
+            Rotation Order
+          </Text>
+          {chart.rotation_members.map((memberId, i) => {
+            const member = members.find((m) => m.id === memberId);
+            return (
+              <View key={memberId} className="flex-row items-center gap-2">
+                <Text className="text-sm font-medium text-gray-400">
+                  {`${i + 1}.`}
+                </Text>
+                <User size={14} color="#6b7280" />
+                <Text className="text-sm text-gray-700">
+                  {member?.nickname ?? "Unknown"}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       ) : null}
 

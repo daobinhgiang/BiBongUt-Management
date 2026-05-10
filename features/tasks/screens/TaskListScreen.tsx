@@ -12,6 +12,7 @@ import { ClipboardText, PlusIcon } from "phosphor-react-native";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTasks, useCompletedTasks } from "../api/queries";
 import { useCompleteTask, type CompleteTaskResult } from "../api/mutations";
+import { useSyncChoreTasks } from "../hooks/useSyncChoreTasks";
 import { TaskCard } from "../components/TaskCard";
 import { TaskFilterBar } from "../components/TaskFilterBar";
 import { XpToast } from "../components/XpToast";
@@ -43,6 +44,7 @@ function filterTasks(
 export function TaskListScreen() {
   const router = useRouter();
   const { data: family } = useFamily();
+  useSyncChoreTasks();
   const { data: tasks, isLoading } = useTasks();
   const { data: completedTasks, isLoading: isLoadingDone } = useCompletedTasks();
   const completeTask = useCompleteTask();
@@ -109,7 +111,7 @@ export function TaskListScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-2 px-4 pb-24 pt-4"
+          contentContainerClassName="gap-2 px-4 pb-24"
           renderItem={({ item }) => {
             const isAssignedToMe =
               !item.assignee_id || item.assignee_id === family?.id;
