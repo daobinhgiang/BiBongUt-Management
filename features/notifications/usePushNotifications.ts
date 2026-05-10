@@ -132,6 +132,9 @@ export function usePushNotifications() {
               router.push(`/(app)/challenges/${data.challengeId}`);
             else router.push("/(app)/challenges");
             break;
+          case "rewards":
+            router.push("/(app)/rewards");
+            break;
         }
       });
 

@@ -228,6 +228,20 @@ export function ProfileScreen({ memberId }: Props) {
         <ArrowRight size={20} color="#9ca3af" />
       </Pressable>
 
+      {/* Rewards Shop link */}
+      <Pressable
+        className="mx-4 mt-4 flex-row items-center justify-between rounded-xl bg-white p-4 shadow-sm"
+        onPress={() => router.push("/(app)/rewards")}
+      >
+        <View className="flex-row items-center gap-2">
+          <CurrencyCircleDollar size={20} color="#807200" weight="fill" />
+          <Text className="text-base font-semibold text-gray-900">
+            Rewards Shop
+          </Text>
+        </View>
+        <ArrowRight size={20} color="#9ca3af" />
+      </Pressable>
+
       {/* Recent activity */}
       <View className="mx-4 mt-4 rounded-xl bg-white p-4 shadow-sm">
         <Text className="text-base font-semibold text-gray-900">
