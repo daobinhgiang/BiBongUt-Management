@@ -127,7 +127,7 @@ export function RewardShopScreen() {
                 redeemReward.variables?.rewardId === item.id
               }
               isParent={isParent}
-              onEdit={
+              onRemove={
                 isParent ? () => handleDelete(item) : undefined
               }
             />

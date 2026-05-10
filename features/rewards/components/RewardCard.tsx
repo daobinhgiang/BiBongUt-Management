@@ -8,7 +8,7 @@ type Props = {
   onRedeem: () => void;
   isRedeeming: boolean;
   isParent: boolean;
-  onEdit?: () => void;
+  onRemove?: () => void;
 };
 
 export function RewardCard({
@@ -17,7 +17,7 @@ export function RewardCard({
   onRedeem,
   isRedeeming,
   isParent,
-  onEdit,
+  onRemove,
 }: Props) {
   const canAfford = myCoins >= reward.cost_coins;
 
@@ -71,10 +71,10 @@ export function RewardCard({
         </Text>
       </Pressable>
 
-      {/* Edit link for parents */}
-      {isParent && onEdit && (
-        <Pressable onPress={onEdit}>
-          <Text className="text-center text-xs text-jungle-500">Edit</Text>
+      {/* Remove link for parents */}
+      {isParent && onRemove && (
+        <Pressable onPress={onRemove}>
+          <Text className="text-center text-xs text-red-400">Remove</Text>
         </Pressable>
       )}
     </View>
