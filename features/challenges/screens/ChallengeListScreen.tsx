@@ -59,24 +59,26 @@ export function ChallengeListScreen() {
 
   return (
     <View className="flex-1 bg-bark-100">
-      <ChallengeFilterBar active={filter} onChange={setFilter} />
-
       {filtered.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Sword size={48} color="#9ca3af" weight="duotone" />
-          <Text className="mt-3 text-center text-base font-medium text-gray-500">
-            {isCompletedFilter
-              ? "No completed challenges yet."
-              : (sourceData?.length ?? 0) === 0
-                ? "No challenges yet. Tap + to create one."
-                : "No challenges match that filter."}
-          </Text>
+        <View className="flex-1">
+          <ChallengeFilterBar active={filter} onChange={setFilter} />
+          <View className="flex-1 items-center justify-center px-8">
+            <Sword size={48} color="#9ca3af" weight="duotone" />
+            <Text className="mt-3 text-center text-base font-medium text-gray-500">
+              {isCompletedFilter
+                ? "No completed challenges yet."
+                : (sourceData?.length ?? 0) === 0
+                  ? "No challenges yet. Tap + to create one."
+                  : "No challenges match that filter."}
+            </Text>
+          </View>
         </View>
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-2 px-4 pb-24 pt-4"
+          ListHeaderComponent={<ChallengeFilterBar active={filter} onChange={setFilter} />}
+          contentContainerClassName="gap-2 px-4 pb-24"
           renderItem={({ item }) => (
             <ChallengeCard
               challenge={item}

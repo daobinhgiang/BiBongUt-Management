@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build:web && node scripts/inject-pwa.js",
+  "outputDirectory": "dist",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

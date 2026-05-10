@@ -191,14 +191,13 @@ export function ChallengeDetailScreen() {
 
         {/* Quest Board */}
         <View className="gap-2 rounded-2xl bg-white p-4 shadow-sm">
-          {[
-            <View key="quests-header" className="flex-row items-center gap-2">
-              <Sword size={16} color="#dc2626" />
-              <Text className="text-sm font-semibold text-gray-700">
-                {`Quests (${challengeTasks.filter((ct) => !ct.task.is_active).length}/${challengeTasks.length})`}
-              </Text>
-            </View>,
-            ...challengeTasks.map((ct) => {
+          <View className="flex-row items-center gap-2">
+            <Sword size={16} color="#dc2626" />
+            <Text className="text-sm font-semibold text-gray-700">
+              {`Quests (${challengeTasks.filter((ct) => !ct.task.is_active).length}/${challengeTasks.length})`}
+            </Text>
+          </View>
+          {challengeTasks.map((ct) => {
               const task = ct.task;
               const isDone = !task.is_active;
               const isMyTask =
@@ -278,8 +277,7 @@ export function ChallengeDetailScreen() {
                   </View>
                 </Pressable>
               );
-            }),
-          ]}
+            })}
         </View>
 
         {/* Participants & Damage */}

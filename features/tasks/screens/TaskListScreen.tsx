@@ -12,6 +12,7 @@ import { ClipboardText, PlusIcon } from "phosphor-react-native";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTasks, useCompletedTasks } from "../api/queries";
 import { useCompleteTask, type CompleteTaskResult } from "../api/mutations";
+import { useSyncChoreTasks } from "../hooks/useSyncChoreTasks";
 import { TaskCard } from "../components/TaskCard";
 import { TaskFilterBar } from "../components/TaskFilterBar";
 import { XpToast } from "../components/XpToast";
@@ -43,6 +44,7 @@ function filterTasks(
 export function TaskListScreen() {
   const router = useRouter();
   const { data: family } = useFamily();
+  useSyncChoreTasks();
   const { data: tasks, isLoading } = useTasks();
   const { data: completedTasks, isLoading: isLoadingDone } = useCompletedTasks();
   const completeTask = useCompleteTask();
@@ -92,24 +94,26 @@ export function TaskListScreen() {
 
   return (
     <View className="flex-1 bg-bark-100">
-      <TaskFilterBar active={filter} onChange={setFilter} />
-
       {filtered.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <ClipboardText size={48} color="#9ca3af" weight="duotone" />
-          <Text className="mt-3 text-center text-base font-medium text-gray-500">
-            {isDoneFilter
-              ? "No completed tasks yet."
-              : (sourceData?.length ?? 0) === 0
-                ? "No tasks yet. Tap + to create one."
-                : "Nothing matches that filter."}
-          </Text>
+        <View className="flex-1">
+          <TaskFilterBar active={filter} onChange={setFilter} />
+          <View className="flex-1 items-center justify-center px-8">
+            <ClipboardText size={48} color="#9ca3af" weight="duotone" />
+            <Text className="mt-3 text-center text-base font-medium text-gray-500">
+              {isDoneFilter
+                ? "No completed tasks yet."
+                : (sourceData?.length ?? 0) === 0
+                  ? "No tasks yet. Tap + to create one."
+                  : "Nothing matches that filter."}
+            </Text>
+          </View>
         </View>
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-2 px-4 pb-24 pt-4"
+          ListHeaderComponent={<TaskFilterBar active={filter} onChange={setFilter} />}
+          contentContainerClassName="gap-2 px-4 pb-24"
           renderItem={({ item }) => {
             const isAssignedToMe =
               !item.assignee_id || item.assignee_id === family?.id;

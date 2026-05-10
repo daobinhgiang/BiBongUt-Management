@@ -36,10 +36,11 @@ type Props = {
 
 export function ChallengeFilterBar({ active, onChange }: Props) {
   return (
-    <View className="border-b border-bark-100 bg-bark-50 px-3 pb-2 pt-2">
+    <View className="flex-row justify-end px-4 pb-2 pt-3">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        className="max-w-full grow-0"
         contentContainerClassName="flex-row items-center gap-0.5 rounded-lg bg-bark-100 p-0.5"
       >
         {FILTERS.map(({ key, label, icon }) => {

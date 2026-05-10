@@ -12,7 +12,8 @@ import { Link } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { House, Envelope, Lock } from "phosphor-react-native";
+import { Envelope, Lock } from "phosphor-react-native";
+import { Image } from "expo-image";
 
 import { useSession } from "@/lib/auth/ctx";
 
@@ -54,10 +55,12 @@ export default function LoginScreen() {
       className="flex-1"
     >
       <View className="flex-1 items-center justify-center bg-bark-50 px-6">
-        <View className="mb-2 flex-row items-center gap-2">
-          <House size={32} color="#819067" weight="duotone" />
-          <Text className="text-3xl font-bold text-jungle-800">BiBongUt</Text>
-        </View>
+        <Image
+          source={require("@/assets/images/logo.png")}
+          style={{ width: 120, height: 120 }}
+          contentFit="contain"
+        />
+        <Text className="mt-2 text-3xl font-bold text-jungle-800">BiBongUt</Text>
         <Text className="mb-8 text-base text-gray-500">
           Sign in to your family
         </Text>

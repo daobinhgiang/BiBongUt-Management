@@ -15,12 +15,12 @@ type Props = {
 
 export function StatusFilterBar({ active, onChange }: Props) {
   return (
-    <View className="shrink-0 border-b border-bark-100">
+    <View className="shrink-0 flex-row justify-end border-b border-bark-100 bg-bark-50 px-3 pb-2 pt-2">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="grow-0"
-        contentContainerClassName="flex-row items-center gap-1.5 px-4 py-2"
+        className="max-w-full grow-0"
+        contentContainerClassName="flex-row items-center gap-1.5"
       >
         {FILTERS.map((f) => (
           <Pressable

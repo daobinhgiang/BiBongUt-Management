@@ -9,7 +9,6 @@ import type {
   LogContributionResult,
 } from "../types";
 import type { TaskDifficulty } from "@/features/tasks/types";
-import { DIFFICULTY_DEFAULTS } from "@/features/tasks/types";
 
 // ── Create challenge with tasks ──
 
@@ -40,63 +39,29 @@ async function createChallenge({
   participantIds,
   tasks,
 }: CreateChallengeInput): Promise<ChallengeWithDetails> {
-  // 1. Insert the challenge
-  const { data, error } = await supabase
-    .from("challenges")
-    .insert({
-      ...challenge,
-      type: "boss_battle" as const,
-      target_value: tasks.reduce((sum, t) => sum + t.damage, 0),
-    })
-    .select("id")
-    .single();
+  const uniqueIds = [...new Set([challenge.created_by, ...participantIds])];
+
+  const { data: challengeId, error } = await supabase.rpc("create_challenge", {
+    p_family_id: challenge.family_id,
+    p_created_by: challenge.created_by,
+    p_title: challenge.title,
+    p_boss_name: challenge.boss_name ?? null,
+    p_boss_emoji: challenge.boss_emoji ?? "👹",
+    p_template_id: challenge.template_id ?? null,
+    p_reward_xp: challenge.reward_xp,
+    p_reward_coins: challenge.reward_coins,
+    p_end_date: challenge.end_date ?? null,
+    p_participant_ids: uniqueIds,
+    p_tasks: tasks.map((t) => ({
+      title: t.title,
+      difficulty: t.difficulty,
+      damage: t.damage,
+    })),
+  });
 
   if (error) throw error;
-  const challengeId = data.id;
 
-  // 2. Add creator + selected participants
-  const uniqueIds = [...new Set([challenge.created_by, ...participantIds])];
-  const { error: partErr } = await supabase.from("challenge_participants").insert(
-    uniqueIds.map((memberId) => ({
-      challenge_id: challengeId,
-      family_member_id: memberId,
-      current_value: 0,
-    }))
-  );
-  if (partErr) throw partErr;
-
-  // 3. Create tasks and link them to the challenge
-  for (const taskInput of tasks) {
-    const defaults = DIFFICULTY_DEFAULTS[taskInput.difficulty];
-    const { data: taskData, error: taskErr } = await supabase
-      .from("tasks")
-      .insert({
-        title: taskInput.title,
-        difficulty: taskInput.difficulty,
-        points: defaults.points,
-        coins_reward: defaults.coins,
-        family_id: challenge.family_id,
-        created_by: challenge.created_by,
-        recurrence: "none" as const,
-      })
-      .select("id")
-      .single();
-
-    if (taskErr) throw taskErr;
-
-    // Link task to challenge
-    const { error: linkErr } = await supabase
-      .from("challenge_tasks")
-      .insert({
-        challenge_id: challengeId,
-        task_id: taskData.id,
-        damage: taskInput.damage,
-      });
-
-    if (linkErr) throw linkErr;
-  }
-
-  // 4. Re-fetch full challenge
+  // Re-fetch full challenge
   const { data: full, error: err2 } = await supabase
     .from("challenges")
     .select(CHALLENGE_FULL_SELECT)

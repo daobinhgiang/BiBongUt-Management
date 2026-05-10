@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { taskKeys } from "./queries";
+import { challengeKeys } from "@/features/challenges/api/queries";
 import type {
   TaskInsert,
   TaskUpdate,
@@ -96,6 +97,7 @@ export function useCompleteTask() {
     onSettled: () => {
       if (!family?.family_id) return;
       qc.invalidateQueries({ queryKey: taskKeys.all(family.family_id) });
+      qc.invalidateQueries({ queryKey: challengeKeys.all(family.family_id) });
     },
   });
 }
