@@ -13,7 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Camera, X, Check } from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
-import { useSelectableMembers } from "@/features/families/api/familyMembers";
+import { useFamilyMembers } from "@/features/families/api/familyMembers";
 import { XpToast } from "@/features/tasks/components/XpToast";
 import { useBucketListItem } from "../api/queries";
 import { useCompleteBucketListItem } from "../api/mutations";
@@ -25,7 +25,7 @@ export function BucketListCompleteScreen() {
   const router = useRouter();
   const { data: family } = useFamily();
   const { data: item, isLoading } = useBucketListItem(id);
-  const { data: members } = useSelectableMembers(family?.family_id);
+  const { data: members } = useFamilyMembers(family?.family_id);
   const completeItem = useCompleteBucketListItem();
 
   const [photoUris, setPhotoUris] = useState<string[]>([]);

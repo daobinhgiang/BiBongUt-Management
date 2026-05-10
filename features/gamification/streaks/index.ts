@@ -39,6 +39,7 @@ async function fetchAtRiskStreaks(
     .from("family_members")
     .select("id, nickname, current_streak, last_active_date")
     .eq("family_id", familyId)
+    .neq("role", "admin")
     .gt("current_streak", 0);
 
   if (error) throw error;

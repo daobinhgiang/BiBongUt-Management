@@ -19,7 +19,8 @@ async function fetchWeeklyLeaderboard(
   const { data: members, error: membersError } = await supabase
     .from("family_members")
     .select("id, nickname, avatar_url, total_xp, level")
-    .eq("family_id", familyId);
+    .eq("family_id", familyId)
+    .neq("role", "admin");
   if (membersError) throw membersError;
 
   const { data: txns, error: txnError } = await supabase
@@ -61,6 +62,7 @@ async function fetchAllTimeLeaderboard(
     .from("family_members")
     .select("id, nickname, avatar_url, total_xp, level")
     .eq("family_id", familyId)
+    .neq("role", "admin")
     .order("total_xp", { ascending: false });
 
   if (error) throw error;

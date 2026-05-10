@@ -44,7 +44,8 @@ insert into public.badges (code, name, description, criteria, xp_reward, coins_r
   ('level_10',         'Powerhouse',        'Reach level 10',
    '{"type":"level","threshold":10}',              150, 75),
   ('level_25',         'Elite',             'Reach level 25',
-   '{"type":"level","threshold":25}',              500, 250);
+   '{"type":"level","threshold":25}',              500, 250)
+on conflict (code) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- 2. check_badges(p_member_id) — idempotent badge evaluator
@@ -199,6 +200,7 @@ begin
 end;
 $$;
 
+drop trigger if exists check_badges_after_task_completion on public.task_completions;
 create trigger check_badges_after_task_completion
   after insert on public.task_completions
   for each row
