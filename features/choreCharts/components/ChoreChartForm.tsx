@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretDown, Check, Trash } from "phosphor-react-native";
 
-import { useSelectableMembers } from "@/features/families/api/familyMembers";
+import { useFamilyMembers } from "@/features/families/api/familyMembers";
 import { choreChartSchema, type ChoreChartFormValues } from "../schemas";
 import { DAY_LABELS, DIFFICULTY_DEFAULTS } from "../types";
 
@@ -25,7 +25,7 @@ export function ChoreChartForm({
   initialValues,
   submitLabel = "Create Chore Chart",
 }: Props) {
-  const { data: members } = useSelectableMembers(familyId);
+  const { data: members } = useFamilyMembers(familyId);
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
   const { control, handleSubmit, watch, setValue, formState: { errors } } =
     useForm<ChoreChartFormValues>({

@@ -17,7 +17,7 @@ import {
 } from "phosphor-react-native";
 
 import { DueDateField } from "@/features/tasks/components/DueDateField";
-import { useSelectableMembers } from "@/features/families";
+import { useFamilyMembers } from "@/features/families";
 import {
   createChallengeSchema,
   type CreateChallengeFormValues,
@@ -44,7 +44,7 @@ export function ChallengeForm({
   familyId,
   creatorMemberId,
 }: Props) {
-  const { data: members = [] } = useSelectableMembers(familyId);
+  const { data: members = [] } = useFamilyMembers(familyId);
   const [mode, setMode] = useState<"pick" | "custom" | "template">("pick");
   const [selectedTemplate, setSelectedTemplate] = useState<BossTemplate | null>(
     null,

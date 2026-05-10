@@ -37,7 +37,7 @@ async function fetchAtRiskStreaks(
   const today = localToday();
   const { data, error } = await supabase
     .from("family_members")
-    .select("id, nickname, current_streak, last_active_date, role")
+    .select("id, nickname, current_streak, last_active_date")
     .eq("family_id", familyId)
     .neq("role", "admin")
     .gt("current_streak", 0);

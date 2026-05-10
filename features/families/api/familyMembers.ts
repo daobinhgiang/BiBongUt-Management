@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/database.types";
@@ -31,14 +30,4 @@ export function useFamilyMembers(familyId: string | undefined) {
     queryFn: () => fetchFamilyMembers(familyId!),
     enabled: !!familyId,
   });
-}
-
-/** Returns only members who can participate (excludes admin) */
-export function useSelectableMembers(familyId: string | undefined) {
-  const query = useFamilyMembers(familyId);
-  const data = useMemo(
-    () => query.data?.filter((m) => m.role !== "admin"),
-    [query.data],
-  );
-  return { ...query, data };
 }
