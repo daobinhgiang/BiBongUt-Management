@@ -71,7 +71,8 @@ export function ChallengeDetailScreen() {
   const template = BOSS_TEMPLATES.find(
     (t) => t.id === challenge?.template_id,
   );
-  const hpPercent = totalHP > 0 ? Math.max(totalHP - totalDamage, 0) / totalHP : 0;
+  const hpPercent =
+    totalHP > 0 ? Math.max(totalHP - totalDamage, 0) / totalHP : 0;
   const tauntText = template
     ? getBossTaunt(hpPercent, template.taunts)
     : hpPercent > 0.5
@@ -86,14 +87,14 @@ export function ChallengeDetailScreen() {
       { taskId, memberId: family.id, challengeId: id },
       {
         onSuccess: (result) => {
-          const r = result as { points: number; coins: number; new_level: number | null };
+          const r = result as {
+            points: number;
+            coins: number;
+            new_level: number | null;
+          };
           if (r.points > 0 || r.coins > 0) {
             setToast({ points: r.points, coins: r.coins });
           }
-          // Check if the challenge completed after a short delay for cache to update
-          setTimeout(() => {
-            // Re-check challenge status via refetch
-          }, 500);
         },
         onError: (err) => Alert.alert("Error", err.message),
       },
@@ -136,12 +137,16 @@ export function ChallengeDetailScreen() {
     !victory
   ) {
     didComplete.current = true;
-    setTimeout(() => {
-      setVictory({
-        xp: challenge.reward_xp,
-        coins: challenge.reward_coins,
-      });
-    }, 500);
+    const victoryData = {
+      xp: challenge.reward_xp,
+      coins: challenge.reward_coins,
+    };
+    // If toast is showing, queue victory for after dismiss
+    if (toast) {
+      pendingVictory.current = victoryData;
+    } else {
+      setVictory(victoryData);
+    }
   }
 
   if (isLoading || !challenge) {
@@ -169,7 +174,8 @@ export function ChallengeDetailScreen() {
           <View className="flex-row items-center gap-2">
             <Sword size={16} color="#dc2626" />
             <Text className="text-sm font-semibold text-gray-700">
-              Quests ({challengeTasks.filter((ct) => !ct.task.is_active).length}/
+              Quests (
+              {challengeTasks.filter((ct) => !ct.task.is_active).length}/
               {challengeTasks.length})
             </Text>
           </View>
@@ -179,7 +185,8 @@ export function ChallengeDetailScreen() {
             const isDone = !task.is_active;
             const isMyTask =
               !task.assignee_id || task.assignee_id === family?.id;
-            const canComplete = isActive && isJoined && !isDone && isMyTask;
+            const canComplete =
+              isActive && isJoined && !isDone && isMyTask;
 
             return (
               <View
@@ -199,11 +206,15 @@ export function ChallengeDetailScreen() {
                         ? "border-bark-300"
                         : "border-bark-200 opacity-50"
                   }`}
-                  onPress={() => canComplete && handleCompleteTask(task.id)}
+                  onPress={() =>
+                    canComplete && handleCompleteTask(task.id)
+                  }
                   disabled={!canComplete || completeTask.isPending}
                   hitSlop={8}
                 >
-                  {isDone && <Check size={14} color="#fff" weight="bold" />}
+                  {isDone && (
+                    <Check size={14} color="#fff" weight="bold" />
+                  )}
                 </Pressable>
 
                 {/* Task info */}
@@ -244,7 +255,7 @@ export function ChallengeDetailScreen() {
                       isDone ? "text-jungle-600" : "text-red-600"
                     }`}
                   >
-                    {isDone ? "✓" : ct.damage} dmg
+                    {isDone ? "\u2713" : ct.damage} dmg
                   </Text>
                 </View>
               </View>
@@ -331,7 +342,10 @@ export function ChallengeDetailScreen() {
                 <Text className="text-xs font-medium text-jungle-600">
                   {log.participant?.member?.nickname ?? "Someone"}
                 </Text>
-                <Text className="flex-1 text-xs text-gray-500" numberOfLines={1}>
+                <Text
+                  className="flex-1 text-xs text-gray-500"
+                  numberOfLines={1}
+                >
                   {log.note ?? `dealt ${log.delta} damage`}
                 </Text>
                 <Text className="text-[10px] text-gray-300">

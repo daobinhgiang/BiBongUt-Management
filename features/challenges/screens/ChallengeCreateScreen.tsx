@@ -21,6 +21,7 @@ export function ChallengeCreateScreen() {
           description: values.description || null,
           boss_name: values.boss_name,
           boss_emoji: values.boss_emoji,
+          template_id: values.template_id,
           reward_xp: values.reward_xp,
           reward_coins: values.reward_coins,
           end_date: values.end_date,
