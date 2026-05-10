@@ -139,18 +139,18 @@ export default function PlanScreen() {
               Meals
             </Text>
           </Pressable>
-
-          {/* FAB for creating calendar events */}
-          {isMember && (
-            <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-jungle-500 shadow-md"
-              onPress={() => router.push("/(app)/calendar/new")}
-            >
-              <PlusIcon size={20} color="#fff" weight="bold" />
-            </Pressable>
-          )}
         </View>
       </View>
+
+      {/* FAB — matches other tabs */}
+      {isMember && (
+        <Pressable
+          className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
+          onPress={() => router.push("/(app)/calendar/new")}
+        >
+          <PlusIcon size={28} color="#fff" weight="bold" />
+        </Pressable>
+      )}
     </View>
   );
 }

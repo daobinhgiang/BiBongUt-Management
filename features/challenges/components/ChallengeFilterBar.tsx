@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable, ScrollView, View, Text } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import {
   Lightning,
   Trophy,
@@ -36,29 +36,22 @@ type Props = {
 
 export function ChallengeFilterBar({ active, onChange }: Props) {
   return (
-    <View className="flex-row justify-end px-4 pb-2 pt-3">
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="max-w-full grow-0"
-        contentContainerClassName="flex-row items-center gap-0.5 rounded-lg bg-bark-100 p-0.5"
-      >
+    <View className="px-4 pb-2 pt-3">
+      <View className="flex-row items-center rounded-lg bg-bark-100 p-0.5">
         {FILTERS.map(({ key, label, icon }) => {
           const selected = active === key;
           return (
             <Pressable
               key={key}
-              className={`flex-row items-center gap-1 rounded-md px-2.5 py-1 ${
+              className={`flex-1 flex-row items-center justify-center gap-1 rounded-md py-1 ${
                 selected ? "bg-white shadow-sm" : "bg-transparent"
               }`}
               onPress={() => onChange(key)}
             >
               {icon(selected ? "#2c351f" : "#b3a56f")}
               <Text
-                className={`text-xs ${
-                  selected
-                    ? "font-semibold text-jungle-900"
-                    : "font-medium text-bark-300"
+                className={`text-xs font-medium ${
+                  selected ? "text-jungle-900" : "text-bark-300"
                 }`}
               >
                 {label}
@@ -66,7 +59,7 @@ export function ChallengeFilterBar({ active, onChange }: Props) {
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 }
