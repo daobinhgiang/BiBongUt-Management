@@ -302,7 +302,8 @@ function LockedBadgeChip({ badge }: { badge: BadgeWithUnlock }) {
 }
 
 function ActivityRow({ transaction }: { transaction: Transaction }) {
-  const isPositive = transaction.delta_xp > 0 || transaction.delta_coins > 0;
+  const xpPositive = transaction.delta_xp > 0;
+  const coinsPositive = transaction.delta_coins > 0;
   return (
     <View className="flex-row items-center justify-between">
       <Text className="flex-1 text-sm text-gray-700" numberOfLines={1}>
@@ -311,17 +312,17 @@ function ActivityRow({ transaction }: { transaction: Transaction }) {
       <View className="flex-row items-center gap-2">
         {transaction.delta_xp !== 0 && (
           <Text
-            className={`text-xs font-medium ${isPositive ? "text-jungle-600" : "text-red-500"}`}
+            className={`text-xs font-medium ${xpPositive ? "text-jungle-600" : "text-red-500"}`}
           >
-            {isPositive ? "+" : ""}
+            {xpPositive ? "+" : ""}
             {transaction.delta_xp} XP
           </Text>
         )}
         {transaction.delta_coins !== 0 && (
           <Text
-            className={`text-xs font-medium ${isPositive ? "text-bark-600" : "text-red-500"}`}
+            className={`text-xs font-medium ${coinsPositive ? "text-bark-600" : "text-red-500"}`}
           >
-            {isPositive ? "+" : ""}
+            {coinsPositive ? "+" : ""}
             {transaction.delta_coins}
           </Text>
         )}

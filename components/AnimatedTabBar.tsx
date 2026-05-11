@@ -9,7 +9,6 @@ import Animated, {
   useDerivedValue,
   interpolateColor,
   FadeIn,
-  FadeOut,
 } from "react-native-reanimated";
 import { useEffect } from "react";
 
@@ -39,7 +38,7 @@ function TabButton({
 
   useEffect(() => {
     progress.value = withSpring(isFocused ? 1 : 0, SPRING_CONFIG);
-  }, [isFocused]);
+  }, [isFocused, progress]);
 
   const animatedIconStyle = useAnimatedStyle(() => ({
     transform: [
@@ -55,12 +54,12 @@ function TabButton({
     ],
   }));
 
-  const color = useDerivedValue(() =>
+  const animatedColor = useDerivedValue(() =>
     interpolateColor(progress.value, [0, 1], [inactiveTint, activeTint])
   );
 
   const iconColorStyle = useAnimatedStyle(() => ({
-    color: color.value,
+    color: animatedColor.value,
   }));
 
   return (

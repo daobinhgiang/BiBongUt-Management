@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { Rows, ForkKnife, PlusIcon } from "phosphor-react-native";
+import { Rows, ForkKnife, Plus } from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { CalendarScreen } from "@/features/calendar/screens/CalendarScreen";
@@ -148,7 +148,7 @@ export default function PlanScreen() {
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
           onPress={() => router.push("/(app)/calendar/new")}
         >
-          <PlusIcon size={28} color="#fff" weight="bold" />
+          <Plus size={28} color="#fff" weight="bold" />
         </Pressable>
       )}
     </View>

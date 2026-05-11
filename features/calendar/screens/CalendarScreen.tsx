@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -63,6 +63,10 @@ function MonthYearPicker({
   const currentYear = Number(selectedMonth.slice(0, 4));
   const currentMon = Number(selectedMonth.slice(5, 7)) - 1;
   const [pickerYear, setPickerYear] = useState(currentYear);
+
+  useEffect(() => {
+    if (visible) setPickerYear(currentYear);
+  }, [visible, currentYear]);
 
   const handleSelect = useCallback(
     (monIdx: number) => {
