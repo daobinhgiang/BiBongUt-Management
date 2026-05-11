@@ -171,14 +171,14 @@ export function ChallengeDetailScreen() {
 
   if (isLoading || !challenge) {
     return (
-      <View className="flex-1 items-center justify-center bg-bark-100">
+      <View className="flex-1 items-center justify-center bg-bark-50">
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-bark-100">
+    <View className="flex-1 bg-bark-50">
       <ScrollView contentContainerClassName="px-4 py-4 gap-4 pb-32">
         {/* Boss Section */}
         <BossHPBar

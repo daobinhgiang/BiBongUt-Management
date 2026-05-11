@@ -73,14 +73,14 @@ export function RewardShopScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-bark-100">
+      <View className="flex-1 items-center justify-center bg-bark-50">
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-bark-100">
+    <View className="flex-1 bg-bark-50">
       {/* Coin balance header */}
       <View className="flex-row items-center justify-between border-b border-bark-100 bg-white px-4 py-3">
         <View className="flex-row items-center gap-2">
