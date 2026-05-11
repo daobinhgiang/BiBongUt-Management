@@ -86,14 +86,14 @@ export function TaskListScreen() {
 
   if (isLoading || (isDoneFilter && isLoadingDone)) {
     return (
-      <View className="flex-1 items-center justify-center bg-bark-100">
+      <View className="flex-1 items-center justify-center bg-bark-50">
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-bark-100">
+    <View className="flex-1 bg-bark-50">
       <TaskFilterBar active={filter} onChange={setFilter} />
 
       {filtered.length === 0 ? (

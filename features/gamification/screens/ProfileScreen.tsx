@@ -2,10 +2,10 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  ScrollView,
   Text,
   View,
 } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import {
   Lightning,
   CurrencyCircleDollar,
@@ -62,7 +62,8 @@ export function ProfileScreen({ memberId }: Props) {
   const allBadges = badges.data ?? [];
 
   return (
-    <ScrollView
+    <Animated.ScrollView
+      entering={FadeIn.duration(300)}
       className="flex-1 bg-bark-50"
       contentContainerClassName="pb-24"
     >
@@ -259,7 +260,7 @@ export function ProfileScreen({ memberId }: Props) {
           </Text>
         )}
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
   );
 }
 

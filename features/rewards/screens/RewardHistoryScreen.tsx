@@ -17,7 +17,7 @@ export function RewardHistoryScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-bark-100">
+      <View className="flex-1 items-center justify-center bg-bark-50">
         <ActivityIndicator size="large" />
       </View>
     );
@@ -25,7 +25,7 @@ export function RewardHistoryScreen() {
 
   if ((redemptions?.length ?? 0) === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-bark-100 px-8">
+      <View className="flex-1 items-center justify-center bg-bark-50 px-8">
         <ClockCounterClockwise size={48} color="#9ca3af" weight="duotone" />
         <Text className="mt-3 text-center text-base font-medium text-gray-500">
           No redemptions yet.
@@ -35,7 +35,7 @@ export function RewardHistoryScreen() {
   }
 
   return (
-    <View className="flex-1 bg-bark-100">
+    <View className="flex-1 bg-bark-50">
       <FlatList
         data={redemptions}
         keyExtractor={(item) => item.id}

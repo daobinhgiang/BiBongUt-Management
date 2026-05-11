@@ -1,13 +1,26 @@
-import { useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { CaretLeft, CaretRight } from "phosphor-react-native";
+import { CaretLeft, CaretRight, CaretDown } from "phosphor-react-native";
 
 import { useMonthEvents } from "../api/queries";
 import { useChoreCharts } from "@/features/choreCharts";
 import { MonthGrid } from "../components/MonthGrid";
 import { EventCard } from "../components/EventCard";
 import type { EventWithAttendees } from "../types";
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
 
 function currentMonth(): string {
   const d = new Date();
@@ -36,10 +49,117 @@ function jsDayToChoreDay(jsDay: number): number {
   return (jsDay + 6) % 7;
 }
 
+function MonthYearPicker({
+  visible,
+  selectedMonth,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  selectedMonth: string;
+  onSelect: (month: string) => void;
+  onClose: () => void;
+}) {
+  const currentYear = Number(selectedMonth.slice(0, 4));
+  const currentMon = Number(selectedMonth.slice(5, 7)) - 1;
+  const [pickerYear, setPickerYear] = useState(currentYear);
+
+  const handleSelect = useCallback(
+    (monIdx: number) => {
+      const val = `${pickerYear}-${String(monIdx + 1).padStart(2, "0")}`;
+      onSelect(val);
+      onClose();
+    },
+    [pickerYear, onSelect, onClose],
+  );
+
+  const nowYear = new Date().getFullYear();
+  const yearRange: number[] = [];
+  for (let y = nowYear - 3; y <= nowYear + 3; y++) yearRange.push(y);
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+        onPress={onClose}
+      >
+        <Pressable
+          className="mx-6 w-full max-w-sm overflow-hidden rounded-2xl bg-white"
+          onPress={() => {}}
+        >
+          {/* Year selector */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 14, gap: 6 }}
+          >
+            {yearRange.map((y) => (
+              <Pressable
+                key={y}
+                onPress={() => setPickerYear(y)}
+                className="items-center justify-center rounded-full px-4"
+                style={{
+                  height: 36,
+                  backgroundColor:
+                    y === pickerYear ? "#819067" : "rgba(154, 168, 126, 0.12)",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: y === pickerYear ? "700" : "500",
+                    color: y === pickerYear ? "#fff" : "#566341",
+                  }}
+                >
+                  {y}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+
+          {/* Month grid */}
+          <View className="flex-row flex-wrap px-4 pb-4">
+            {MONTHS.map((name, idx) => {
+              const isSelected = pickerYear === currentYear && idx === currentMon;
+              return (
+                <Pressable
+                  key={name}
+                  onPress={() => handleSelect(idx)}
+                  className="items-center justify-center"
+                  style={{
+                    width: "33.33%",
+                    height: 44,
+                    borderRadius: 12,
+                    backgroundColor: isSelected
+                      ? "rgba(154, 168, 126, 0.18)"
+                      : "transparent",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: isSelected ? "700" : "400",
+                      color: isSelected ? "#566341" : "#374151",
+                    }}
+                  >
+                    {name.slice(0, 3)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
 export function CalendarScreen() {
   const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedDate, setSelectedDate] = useState<string | null>(todayStr);
+  const [pickerVisible, setPickerVisible] = useState(false);
   const { data: events = [], isLoading } = useMonthEvents(selectedMonth);
   const { data: charts } = useChoreCharts();
 
@@ -96,9 +216,15 @@ export function CalendarScreen() {
         >
           <CaretLeft size={24} color="#819067" weight="bold" />
         </Pressable>
-        <Text className="text-lg font-bold text-gray-900">
-          {monthLabel(selectedMonth)}
-        </Text>
+        <Pressable
+          className="flex-row items-center gap-1.5"
+          onPress={() => setPickerVisible(true)}
+        >
+          <Text className="text-lg font-bold text-gray-900">
+            {monthLabel(selectedMonth)}
+          </Text>
+          <CaretDown size={16} color="#819067" weight="bold" />
+        </Pressable>
         <Pressable
           hitSlop={12}
           onPress={() => setSelectedMonth((m) => shiftMonth(m, 1))}
@@ -106,6 +232,14 @@ export function CalendarScreen() {
           <CaretRight size={24} color="#819067" weight="bold" />
         </Pressable>
       </View>
+
+      {/* Month/Year picker modal */}
+      <MonthYearPicker
+        visible={pickerVisible}
+        selectedMonth={selectedMonth}
+        onSelect={setSelectedMonth}
+        onClose={() => setPickerVisible(false)}
+      />
 
       {/* Grid */}
       <View className="px-4">
