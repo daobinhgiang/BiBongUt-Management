@@ -28,6 +28,10 @@ function filterTasks(
   const today = localToday();
 
   switch (filter) {
+    case "mine_today":
+      return tasks.filter(
+        (t) => t.assignee_id === myMemberId && t.due_date === today,
+      );
     case "mine":
       return tasks.filter((t) => t.assignee_id === myMemberId);
     case "today":
@@ -48,7 +52,7 @@ export function TaskListScreen() {
   const { data: tasks, isLoading } = useTasks();
   const { data: completedTasks, isLoading: isLoadingDone } = useCompletedTasks();
   const completeTask = useCompleteTask();
-  const [filter, setFilter] = useState<TaskFilter>("all");
+  const [filter, setFilter] = useState<TaskFilter>("mine_today");
   const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [badgeToast, setBadgeToast] = useState<string | null>(null);

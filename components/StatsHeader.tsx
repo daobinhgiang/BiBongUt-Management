@@ -80,71 +80,63 @@ export function StatsHeader() {
             )}
           </View>
 
-          {/* Stats — bottom-aligned to avatar */}
+          {/* Stats + bar — bottom-aligned to avatar */}
           <View
             className="ml-4 min-w-0 flex-1 justify-end"
             style={{ paddingBottom: 6 }}
           >
-            {/* Level badge */}
-            <View className="flex-row items-center">
-              <View
-                className="flex-row items-center gap-1 rounded-full px-2.5"
-                style={{ backgroundColor: "rgba(154, 168, 126, 0.18)", height: 26 }}
-              >
-                <Lightning size={14} color="#fbbf24" weight="fill" />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: "#566341" }}>
-                  Lv.{profile.level}
-                </Text>
-              </View>
-            </View>
+            <View className="flex-row items-end gap-3">
+              {/* Left: level badge + XP bar */}
+              <View className="min-w-0 flex-1">
+                {/* Level badge */}
+                <View className="flex-row items-center gap-1">
+                  <Lightning size={14} color="#fbbf24" weight="fill" />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#566341" }}>
+                    Lv.{profile.level}
+                  </Text>
+                </View>
 
-            {/* Stats */}
-            <View className="mt-2 flex-row items-center">
-              <View className="flex-row items-center gap-1">
-                <Lightning size={15} color="#9aa87e" weight="fill" />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: "#1f2937" }}>
-                  {xpInLevel}
-                </Text>
-                <Text style={{ fontSize: 13, color: "#9ca3af" }}>
-                  / {xpNeeded}
-                </Text>
+                {/* XP bar with level + fraction labels */}
+                <View className="mt-2">
+                  <View
+                    className="w-full justify-center overflow-hidden rounded-full"
+                    style={{
+                      height: 18,
+                      backgroundColor: "rgba(197, 204, 177, 0.35)",
+                    }}
+                  >
+                    <View
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.max(progress, 3)}%`,
+                        backgroundColor: "#9aa87e",
+                      }}
+                    />
+                    <Text
+                      className="absolute self-center"
+                      style={{ fontSize: 10, fontWeight: "700", color: "#566341" }}
+                    >
+                      {xpInLevel} / {xpNeeded}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <View
-                style={{ width: 1, height: 14, backgroundColor: "#d1d5db", marginHorizontal: 10 }}
-              />
-              <View className="flex-row items-center gap-1">
-                <CurrencyCircleDollar size={15} color="#f59e0b" weight="fill" />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: "#1f2937" }}>
-                  {profile.coins}
-                </Text>
-              </View>
-              <View
-                style={{ width: 1, height: 14, backgroundColor: "#d1d5db", marginHorizontal: 10 }}
-              />
-              <View className="flex-row items-center gap-1">
-                <Fire size={15} color="#ef4444" weight="fill" />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: "#1f2937" }}>
-                  {profile.current_streak}
-                </Text>
-              </View>
-            </View>
 
-            {/* XP progress bar */}
-            <View
-              className="mt-2.5 overflow-hidden rounded-full"
-              style={{
-                height: 6,
-                backgroundColor: "rgba(197, 204, 177, 0.35)",
-                maxWidth: 220,
-              }}
-            >
-              <View
-                className="h-full rounded-full"
-                style={{
-                  width: `${Math.max(progress, 3)}%`,
-                  backgroundColor: "#9aa87e",
-                }}
-              />
+              {/* Right: Coins + Streak stacked */}
+              <View style={{ gap: 6 }}>
+                <View className="flex-row items-center gap-1">
+                  <CurrencyCircleDollar size={15} color="#f59e0b" weight="fill" />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#1f2937" }}>
+                    {profile.coins}
+                  </Text>
+                </View>
+                <View className="flex-row items-center gap-1">
+                  <Fire size={15} color="#ef4444" weight="fill" />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#1f2937" }}>
+                    {profile.current_streak}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
         </View>

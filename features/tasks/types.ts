@@ -41,6 +41,7 @@ export { localToday } from "@/lib/date";
 export type TaskFilter =
   | "all"
   | "mine"
+  | "mine_today"
   | "today"
   | "overdue"
   | "done";
