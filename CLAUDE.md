@@ -3,6 +3,10 @@
 ## Project Overview
 A family management mobile app built with Expo + Supabase. Currently in scaffolding-complete stage — data model + RLS policies are next, then feature implementation.
 
+## Production deployment
+- **Frontend (web):** Hosted on **Vercel** — [https://bibongut.vercel.app/](https://bibongut.vercel.app/)
+- **Backend:** Hosted on **Supabase** — project ref `bmyvkytdbarrfrkgsmak`, URL `https://bmyvkytdbarrfrkgsmak.supabase.co`
+
 ## Tech Stack
 - **Framework:** Expo SDK 54, Expo Router v6, React Native 0.81
 - **Language:** TypeScript strict (no `any` unless explicitly approved)

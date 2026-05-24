@@ -52,9 +52,10 @@ function jsDayToChoreDay(jsDay: number): number {
 }
 
 function getISOWeekForDate(date: Date): number {
-  const jan4 = new Date(date.getFullYear(), 0, 4);
-  const daysSinceJan4 = Math.floor((date.getTime() - jan4.getTime()) / 86400000);
-  return Math.ceil((daysSinceJan4 + jan4.getDay() + 1) / 7);
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 function MonthYearPicker({
@@ -187,62 +188,51 @@ export function CalendarScreen() {
 
   // Inject chore chart slots as calendar events for the selected day
   if (selectedDate && charts) {
+    const buildChoreEvent = (
+      chart: (typeof charts)[number],
+      attendees: EventWithAttendees["event_attendees"],
+    ): EventWithAttendees => ({
+      id: `chore-${chart.id}-${selectedDate}`,
+      title: chart.title,
+      description: chart.description,
+      start_at: `${selectedDate}T20:30:00`,
+      end_at: `${selectedDate}T21:00:00`,
+      all_day: false,
+      family_id: chart.family_id,
+      created_by: chart.created_by,
+      created_at: chart.created_at,
+      creator: { id: "", nickname: "" },
+      event_attendees: attendees,
+    } as EventWithAttendees);
+
     const selectedDow = jsDayToChoreDay(new Date(selectedDate + "T12:00:00").getDay());
     for (const chart of charts) {
       if (chart.schedule_type === "rotate_weekly") {
-        // Rotate weekly: show every day, assignee based on ISO week
         const isoWeek = getISOWeekForDate(new Date(selectedDate + "T12:00:00"));
         const len = chart.rotation_members.length;
         const assigneeId = len > 0 ? chart.rotation_members[isoWeek % len] : null;
         const assignee = assigneeId && members
           ? members.find((m) => m.id === assigneeId)
           : null;
-        dayEvents.push({
-          id: `chore-${chart.id}-${selectedDate}`,
-          title: chart.title,
-          description: chart.description,
-          start_at: `${selectedDate}T20:30:00`,
-          end_at: `${selectedDate}T21:00:00`,
-          all_day: false,
-          family_id: chart.family_id,
-          created_by: chart.created_by,
-          created_at: chart.created_at,
-          creator: { id: "", nickname: "" },
-          event_attendees: assignee
-            ? [{
-                id: `chore-attendee-${chart.id}-${selectedDate}`,
-                event_id: `chore-${chart.id}-${selectedDate}`,
-                family_member_id: assignee.id,
-                status: "going" as const,
-                family_member: { id: assignee.id, nickname: assignee.nickname },
-              }]
-            : [],
-        } as EventWithAttendees);
+        dayEvents.push(buildChoreEvent(chart, assignee
+          ? [{
+              id: `chore-attendee-${chart.id}-${selectedDate}`,
+              event_id: `chore-${chart.id}-${selectedDate}`,
+              family_member_id: assignee.id,
+              status: "going" as const,
+              family_member: { id: assignee.id, nickname: assignee.nickname },
+            }]
+          : []));
       } else {
-        // Fixed schedule: show on assigned days
         const slot = chart.chore_chart_slots.find((s) => s.day_of_week === selectedDow);
         if (slot) {
-          dayEvents.push({
-            id: `chore-${chart.id}-${selectedDate}`,
-            title: chart.title,
-            description: chart.description,
-            start_at: `${selectedDate}T20:30:00`,
-            end_at: `${selectedDate}T21:00:00`,
-            all_day: false,
-            family_id: chart.family_id,
-            created_by: chart.created_by,
-            created_at: chart.created_at,
-            creator: { id: "", nickname: "" },
-            event_attendees: [
-              {
-                id: `chore-attendee-${slot.id}`,
-                event_id: `chore-${chart.id}-${selectedDate}`,
-                family_member_id: slot.assignee_id,
-                status: "going" as const,
-                family_member: slot.assignee,
-              },
-            ],
-          } as EventWithAttendees);
+          dayEvents.push(buildChoreEvent(chart, [{
+            id: `chore-attendee-${slot.id}`,
+            event_id: `chore-${chart.id}-${selectedDate}`,
+            family_member_id: slot.assignee_id,
+            status: "going" as const,
+            family_member: slot.assignee,
+          }]));
         }
       }
     }

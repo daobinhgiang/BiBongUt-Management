@@ -2,6 +2,10 @@
 
 A gamified family management app built with Expo (React Native) and Supabase. Helps families organize tasks, plan meals, manage shopping lists, track goals, and stay engaged through a fun XP/rewards system.
 
+### Production
+
+The web app is **deployed and hosted on Vercel**: https://bibongut.vercel.app/
+
 ## Features
 
 ### Core
@@ -153,6 +157,8 @@ Each feature folder contains:
 
 ## Deploying the web build
 
+**Current production:** The app is live on **Vercel** at https://bibongut.vercel.app/ (configured via [`vercel.json`](vercel.json): build writes to `dist/` with SPA fallback).
+
 The web target is a **static export**: `npm run build:web` runs `expo export --platform web` and writes production assets to the **`dist/`** directory (upload everything inside `dist`, not the repo root).
 
 1. **Production environment variables** — `EXPO_PUBLIC_*` values from [`.env.example`](.env.example) are inlined at **build** time. Set them in your CI/hosting provider’s build environment (or export them in the shell) before running the build command; they are not read from a `.env` file on the server after deploy.
@@ -163,7 +169,7 @@ The web target is a **static export**: `npm run build:web` runs `expo export --p
    npm run build:web
    ```
 
-3. **Host `dist/`** on any static host (HTTPS in production). Examples: upload `dist` via [Netlify](https://docs.expo.dev/guides/publishing-websites/#hosting-with-netlify-cli), [Firebase Hosting](https://docs.expo.dev/guides/publishing-websites/#hosting-with-firebase-cli), Vercel, S3 + CloudFront, etc.
+3. **Host `dist/`** on any static host (HTTPS in production). **This project’s production deployment is Vercel** (see URL above); other examples include [Netlify](https://docs.expo.dev/guides/publishing-websites/#hosting-with-netlify-cli), [Firebase Hosting](https://docs.expo.dev/guides/publishing-websites/#hosting-with-firebase-cli), S3 + CloudFront, etc.
 
 4. **Smoke-test locally** — after exporting, you can serve the folder with Expo’s static server:
 
