@@ -15,6 +15,7 @@ import {
   Lock,
   ArrowRight,
   Camera,
+  GearSix,
 } from "phosphor-react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -69,6 +70,16 @@ export function ProfileScreen({ memberId }: Props) {
     >
       {/* Header card */}
       <View className="bg-jungle-700 px-6 pb-8 pt-10">
+        {/* Settings gear */}
+        {isOwnProfile && (
+          <Pressable
+            className="absolute right-4 top-10 z-10 h-10 w-10 items-center justify-center rounded-full"
+            onPress={() => router.push("/(app)/settings")}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <GearSix size={24} color="#fff" weight="bold" />
+          </Pressable>
+        )}
         {/* Avatar + name */}
         <View className="items-center gap-2">
           <Pressable

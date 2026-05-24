@@ -13,6 +13,8 @@ import { CaretLeft, CaretRight, CaretDown } from "phosphor-react-native";
 
 import { useMonthEvents } from "../api/queries";
 import { useChoreCharts } from "@/features/choreCharts";
+import { useFamilyMembers } from "@/features/families";
+import { useFamily } from "@/features/auth/hooks/useFamily";
 import { MonthGrid } from "../components/MonthGrid";
 import { EventCard } from "../components/EventCard";
 import type { EventWithAttendees } from "../types";
@@ -47,6 +49,13 @@ function monthLabel(month: string): string {
 /** Convert JS getDay() (0=Sun) to chore chart day_of_week (0=Mon). */
 function jsDayToChoreDay(jsDay: number): number {
   return (jsDay + 6) % 7;
+}
+
+function getISOWeekForDate(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 function MonthYearPicker({
@@ -166,6 +175,8 @@ export function CalendarScreen() {
   const [pickerVisible, setPickerVisible] = useState(false);
   const { data: events = [], isLoading } = useMonthEvents(selectedMonth);
   const { data: charts } = useChoreCharts();
+  const { data: family } = useFamily();
+  const { data: members } = useFamilyMembers(family?.family_id);
 
   const dayEvents = selectedDate
     ? events.filter((e) => {
@@ -177,32 +188,52 @@ export function CalendarScreen() {
 
   // Inject chore chart slots as calendar events for the selected day
   if (selectedDate && charts) {
+    const buildChoreEvent = (
+      chart: (typeof charts)[number],
+      attendees: EventWithAttendees["event_attendees"],
+    ): EventWithAttendees => ({
+      id: `chore-${chart.id}-${selectedDate}`,
+      title: chart.title,
+      description: chart.description,
+      start_at: `${selectedDate}T20:30:00`,
+      end_at: `${selectedDate}T21:00:00`,
+      all_day: false,
+      family_id: chart.family_id,
+      created_by: chart.created_by,
+      created_at: chart.created_at,
+      creator: { id: "", nickname: "" },
+      event_attendees: attendees,
+    } as EventWithAttendees);
+
     const selectedDow = jsDayToChoreDay(new Date(selectedDate + "T12:00:00").getDay());
     for (const chart of charts) {
-      if (chart.schedule_type === "rotate_weekly") continue;
-      const slot = chart.chore_chart_slots.find((s) => s.day_of_week === selectedDow);
-      if (slot) {
-        dayEvents.push({
-          id: `chore-${chart.id}-${selectedDate}`,
-          title: chart.title,
-          description: chart.description,
-          start_at: `${selectedDate}T20:30:00`,
-          end_at: `${selectedDate}T21:00:00`,
-          all_day: false,
-          family_id: chart.family_id,
-          created_by: chart.created_by,
-          created_at: chart.created_at,
-          creator: { id: "", nickname: "" },
-          event_attendees: [
-            {
-              id: `chore-attendee-${slot.id}`,
+      if (chart.schedule_type === "rotate_weekly") {
+        const isoWeek = getISOWeekForDate(new Date(selectedDate + "T12:00:00"));
+        const len = chart.rotation_members.length;
+        const assigneeId = len > 0 ? chart.rotation_members[isoWeek % len] : null;
+        const assignee = assigneeId && members
+          ? members.find((m) => m.id === assigneeId)
+          : null;
+        dayEvents.push(buildChoreEvent(chart, assignee
+          ? [{
+              id: `chore-attendee-${chart.id}-${selectedDate}`,
               event_id: `chore-${chart.id}-${selectedDate}`,
-              family_member_id: slot.assignee_id,
+              family_member_id: assignee.id,
               status: "going" as const,
-              family_member: slot.assignee,
-            },
-          ],
-        } as EventWithAttendees);
+              family_member: { id: assignee.id, nickname: assignee.nickname },
+            }]
+          : []));
+      } else {
+        const slot = chart.chore_chart_slots.find((s) => s.day_of_week === selectedDow);
+        if (slot) {
+          dayEvents.push(buildChoreEvent(chart, [{
+            id: `chore-attendee-${slot.id}`,
+            event_id: `chore-${chart.id}-${selectedDate}`,
+            family_member_id: slot.assignee_id,
+            status: "going" as const,
+            family_member: slot.assignee,
+          }]));
+        }
       }
     }
     dayEvents.sort(

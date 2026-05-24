@@ -121,7 +121,7 @@ export function AnimatedTabBar({
         backgroundColor: "#ffffff",
         borderTopWidth: 1,
         borderTopColor: "#f3f4f6",
-        paddingBottom: Platform.OS === "web" ? 8 : Math.max(insets.bottom, 8),
+        paddingBottom: Platform.OS === "web" ? 16 : Math.max(insets.bottom + 8, 16),
       }}
     >
       {state.routes.map((route, index) => {
