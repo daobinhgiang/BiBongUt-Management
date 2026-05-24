@@ -282,13 +282,13 @@ function MetaChip({
 }) {
   return (
     <View
-      className={`flex-row items-center gap-1 rounded-full px-3 py-1 ${
+      className={`flex-row items-center gap-1.5 rounded-full px-4 py-1.5 ${
         variant === "danger" ? "bg-red-100" : "bg-bark-100"
       }`}
     >
       {icon}
       <Text
-        className={`text-xs font-medium ${
+        className={`text-sm font-medium ${
           variant === "danger" ? "text-red-700" : "text-gray-700"
         }`}
       >

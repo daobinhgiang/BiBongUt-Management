@@ -13,6 +13,8 @@ import { CaretLeft, CaretRight, CaretDown } from "phosphor-react-native";
 
 import { useMonthEvents } from "../api/queries";
 import { useChoreCharts } from "@/features/choreCharts";
+import { useFamilyMembers } from "@/features/families";
+import { useFamily } from "@/features/auth/hooks/useFamily";
 import { MonthGrid } from "../components/MonthGrid";
 import { EventCard } from "../components/EventCard";
 import type { EventWithAttendees } from "../types";
@@ -47,6 +49,12 @@ function monthLabel(month: string): string {
 /** Convert JS getDay() (0=Sun) to chore chart day_of_week (0=Mon). */
 function jsDayToChoreDay(jsDay: number): number {
   return (jsDay + 6) % 7;
+}
+
+function getISOWeekForDate(date: Date): number {
+  const jan4 = new Date(date.getFullYear(), 0, 4);
+  const daysSinceJan4 = Math.floor((date.getTime() - jan4.getTime()) / 86400000);
+  return Math.ceil((daysSinceJan4 + jan4.getDay() + 1) / 7);
 }
 
 function MonthYearPicker({
@@ -166,6 +174,8 @@ export function CalendarScreen() {
   const [pickerVisible, setPickerVisible] = useState(false);
   const { data: events = [], isLoading } = useMonthEvents(selectedMonth);
   const { data: charts } = useChoreCharts();
+  const { data: family } = useFamily();
+  const { data: members } = useFamilyMembers(family?.family_id);
 
   const dayEvents = selectedDate
     ? events.filter((e) => {
@@ -179,9 +189,14 @@ export function CalendarScreen() {
   if (selectedDate && charts) {
     const selectedDow = jsDayToChoreDay(new Date(selectedDate + "T12:00:00").getDay());
     for (const chart of charts) {
-      if (chart.schedule_type === "rotate_weekly") continue;
-      const slot = chart.chore_chart_slots.find((s) => s.day_of_week === selectedDow);
-      if (slot) {
+      if (chart.schedule_type === "rotate_weekly") {
+        // Rotate weekly: show every day, assignee based on ISO week
+        const isoWeek = getISOWeekForDate(new Date(selectedDate + "T12:00:00"));
+        const len = chart.rotation_members.length;
+        const assigneeId = len > 0 ? chart.rotation_members[isoWeek % len] : null;
+        const assignee = assigneeId && members
+          ? members.find((m) => m.id === assigneeId)
+          : null;
         dayEvents.push({
           id: `chore-${chart.id}-${selectedDate}`,
           title: chart.title,
@@ -193,16 +208,42 @@ export function CalendarScreen() {
           created_by: chart.created_by,
           created_at: chart.created_at,
           creator: { id: "", nickname: "" },
-          event_attendees: [
-            {
-              id: `chore-attendee-${slot.id}`,
-              event_id: `chore-${chart.id}-${selectedDate}`,
-              family_member_id: slot.assignee_id,
-              status: "going" as const,
-              family_member: slot.assignee,
-            },
-          ],
+          event_attendees: assignee
+            ? [{
+                id: `chore-attendee-${chart.id}-${selectedDate}`,
+                event_id: `chore-${chart.id}-${selectedDate}`,
+                family_member_id: assignee.id,
+                status: "going" as const,
+                family_member: { id: assignee.id, nickname: assignee.nickname },
+              }]
+            : [],
         } as EventWithAttendees);
+      } else {
+        // Fixed schedule: show on assigned days
+        const slot = chart.chore_chart_slots.find((s) => s.day_of_week === selectedDow);
+        if (slot) {
+          dayEvents.push({
+            id: `chore-${chart.id}-${selectedDate}`,
+            title: chart.title,
+            description: chart.description,
+            start_at: `${selectedDate}T20:30:00`,
+            end_at: `${selectedDate}T21:00:00`,
+            all_day: false,
+            family_id: chart.family_id,
+            created_by: chart.created_by,
+            created_at: chart.created_at,
+            creator: { id: "", nickname: "" },
+            event_attendees: [
+              {
+                id: `chore-attendee-${slot.id}`,
+                event_id: `chore-${chart.id}-${selectedDate}`,
+                family_member_id: slot.assignee_id,
+                status: "going" as const,
+                family_member: slot.assignee,
+              },
+            ],
+          } as EventWithAttendees);
+        }
       }
     }
     dayEvents.sort(

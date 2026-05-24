@@ -31,13 +31,13 @@ export function EventCard({ event, onPress }: Props) {
       {event.event_attendees.length > 0 ? (
         <View className="flex-row items-center gap-1 rounded-full bg-bark-100 px-2 py-1">
           <Users size={14} color="#6b7a54" />
-          <Text className="text-xs font-medium text-gray-600">
-            {event.event_attendees.length}
+          <Text className="text-xs font-medium text-gray-600" numberOfLines={1}>
+            {event.event_attendees.map((a) => a.family_member.nickname).join(", ")}
           </Text>
         </View>
       ) : (
         <View className="rounded-full bg-gray-100 px-2 py-1">
-          <Text className="text-xs font-medium text-gray-400">Unassigned</Text>
+          <Text className="text-xs font-medium text-gray-400">No one</Text>
         </View>
       )}
     </Pressable>

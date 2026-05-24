@@ -51,9 +51,6 @@ export type LogContributionResult = {
   status?: string;
 };
 
-// ── Filter ──
-export type ChallengeFilter = "active" | "completed" | "mine";
-
 // ── Type display helpers ──
 export const CHALLENGE_TYPE_LABELS: Record<ChallengeType, string> = {
   solo: "Solo",

@@ -23,6 +23,7 @@ import type { PropsWithChildren } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
+import { queryClient } from "@/lib/query-client";
 
 interface AuthContextValue {
   /** Current Supabase session (null if not authenticated) */
@@ -105,8 +106,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut().catch(() => {});
+    queryClient.clear();
     setSession(null);
+    await supabase.auth.signOut().catch(() => {});
   };
 
   return (

@@ -15,7 +15,7 @@ async function createChart(input: CreateInput): Promise<string> {
   const { data, error } = await supabase.rpc("create_chore_chart", {
     p_family_id: input.family_id,
     p_title: input.title,
-    p_description: input.description ?? undefined,
+    p_description: input.description ?? null,
     p_difficulty: input.difficulty,
     p_points: input.points,
     p_coins_reward: input.coins_reward,
@@ -53,7 +53,7 @@ async function updateChart(input: UpdateInput): Promise<void> {
   const { error } = await supabase.rpc("update_chore_chart", {
     p_chart_id: input.chart_id,
     p_title: input.title,
-    p_description: input.description ?? undefined,
+    p_description: input.description ?? null,
     p_difficulty: input.difficulty,
     p_points: input.points,
     p_coins_reward: input.coins_reward,

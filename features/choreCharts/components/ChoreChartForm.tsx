@@ -188,47 +188,62 @@ export function ChoreChartForm({
               const isExpanded = expandedDay === dayIndex;
 
               return (
-                <View key={dayIndex} className="gap-1">
+                <View key={dayIndex} style={{ zIndex: isExpanded ? 100 : 0 }}>
                   <View className="flex-row items-center gap-2">
                     <Text className="w-10 text-sm font-medium text-gray-600">{label}</Text>
-                    {existingSlot ? (
-                      <View className="flex-1 flex-row items-center justify-between rounded-xl bg-jungle-50 border border-jungle-200 px-3 py-2.5">
-                        <Text className="text-sm font-medium text-jungle-800">
-                          {assignee?.nickname ?? "Unknown"}
-                        </Text>
-                        <Pressable onPress={() => removeSlot(dayIndex)} hitSlop={8}>
-                          <Trash size={16} color="#ef4444" />
-                        </Pressable>
-                      </View>
-                    ) : (
+                    <View className="flex-1">
                       <Pressable
-                        className={`flex-1 flex-row items-center justify-between rounded-xl border px-3 py-2.5 ${
-                          isExpanded ? "border-jungle-400 bg-jungle-50" : "border-bark-200 bg-white"
+                        className={`flex-row items-center justify-between rounded-xl border px-3 py-2.5 ${
+                          existingSlot
+                            ? isExpanded ? "border-jungle-400 bg-jungle-50" : "bg-jungle-50 border-jungle-200"
+                            : isExpanded ? "border-jungle-400 bg-jungle-50" : "border-bark-200 bg-white"
                         }`}
                         onPress={() => setExpandedDay(isExpanded ? null : dayIndex)}
                       >
-                        <Text className="text-sm text-gray-400">Select member</Text>
-                        <CaretDown size={14} color="#9ca3af" weight="bold" />
+                        <Text className={`text-sm ${existingSlot ? "font-medium text-jungle-800" : "text-gray-400"}`}>
+                          {existingSlot ? (assignee?.nickname ?? "Unknown") : "Select member"}
+                        </Text>
+                        {existingSlot ? (
+                          <Pressable onPress={() => { removeSlot(dayIndex); setExpandedDay(null); }} hitSlop={8}>
+                            <Trash size={16} color="#ef4444" />
+                          </Pressable>
+                        ) : (
+                          <CaretDown size={14} color="#9ca3af" weight="bold" />
+                        )}
                       </Pressable>
-                    )}
-                  </View>
 
-                  {/* Dropdown member list */}
-                  {isExpanded && !existingSlot && (
-                    <View className="ml-12 rounded-xl border border-bark-200 bg-white overflow-hidden">
-                      {members?.map((member, i) => (
-                        <Pressable
-                          key={member.id}
-                          className={`px-4 py-3 ${
-                            i < (members.length - 1) ? "border-b border-bark-100" : ""
-                          }`}
-                          onPress={() => addSlot(dayIndex, member.id)}
+                      {/* Dropdown member list — absolute overlay */}
+                      {isExpanded && (
+                        <View
+                          className="rounded-xl border border-bark-200 bg-white"
+                          style={{
+                            position: "absolute",
+                            top: 44,
+                            left: 0,
+                            right: 0,
+                            zIndex: 999,
+                            elevation: 5,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.15,
+                            shadowRadius: 6,
+                          }}
                         >
-                          <Text className="text-sm text-gray-700">{member.nickname}</Text>
-                        </Pressable>
-                      ))}
+                          {members?.map((member, i) => (
+                            <Pressable
+                              key={member.id}
+                              className={`px-4 py-3 ${
+                                i < (members.length - 1) ? "border-b border-bark-100" : ""
+                              }`}
+                              onPress={() => addSlot(dayIndex, member.id)}
+                            >
+                              <Text className="text-sm text-gray-700">{member.nickname}</Text>
+                            </Pressable>
+                          ))}
+                        </View>
+                      )}
                     </View>
-                  )}
+                  </View>
                 </View>
               );
             })}
