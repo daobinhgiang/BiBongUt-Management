@@ -9,6 +9,7 @@ import {
   FunnelSimple,
   CaretDown,
   UserList,
+  Sword,
 } from "phosphor-react-native";
 import type { TaskFilter } from "../types";
 
@@ -38,6 +39,11 @@ const FILTERS: {
     key: "done",
     label: "Done",
     icon: (c) => <CheckCircle size={16} color={c} />,
+  },
+  {
+    key: "challenges",
+    label: "From Challenges",
+    icon: (c) => <Sword size={16} color={c} />,
   },
 ];
 

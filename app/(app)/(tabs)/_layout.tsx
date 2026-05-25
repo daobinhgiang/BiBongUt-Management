@@ -1,12 +1,11 @@
 /**
  * Tab Navigator Layout
  *
- * Defines the 6 main tabs of the app with an animated custom tab bar.
+ * Defines the 5 main tabs of the app with an animated custom tab bar.
  *
  * | Tab        | Screen         | Content                                              |
  * |------------|----------------|------------------------------------------------------|
- * | Home       | index.tsx      | Dashboard: active votes, daily quests, announcements  |
- * | Do         | do.tsx         | Tasks + Challenges                                   |
+ * | Do         | index.tsx      | Tasks + Challenges                                   |
  * | Challenges | challenges.tsx | Boss battles                                         |
  * | Plan       | plan.tsx       | Calendar + Meal Planning                             |
  * | Lists      | lists.tsx      | Shopping + Pantry + Bucket List + Movies              |
@@ -18,7 +17,6 @@ import { View } from "react-native";
 import { Tabs, usePathname } from "expo-router";
 import {
   House,
-  CheckCircle,
   Sword,
   CalendarBlank,
   ListBullets,
@@ -50,15 +48,6 @@ export default function TabLayout() {
             title: "Home",
             tabBarIcon: ({ color, size }) => (
               <House size={size} color={color} weight="fill" />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="do"
-          options={{
-            title: "Do",
-            tabBarIcon: ({ color, size }) => (
-              <CheckCircle size={size} color={color} weight="fill" />
             ),
           }}
         />

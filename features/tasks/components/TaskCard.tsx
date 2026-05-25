@@ -7,8 +7,13 @@ import {
   Lightning,
   CurrencyCircleDollar,
   Check,
+  GlobeHemisphereWest,
 } from "phosphor-react-native";
-import { localToday, type TaskWithAssignee } from "../types";
+import {
+  isOverdue as checkOverdue,
+  formatDeadlineLocal,
+  type TaskWithAssignee,
+} from "../types";
 
 const DIFFICULTY_COLORS = {
   easy: { bg: "bg-jungle-100", text: "text-jungle-700" },
@@ -22,10 +27,22 @@ type Props = {
   onComplete: () => void;
   isCompleting: boolean;
   canComplete?: boolean;
+  subtitle?: string;
 };
 
-export function TaskCard({ task, onPress, onComplete, isCompleting, canComplete = true }: Props) {
-  const isOverdue = task.due_date != null && task.due_date < localToday();
+export function TaskCard({
+  task,
+  onPress,
+  onComplete,
+  isCompleting,
+  canComplete = true,
+  subtitle,
+}: Props) {
+  const creatorTz = task.creator_tz ?? "UTC";
+  const overdue = checkOverdue(task.due_date, creatorTz);
+  const deadlineLocal = task.due_date
+    ? formatDeadlineLocal(task.due_date, creatorTz)
+    : null;
 
   return (
     <Pressable
@@ -36,7 +53,9 @@ export function TaskCard({ task, onPress, onComplete, isCompleting, canComplete 
       {canComplete && (
         <Pressable
           className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
-            isCompleting ? "border-jungle-400 bg-jungle-400" : "border-bark-200"
+            isCompleting
+              ? "border-jungle-400 bg-jungle-400"
+              : "border-bark-200"
           }`}
           onPress={onComplete}
           disabled={isCompleting}
@@ -51,7 +70,12 @@ export function TaskCard({ task, onPress, onComplete, isCompleting, canComplete 
         <Text className="text-base font-semibold text-gray-900">
           {task.title}
         </Text>
-        <View className="flex-row items-center gap-2">
+
+        {subtitle && (
+          <Text className="text-xs text-jungle-600">{subtitle}</Text>
+        )}
+
+        <View className="flex-row flex-wrap items-center gap-2">
           {/* Difficulty badge */}
           <View
             className={`rounded-full px-2 py-0.5 ${DIFFICULTY_COLORS[task.difficulty].bg}`}
@@ -76,17 +100,27 @@ export function TaskCard({ task, onPress, onComplete, isCompleting, canComplete 
           {/* Due date */}
           {task.due_date && (
             <View className="flex-row items-center gap-0.5">
-              {isOverdue ? (
+              {overdue ? (
                 <Warning size={12} color="#ef4444" weight="fill" />
               ) : (
                 <CalendarBlank size={12} color="#9ca3af" />
               )}
               <Text
-                className={`text-xs ${isOverdue ? "font-semibold text-red-500" : "text-gray-400"}`}
+                className={`text-xs ${overdue ? "font-semibold text-red-500" : "text-gray-400"}`}
               >
-                {isOverdue
+                {overdue
                   ? "Overdue"
-                  : new Date(task.due_date).toLocaleDateString()}
+                  : new Date(`${task.due_date}T12:00:00`).toLocaleDateString()}
+              </Text>
+            </View>
+          )}
+
+          {/* Timezone indicator — only if creator and viewer are in different timezones */}
+          {deadlineLocal && (
+            <View className="flex-row items-center gap-0.5">
+              <GlobeHemisphereWest size={12} color="#6b7280" />
+              <Text className="text-xs text-gray-400">
+                Due by {deadlineLocal}
               </Text>
             </View>
           )}
@@ -108,7 +142,9 @@ export function TaskCard({ task, onPress, onComplete, isCompleting, canComplete 
         </View>
         <View className="flex-row items-center gap-0.5">
           <CurrencyCircleDollar size={12} color="#807200" />
-          <Text className="text-xs font-medium text-bark-500">{task.coins_reward}</Text>
+          <Text className="text-xs font-medium text-bark-500">
+            {task.coins_reward}
+          </Text>
         </View>
       </View>
     </Pressable>

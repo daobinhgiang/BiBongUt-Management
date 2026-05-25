@@ -16,7 +16,7 @@ export function TasksScreenHeaderBack() {
       hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
       onPress={() => {
         if (router.canGoBack()) router.back();
-        else router.replace("/(app)/(tabs)/do");
+        else router.replace("/(app)/(tabs)");
       }}
       className="ml-1 min-h-[44px] flex-row items-center justify-center px-2 py-2"
     >

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, Switch } from "react-native";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -14,9 +14,11 @@ import {
   Plus,
   Trash,
   Target,
+  ListChecks,
 } from "phosphor-react-native";
 
 import { DueDateField } from "@/features/tasks/components/DueDateField";
+import { ActivityAutocomplete } from "@/features/tasks/components/ActivityAutocomplete";
 import { useFamilyMembers } from "@/features/families";
 import {
   createChallengeSchema,
@@ -98,6 +100,7 @@ export function ChallengeForm({
         title: t.title,
         difficulty: t.difficulty,
         damage: t.damage,
+        show_on_task_list: false,
       })),
     });
   }
@@ -119,7 +122,7 @@ export function ChallengeForm({
     });
   }
 
-  // ── Mode: Pick template or custom ──
+  // -- Mode: Pick template or custom --
   if (mode === "pick") {
     return (
       <ScrollView
@@ -182,7 +185,7 @@ export function ChallengeForm({
     );
   }
 
-  // ── Mode: Template or Custom form ──
+  // -- Mode: Template or Custom form --
   const isTemplate = mode === "template";
 
   return (
@@ -301,71 +304,99 @@ export function ChallengeForm({
         {fields.map((field, index) => (
           <View
             key={field.id}
-            className="flex-row items-center gap-2 rounded-lg border border-bark-200 bg-bark-50 p-3"
+            className="gap-2 rounded-lg border border-bark-200 bg-bark-50 p-3"
           >
-            <View className="flex-1 gap-1">
-              {isTemplate ? (
-                <Text className="text-sm font-medium text-gray-800">
-                  {tasks[index]?.title}
-                </Text>
-              ) : (
-                <Controller
-                  control={control}
-                  name={`tasks.${index}.title`}
-                  render={({ field: { onChange, value } }) => (
-                    <TextInput
-                      className="rounded border border-bark-200 bg-white px-2 py-1 text-sm"
-                      placeholder="Task name"
-                      value={value}
-                      onChangeText={onChange}
-                    />
-                  )}
-                />
-              )}
-              <View className="flex-row items-center gap-2">
-                {/* Difficulty chips */}
-                <Controller
-                  control={control}
-                  name={`tasks.${index}.difficulty`}
-                  render={({ field: { onChange, value } }) => (
-                    <View className="flex-row gap-1">
-                      {(["easy", "medium", "hard"] as const).map((d) => (
-                        <Pressable
-                          key={d}
-                          className={`rounded-full px-2 py-0.5 ${
-                            value === d ? "bg-jungle-500" : "bg-bark-100"
-                          }`}
-                          onPress={() => {
-                            onChange(d);
-                            setValue(
-                              `tasks.${index}.damage`,
-                              DAMAGE_BY_DIFFICULTY[d],
-                            );
-                          }}
-                          disabled={isTemplate}
-                        >
-                          <Text
-                            className={`text-[10px] font-semibold capitalize ${
-                              value === d ? "text-white" : "text-gray-500"
+            <View className="flex-row items-center gap-2">
+              <View className="flex-1 gap-1">
+                {isTemplate ? (
+                  <Text className="text-sm font-medium text-gray-800">
+                    {tasks[index]?.title}
+                  </Text>
+                ) : (
+                  <Controller
+                    control={control}
+                    name={`tasks.${index}.title`}
+                    render={({ field: { onChange, value } }) => (
+                      <ActivityAutocomplete
+                        value={value}
+                        onChange={onChange}
+                        familyId={familyId}
+                        placeholder="Task name"
+                      />
+                    )}
+                  />
+                )}
+                <View className="flex-row items-center gap-2">
+                  {/* Difficulty chips */}
+                  <Controller
+                    control={control}
+                    name={`tasks.${index}.difficulty`}
+                    render={({ field: { onChange, value } }) => (
+                      <View className="flex-row gap-1">
+                        {(["easy", "medium", "hard"] as const).map((d) => (
+                          <Pressable
+                            key={d}
+                            className={`rounded-full px-2 py-0.5 ${
+                              value === d ? "bg-jungle-500" : "bg-bark-100"
                             }`}
+                            onPress={() => {
+                              onChange(d);
+                              setValue(
+                                `tasks.${index}.damage`,
+                                DAMAGE_BY_DIFFICULTY[d],
+                              );
+                            }}
+                            disabled={isTemplate}
                           >
-                            {d}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  )}
-                />
-                <Text className="text-xs font-medium text-red-500">
-                  {tasks[index]?.damage ?? 1} dmg
-                </Text>
+                            <Text
+                              className={`text-[10px] font-semibold capitalize ${
+                                value === d ? "text-white" : "text-gray-500"
+                              }`}
+                            >
+                              {d}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+                  />
+                  <Text className="text-xs font-medium text-red-500">
+                    {tasks[index]?.damage ?? 1} dmg
+                  </Text>
+                </View>
               </View>
+              {!isTemplate && (
+                <Pressable onPress={() => remove(index)} hitSlop={8}>
+                  <Trash size={18} color="#dc2626" />
+                </Pressable>
+              )}
             </View>
-            {!isTemplate && (
-              <Pressable onPress={() => remove(index)} hitSlop={8}>
-                <Trash size={18} color="#dc2626" />
-              </Pressable>
-            )}
+
+            {/* Show on To-Do list toggle */}
+            <Controller
+              control={control}
+              name={`tasks.${index}.show_on_task_list`}
+              render={({ field: { onChange, value } }) => (
+                <Pressable
+                  className="flex-row items-center justify-between"
+                  onPress={() => onChange(!value)}
+                >
+                  <View className="flex-row items-center gap-1">
+                    <ListChecks size={12} color="#6b7a54" />
+                    <Text className="text-xs text-gray-600">
+                      Show on To-Do list
+                    </Text>
+                  </View>
+                  <Switch
+                    value={value}
+                    onValueChange={onChange}
+                    trackColor={{ false: "#d1d5db", true: "#819067" }}
+                    thumbColor="#fff"
+                    style={{ transform: [{ scale: 0.7 }] }}
+                  />
+                </Pressable>
+              )}
+            />
           </View>
         ))}
 
@@ -378,7 +409,7 @@ export function ChallengeForm({
           <Pressable
             className="flex-row items-center justify-center gap-1 rounded-lg border border-dashed border-bark-300 py-2"
             onPress={() =>
-              append({ title: "", difficulty: "easy", damage: 1 })
+              append({ title: "", difficulty: "easy", damage: 1, show_on_task_list: false })
             }
           >
             <Plus size={16} color="#819067" />

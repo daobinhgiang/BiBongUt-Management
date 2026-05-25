@@ -16,6 +16,7 @@ type TaskInput = {
   title: string;
   difficulty: TaskDifficulty;
   damage: number;
+  show_on_task_list?: boolean;
 };
 
 type CreateChallengeInput = {
@@ -61,6 +62,30 @@ async function createChallenge({
 
   if (error) throw error;
 
+  // Update show_on_task_list for any tasks that opted in.
+  // The RPC created tasks in order, so fetch challenge_tasks to match by title.
+  const tasksWithFlag = tasks.filter((t) => t.show_on_task_list);
+  if (tasksWithFlag.length > 0) {
+    const { data: ctRows } = await supabase
+      .from("challenge_tasks")
+      .select("id, task:tasks!challenge_tasks_task_id_fkey(title)")
+      .eq("challenge_id", challengeId);
+
+    if (ctRows) {
+      const flagTitles = new Set(tasksWithFlag.map((t) => t.title));
+      const idsToUpdate = (ctRows as any[])
+        .filter((ct) => flagTitles.has(ct.task?.title))
+        .map((ct) => ct.id);
+
+      if (idsToUpdate.length > 0) {
+        await supabase
+          .from("challenge_tasks")
+          .update({ show_on_task_list: true })
+          .in("id", idsToUpdate);
+      }
+    }
+  }
+
   // Re-fetch full challenge
   const { data: full, error: err2 } = await supabase
     .from("challenges")
@@ -84,6 +109,9 @@ export function useCreateChallenge() {
         challengeKeys.all(family.family_id),
         (old) => (old ? [newChallenge, ...old] : [newChallenge]),
       );
+      qc.invalidateQueries({
+        queryKey: taskKeys.challengeTasks(family.family_id),
+      });
     },
   });
 }

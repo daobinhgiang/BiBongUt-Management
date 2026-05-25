@@ -4,6 +4,7 @@ export const challengeTaskSchema = z.object({
   title: z.string().min(1, "Task title is required"),
   difficulty: z.enum(["easy", "medium", "hard"]),
   damage: z.number().int().min(1),
+  show_on_task_list: z.boolean(),
 });
 
 export const createChallengeSchema = z.object({

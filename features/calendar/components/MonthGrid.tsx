@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 import type { EventWithAttendees } from "../types";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 type Props = {
   month: string; // "YYYY-MM"
@@ -14,7 +14,7 @@ type Props = {
 export function MonthGrid({ month, events, selectedDate, onSelectDate, hasChoreCharts }: Props) {
   const year = Number(month.slice(0, 4));
   const mon = Number(month.slice(5, 7)) - 1;
-  const firstDay = new Date(year, mon, 1).getDay();
+  const firstDay = (new Date(year, mon, 1).getDay() + 6) % 7; // Monday = 0
   const daysInMonth = new Date(year, mon + 1, 0).getDate();
   const today = new Date();
   const todayStr =

@@ -117,7 +117,7 @@ export function usePushNotifications() {
             if (data.taskId) router.push(`/(app)/tasks/${data.taskId}`);
             break;
           case "tasks":
-            router.push("/(app)/(tabs)/do");
+            router.push("/(app)/(tabs)");
             break;
           case "profile":
             if (data.memberId)

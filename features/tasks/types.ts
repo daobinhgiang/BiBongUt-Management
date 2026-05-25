@@ -34,8 +34,14 @@ export const DIFFICULTY_DEFAULTS: Record<
   hard: { points: 50, coins: 25 },
 };
 
-// Re-export shared date helper for backwards compatibility
-export { localToday } from "@/lib/date";
+// Re-export shared date helpers
+export {
+  localToday,
+  localTimezone,
+  isDueToday,
+  isOverdue,
+  formatDeadlineLocal,
+} from "@/lib/date";
 
 // ── Filter types used by the UI ──
 export type TaskFilter =
@@ -44,4 +50,11 @@ export type TaskFilter =
   | "mine_today"
   | "today"
   | "overdue"
-  | "done";
+  | "done"
+  | "challenges";
+
+// ── Challenge tasks shown on the main task list ──
+export type ChallengeTaskForList = TaskWithAssignee & {
+  challenge_title: string;
+  damage: number;
+};

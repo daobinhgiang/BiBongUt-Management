@@ -22,7 +22,11 @@ import { useCompleteTask, useDeleteTask, type CompleteTaskResult } from "../api/
 import { XpToast } from "../components/XpToast";
 import { LevelUpModal } from "@/features/gamification/components/LevelUpModal";
 import { BadgeToast } from "@/features/gamification/components/BadgeToast";
-import { localToday, type TaskCompletionWithMember } from "../types";
+import {
+  isOverdue as checkOverdue,
+  formatDeadlineLocal,
+  type TaskCompletionWithMember,
+} from "../types";
 
 const DIFFICULTY_LABEL = {
   easy: "Easy",
@@ -65,7 +69,11 @@ export function TaskDetailScreen() {
     );
   }
 
-  const isOverdue = task.due_date != null && task.due_date < localToday();
+  const creatorTz = task.creator_tz ?? "UTC";
+  const isOverdue = checkOverdue(task.due_date, creatorTz);
+  const deadlineLocal = task.due_date
+    ? formatDeadlineLocal(task.due_date, creatorTz)
+    : null;
 
   const handleComplete = () => {
     if (!family) return;
@@ -192,6 +200,12 @@ export function TaskDetailScreen() {
                 : `Due: ${task.due_date}`
             }
             variant={isOverdue ? "danger" : "default"}
+          />
+        )}
+        {deadlineLocal && (
+          <MetaChip
+            icon={<CalendarBlank size={14} color="#6b7a54" />}
+            label={`Due by ${deadlineLocal}`}
           />
         )}
       </View>

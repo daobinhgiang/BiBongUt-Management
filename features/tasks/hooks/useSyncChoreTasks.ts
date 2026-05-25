@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useChoreCharts } from "@/features/choreCharts";
-import { localToday } from "@/lib/date";
+import { localToday, localTimezone } from "@/lib/date";
 import { taskKeys } from "../api/queries";
 import type { ChoreChartWithSlots } from "@/features/choreCharts/types";
 
@@ -92,6 +92,7 @@ async function syncChoreTasks(
       coins_reward: c.chart.coins_reward,
       source_chart_id: c.chart.id,
       recurrence: "none" as const,
+      creator_tz: localTimezone(),
     }));
 
   if (toInsert.length === 0) return;
