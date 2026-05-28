@@ -43,9 +43,13 @@ export type ClaimDailyChestResult = {
   coins_awarded: number;
 };
 
-async function claimDailyChest(memberId: string): Promise<ClaimDailyChestResult> {
+async function claimDailyChest(args: {
+  memberId: string;
+  tz: string;
+}): Promise<ClaimDailyChestResult> {
   const { data, error } = await supabase.rpc("claim_daily_chest", {
-    p_member_id: memberId,
+    p_member_id: args.memberId,
+    p_tz: args.tz,
   });
   if (error) throw error;
   return data as ClaimDailyChestResult;
@@ -58,7 +62,8 @@ export function useClaimDailyChest() {
   return useMutation({
     mutationFn: claimDailyChest,
     onSuccess: () => {
-      if (!member?.family_id) return;
+      if (!member?.id) return;
+      qc.invalidateQueries({ queryKey: taskKeys.dailyChestClaimed(member.id) });
       qc.invalidateQueries({ queryKey: ["my-family"] });
     },
   });

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
-import { localToday } from "@/lib/date";
+import { localToday, localTimezone } from "@/lib/date";
 import type { TaskWithAssignee, TaskCompletionWithMember, ChallengeTaskForList } from "../types";
 
 const TASK_SELECT =
@@ -17,6 +17,8 @@ export const taskKeys = {
     ["tasks", "challenge", familyId] as const,
   todayCompletions: (memberId: string) =>
     ["tasks", "todayCompletions", memberId] as const,
+  dailyChestClaimed: (memberId: string) =>
+    ["tasks", "dailyChestClaimed", memberId] as const,
 };
 
 // ── Fetch all active tasks for the family ──
@@ -169,6 +171,32 @@ export function useTodayCompletionCount() {
   return useQuery({
     queryKey: taskKeys.todayCompletions(member?.id ?? ""),
     queryFn: () => fetchTodayCompletionCount(member!.id),
+    enabled: !!member?.id,
+  });
+}
+
+// ── Daily chest claimed today? ──
+
+async function fetchDailyChestClaimed(memberId: string): Promise<boolean> {
+  const today = localToday();
+  const { count, error } = await supabase
+    .from("transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("family_member_id", memberId)
+    .eq("ref_table", "daily_chest")
+    .gte("created_at", `${today}T00:00:00`)
+    .lt("created_at", `${today}T23:59:59.999`);
+
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+export function useDailyChestClaimed() {
+  const { data: member } = useCurrentMember();
+
+  return useQuery({
+    queryKey: taskKeys.dailyChestClaimed(member?.id ?? ""),
+    queryFn: () => fetchDailyChestClaimed(member!.id),
     enabled: !!member?.id,
   });
 }

@@ -1255,7 +1255,7 @@ export type Database = {
         Returns: string
       }
       claim_daily_chest: {
-        Args: { p_member_id: string }
+        Args: { p_member_id: string; p_tz?: string }
         Returns: Json
       }
       complete_task: {

@@ -16,7 +16,7 @@ import { ArrowCounterClockwise, ClipboardText, PlusIcon } from "phosphor-react-n
 import { useDevMode } from "@/lib/stores/developer-mode";
 
 import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
-import { useTasks, useTodayCompletionCount, taskKeys } from "../api/queries";
+import { useTasks, useTodayCompletionCount, useDailyChestClaimed, taskKeys } from "../api/queries";
 import {
   useCompleteTask,
   useEnsureDailyHabits,
@@ -64,6 +64,7 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
   const { data: member } = useCurrentMember();
   const { data: tasks, isLoading } = useTasks();
   const { data: completedToday = 0 } = useTodayCompletionCount();
+  const { data: chestClaimedFromServer = false } = useDailyChestClaimed();
   const completeTask = useCompleteTask();
   const ensureDailyHabits = useEnsureDailyHabits();
   const claimDailyChest = useClaimDailyChest();
@@ -86,7 +87,8 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
   // Flying orb + progress bar state
   const [flyingOrb, setFlyingOrb] = useState<{ from: Point; to: Point; count: number } | null>(null);
   const progressBarRef = useRef<View>(null);
-  const [chestClaimed, setChestClaimed] = useState(false);
+  const [chestClaimedLocal, setChestClaimedLocal] = useState(false);
+  const chestClaimed = chestClaimedFromServer || chestClaimedLocal;
   const [chestReward, setChestReward] = useState<number | null>(null);
 
   // Flying coin state (shared for chest + task coins)
@@ -122,9 +124,10 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [member?.id, member?.family_id]);
 
-  const sections = useMemo<Section[]>(() => {
+  const { sections, activeDailyHabits, todayTasksRemaining } = useMemo(() => {
     let all = tasks ?? [];
-    if (all.length === 0) return [];
+    if (all.length === 0)
+      return { sections: [] as Section[], activeDailyHabits: 0, todayTasksRemaining: 0 };
 
     if (isChild && member) {
       all = all.filter(
@@ -132,7 +135,8 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
       );
     }
 
-    if (all.length === 0) return [];
+    if (all.length === 0)
+      return { sections: [] as Section[], activeDailyHabits: 0, todayTasksRemaining: 0 };
 
     const dailyHabits = all.filter(
       (t) =>
@@ -149,39 +153,15 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
     if (todayTasks.length > 0) {
       result.push({ title: "Today's Tasks", data: todayTasks });
     }
-    return result;
-  }, [tasks, isChild, member, viewerTz]);
 
-  // Daily habits completion tracking
-  const activeDailyHabits = useMemo(() => {
-    let all = tasks ?? [];
-    if (isChild && member) {
-      all = all.filter(
-        (t) => !t.assignee_id || t.assignee_id === member.id,
-      );
-    }
-    return all.filter(
-      (t) =>
-        t.task_type === "daily_habit" &&
-        t.assignee_id === member?.id &&
-        isDueToday(t.due_date, t.creator_tz ?? viewerTz),
+    const dueToday = all.filter((t) =>
+      isDueToday(t.due_date, t.creator_tz ?? viewerTz),
     ).length;
+
+    return { sections: result, activeDailyHabits: dailyHabits.length, todayTasksRemaining: dueToday };
   }, [tasks, isChild, member, viewerTz]);
 
   const dailyCompleted = DAILY_HABIT_TOTAL - activeDailyHabits;
-
-  // Count today's remaining tasks from the active list
-  const todayTasksRemaining = useMemo(() => {
-    let all = tasks ?? [];
-    if (isChild && member) {
-      all = all.filter(
-        (t) => !t.assignee_id || t.assignee_id === member.id,
-      );
-    }
-    return all.filter((t) =>
-      isDueToday(t.due_date, t.creator_tz ?? viewerTz),
-    ).length;
-  }, [tasks, isChild, member, viewerTz]);
 
   const totalToday = todayTasksRemaining + completedToday;
 
@@ -271,12 +251,15 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
 
   const handleClaimChest = useCallback(() => {
     if (!member?.id) return;
-    claimDailyChest.mutate(member.id, {
-      onSuccess: (result) => {
-        setChestReward(result.coins_awarded);
+    claimDailyChest.mutate(
+      { memberId: member.id, tz: viewerTz },
+      {
+        onSuccess: (result) => {
+          setChestReward(result.coins_awarded);
+        },
       },
-    });
-  }, [member?.id, claimDailyChest]);
+    );
+  }, [member?.id, claimDailyChest, viewerTz]);
 
   const handleCollectCoins = useCallback(
     (coinPosition: Point) => {
@@ -284,7 +267,7 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
       setChestReward(null);
 
       if (!coinIconRef?.current) {
-        setChestClaimed(true);
+        setChestClaimedLocal(true);
         return;
       }
 
@@ -305,7 +288,7 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
     const source = flyingCoin?.source;
     setFlyingCoin(null);
     if (source === "chest") {
-      setChestClaimed(true);
+      setChestClaimedLocal(true);
     }
     onCoinsAnimationDone?.();
   }, [flyingCoin?.source, onCoinsAnimationDone]);
