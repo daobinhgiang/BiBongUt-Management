@@ -3,6 +3,7 @@
  *
  * Hub for all list-based features with navigation cards.
  */
+import { useEffect } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import {
@@ -11,6 +12,8 @@ import {
   Star,
   FilmSlate,
 } from "phosphor-react-native";
+
+import { useDevMode } from "@/lib/stores/developer-mode";
 
 type ListCard = {
   title: string;
@@ -47,7 +50,14 @@ const LISTS: ListCard[] = [
 ];
 
 export default function ListsScreen() {
+  const devMode = useDevMode();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!devMode) router.replace("/(app)/(tabs)");
+  }, [devMode]);
+
+  if (!devMode) return null;
 
   return (
     <View className="flex-1 bg-bark-50 px-4 pt-6">

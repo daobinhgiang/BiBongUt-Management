@@ -124,7 +124,15 @@ export function AnimatedTabBar({
         paddingBottom: Platform.OS === "web" ? 16 : Math.max(insets.bottom + 8, 16),
       }}
     >
-      {state.routes.map((route, index) => {
+      {state.routes
+        .filter((route) => {
+          const { options } = descriptors[route.key];
+          const style = options.tabBarItemStyle as
+            | { display?: string }
+            | undefined;
+          return style?.display !== "none";
+        })
+        .map((route) => {
         const { options } = descriptors[route.key];
         const label =
           typeof options.tabBarLabel === "string"
@@ -133,7 +141,7 @@ export function AnimatedTabBar({
               ? options.title
               : route.name;
 
-        const isFocused = state.index === index;
+        const isFocused = state.index === state.routes.indexOf(route);
 
         const onPress = () => {
           const event = navigation.emit({

@@ -11,6 +11,7 @@ import {
   CurrencyCircleDollar,
   CalendarBlank,
   ArrowsClockwise,
+  Check,
 } from "phosphor-react-native";
 
 import { DueDateField } from "./DueDateField";
@@ -46,6 +47,9 @@ export function TaskForm({
   const { data: members = [] } = useFamilyMembers(familyId);
   const isEdit = !!initialValues;
   const [userChangedDifficulty, setUserChangedDifficulty] = useState(false);
+  const [showDescription, setShowDescription] = useState(
+    !!initialValues?.description?.trim(),
+  );
 
   const {
     control,
@@ -105,27 +109,50 @@ export function TaskForm({
       </View>
 
       {/* Description */}
-      <View className="gap-1">
-        <FieldLabel
-          icon={<FileText size={14} color="#6b7a54" />}
-          label="Description (optional)"
-        />
-        <Controller
-          control={control}
-          name="description"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              className="rounded-lg border border-bark-200 px-3 py-2"
-              placeholder="Any extra details..."
-              onChangeText={onChange}
-              onBlur={onBlur}
-              value={value ?? ""}
-              multiline
-              numberOfLines={3}
-              textAlignVertical="top"
-            />
-          )}
-        />
+      <View className="gap-2">
+        <Pressable
+          className="flex-row items-center gap-2"
+          onPress={() => {
+            setShowDescription((prev) => {
+              if (prev) setValue("description", "");
+              return !prev;
+            });
+          }}
+        >
+          <View
+            className={`h-5 w-5 items-center justify-center rounded border-2 ${
+              showDescription
+                ? "border-jungle-500 bg-jungle-500"
+                : "border-bark-200 bg-white"
+            }`}
+          >
+            {showDescription && <Check size={12} color="#fff" weight="bold" />}
+          </View>
+          <View className="flex-row items-center gap-1.5">
+            <FileText size={14} color="#6b7a54" />
+            <Text className="text-sm font-medium text-jungle-700">
+              Add description
+            </Text>
+          </View>
+        </Pressable>
+        {showDescription && (
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                className="rounded-lg border border-bark-200 px-3 py-2"
+                placeholder="Any extra details..."
+                onChangeText={onChange}
+                onBlur={onBlur}
+                value={value ?? ""}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            )}
+          />
+        )}
       </View>
 
       {/* Assignee */}

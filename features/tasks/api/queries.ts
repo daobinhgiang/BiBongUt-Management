@@ -79,13 +79,13 @@ export function useTasks() {
   });
 }
 
-export function useCompletedTasks() {
+export function useCompletedTasks(enabled = true) {
   const { data: family } = useFamily();
 
   return useQuery({
     queryKey: taskKeys.done(family?.family_id ?? ""),
     queryFn: () => fetchCompletedTasks(family!.family_id),
-    enabled: !!family?.family_id,
+    enabled: enabled && !!family?.family_id,
   });
 }
 

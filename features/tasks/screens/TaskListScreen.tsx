@@ -12,7 +12,6 @@ import { ClipboardText, PlusIcon, Sword } from "phosphor-react-native";
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { useTasks, useCompletedTasks, useChallengeTasks } from "../api/queries";
 import { useCompleteTask, type CompleteTaskResult } from "../api/mutations";
-import { useSyncChoreTasks } from "../hooks/useSyncChoreTasks";
 import { TaskCard } from "../components/TaskCard";
 import { TaskFilterBar } from "../components/TaskFilterBar";
 import { XpToast } from "../components/XpToast";
@@ -59,7 +58,6 @@ type Section = { title: string; data: SectionItem[] };
 export function TaskListScreen() {
   const router = useRouter();
   const { data: family } = useFamily();
-  useSyncChoreTasks();
   const { data: tasks, isLoading } = useTasks();
   const { data: completedTasks, isLoading: isLoadingDone } =
     useCompletedTasks();
