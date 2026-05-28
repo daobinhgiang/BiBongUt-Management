@@ -1,12 +1,11 @@
 /**
  * Tab Navigator Layout
  *
- * Defines the 6 main tabs of the app with an animated custom tab bar.
+ * Defines the 5 main tabs of the app with an animated custom tab bar.
  *
  * | Tab        | Screen         | Content                                              |
  * |------------|----------------|------------------------------------------------------|
- * | Home       | index.tsx      | Dashboard: active votes, daily quests, announcements  |
- * | Do         | do.tsx         | Tasks + Challenges                                   |
+ * | Do         | index.tsx      | Tasks + Challenges                                   |
  * | Challenges | challenges.tsx | Boss battles                                         |
  * | Plan       | plan.tsx       | Calendar + Meal Planning                             |
  * | Lists      | lists.tsx      | Shopping + Pantry + Bucket List + Movies              |
@@ -15,26 +14,25 @@
  * @see https://docs.expo.dev/router/advanced/tabs/
  */
 import { View } from "react-native";
-import { Tabs, usePathname } from "expo-router";
+import { Tabs } from "expo-router";
 import {
   House,
-  CheckCircle,
   Sword,
   CalendarBlank,
   ListBullets,
   UserCircle,
 } from "phosphor-react-native";
 
+import { useDevMode } from "@/lib/stores/developer-mode";
 import { StatsHeader } from "@/components/StatsHeader";
 import { AnimatedTabBar } from "@/components/AnimatedTabBar";
 
 export default function TabLayout() {
-  const pathname = usePathname();
-  const isProfileTab = pathname === "/me";
+  const devMode = useDevMode();
 
   return (
     <View className="flex-1 bg-bark-50">
-      {!isProfileTab && <StatsHeader />}
+      <StatsHeader />
       <Tabs
         tabBar={(props) => <AnimatedTabBar {...props} />}
         screenOptions={{
@@ -54,18 +52,10 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="do"
-          options={{
-            title: "Do",
-            tabBarIcon: ({ color, size }) => (
-              <CheckCircle size={size} color={color} weight="fill" />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="challenges"
           options={{
             title: "Challenges",
+            href: devMode ? undefined : null,
             tabBarIcon: ({ color, size }) => (
               <Sword size={size} color={color} weight="fill" />
             ),
@@ -84,6 +74,7 @@ export default function TabLayout() {
           name="lists"
           options={{
             title: "Lists",
+            href: devMode ? undefined : null,
             tabBarIcon: ({ color, size }) => (
               <ListBullets size={size} color={color} weight="fill" />
             ),

@@ -352,18 +352,21 @@ export type Database = {
           challenge_id: string
           damage: number
           id: string
+          show_on_task_list: boolean
           task_id: string
         }
         Insert: {
           challenge_id: string
           damage?: number
           id?: string
+          show_on_task_list?: boolean
           task_id: string
         }
         Update: {
           challenge_id?: string
           damage?: number
           id?: string
+          show_on_task_list?: boolean
           task_id?: string
         }
         Relationships: [
@@ -1017,6 +1020,38 @@ export type Database = {
           },
         ]
       }
+      task_activities: {
+        Row: {
+          created_at: string
+          family_id: string
+          id: string
+          last_used_at: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          family_id: string
+          id?: string
+          last_used_at?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          family_id?: string
+          id?: string
+          last_used_at?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_activities_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_completions: {
         Row: {
           coins_awarded: number
@@ -1071,6 +1106,7 @@ export type Database = {
           coins_reward: number
           created_at: string
           created_by: string
+          creator_tz: string
           description: string | null
           difficulty: Database["public"]["Enums"]["task_difficulty"]
           due_date: string | null
@@ -1087,6 +1123,7 @@ export type Database = {
           coins_reward?: number
           created_at?: string
           created_by: string
+          creator_tz?: string
           description?: string | null
           difficulty?: Database["public"]["Enums"]["task_difficulty"]
           due_date?: string | null
@@ -1103,6 +1140,7 @@ export type Database = {
           coins_reward?: number
           created_at?: string
           created_by?: string
+          creator_tz?: string
           description?: string | null
           difficulty?: Database["public"]["Enums"]["task_difficulty"]
           due_date?: string | null
@@ -1196,8 +1234,8 @@ export type Database = {
           p_coins: number
           p_member_id: string
           p_reason: string
-          p_ref_id: string
-          p_ref_table: string
+          p_ref_id?: string
+          p_ref_table?: string
           p_xp: number
         }
         Returns: undefined
@@ -1216,6 +1254,22 @@ export type Database = {
       complete_task: {
         Args: { p_member_id: string; p_task_id: string }
         Returns: Json
+      }
+      create_challenge: {
+        Args: {
+          p_boss_emoji: string
+          p_boss_name: string
+          p_created_by: string
+          p_end_date?: string
+          p_family_id: string
+          p_participant_ids?: string[]
+          p_reward_coins: number
+          p_reward_xp: number
+          p_tasks?: Json
+          p_template_id: string
+          p_title: string
+        }
+        Returns: string
       }
       create_chore_chart: {
         Args: {
@@ -1238,6 +1292,18 @@ export type Database = {
       }
       expire_failed_challenges: { Args: never; Returns: undefined }
       generate_chore_tasks: { Args: never; Returns: undefined }
+      get_assignable_family_members: {
+        Args: { p_family_id: string }
+        Returns: {
+          id: string
+          nickname: string
+          role: Database["public"]["Enums"]["family_role"]
+        }[]
+      }
+      is_assignable_family_member: {
+        Args: { p_member_id: string }
+        Returns: boolean
+      }
       is_family_member: { Args: { p_family_id: string }; Returns: boolean }
       is_family_parent: { Args: { p_family_id: string }; Returns: boolean }
       join_challenge: {

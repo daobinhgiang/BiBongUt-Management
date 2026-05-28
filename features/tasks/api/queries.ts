@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useFamily } from "@/features/auth/hooks/useFamily";
-import type { TaskWithAssignee, TaskCompletionWithMember } from "../types";
+import type { TaskWithAssignee, TaskCompletionWithMember, ChallengeTaskForList } from "../types";
 
 const TASK_SELECT =
   "*, assignee:family_members!tasks_assignee_id_fkey(id, nickname), creator:family_members!tasks_created_by_fkey(id, nickname)";
@@ -12,6 +12,8 @@ export const taskKeys = {
   detail: (taskId: string) => ["tasks", "detail", taskId] as const,
   completions: (taskId: string) =>
     ["tasks", "completions", taskId] as const,
+  challengeTasks: (familyId: string) =>
+    ["tasks", "challenge", familyId] as const,
 };
 
 // ── Fetch all active tasks for the family ──
@@ -77,13 +79,13 @@ export function useTasks() {
   });
 }
 
-export function useCompletedTasks() {
+export function useCompletedTasks(enabled = true) {
   const { data: family } = useFamily();
 
   return useQuery({
     queryKey: taskKeys.done(family?.family_id ?? ""),
     queryFn: () => fetchCompletedTasks(family!.family_id),
-    enabled: !!family?.family_id,
+    enabled: enabled && !!family?.family_id,
   });
 }
 
@@ -100,5 +102,45 @@ export function useTaskCompletions(taskId: string) {
     queryKey: taskKeys.completions(taskId),
     queryFn: () => fetchTaskCompletions(taskId),
     enabled: !!taskId,
+  });
+}
+
+// ── Challenge tasks shown on the main task list ──
+
+const CHALLENGE_TASK_SELECT = `
+  ${TASK_SELECT},
+  challenge_tasks!inner(damage, show_on_task_list, challenge:challenges!challenge_tasks_challenge_id_fkey(title))
+`;
+
+async function fetchChallengeTasks(familyId: string): Promise<ChallengeTaskForList[]> {
+  const { data, error } = await supabase
+    .from("tasks")
+    .select(CHALLENGE_TASK_SELECT)
+    .eq("family_id", familyId)
+    .eq("is_active", true)
+    .eq("challenge_tasks.show_on_task_list", true)
+    .order("due_date", { ascending: true, nullsFirst: false });
+
+  if (error) throw error;
+
+  // Flatten the nested join
+  return (data as any[]).map((row) => {
+    const ct = row.challenge_tasks[0];
+    const { challenge_tasks: _, ...task } = row;
+    return {
+      ...task,
+      challenge_title: ct.challenge?.title ?? "",
+      damage: ct.damage,
+    } as ChallengeTaskForList;
+  });
+}
+
+export function useChallengeTasks() {
+  const { data: family } = useFamily();
+
+  return useQuery({
+    queryKey: taskKeys.challengeTasks(family?.family_id ?? ""),
+    queryFn: () => fetchChallengeTasks(family!.family_id),
+    enabled: !!family?.family_id,
   });
 }

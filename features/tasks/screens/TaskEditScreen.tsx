@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTask } from "../api/queries";
 import { useUpdateTask } from "../api/mutations";
 import { TaskForm } from "../components/TaskForm";
+import { localTimezone } from "../types";
 import type { CreateTaskFormValues } from "../schemas";
 
 export function TaskEditScreen() {
@@ -33,6 +34,7 @@ export function TaskEditScreen() {
           coins_reward: values.coins_reward,
           due_date: values.due_date,
           recurrence: values.recurrence,
+          creator_tz: localTimezone(),
         },
       },
       {

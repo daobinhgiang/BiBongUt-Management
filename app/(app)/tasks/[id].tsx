@@ -22,7 +22,7 @@ export default function TaskDetailRoute() {
               hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
               onPress={() => {
                 if (router.canGoBack()) router.back();
-                else router.replace("/(app)/(tabs)/do");
+                else router.replace("/(app)/(tabs)");
               }}
               className="ml-1 flex-row items-center p-1"
             >

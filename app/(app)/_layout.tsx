@@ -1,20 +1,20 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Text, View } from "react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
 import { usePushNotifications } from "@/features/notifications";
 
 export default function AppLayout() {
+  // Family data is prefetched in AuthGate — resolves from cache on first render
   const { data: familyMember, isLoading, error } = useFamily();
 
-  // Register push token + handle notification taps
+  // Register push token + handle notification taps (non-blocking)
   usePushNotifications();
   const router = useRouter();
   const segments = useSegments();
   const segmentsRef = useRef(segments);
   segmentsRef.current = segments;
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -26,17 +26,7 @@ export default function AppLayout() {
     } else if (familyMember && !inTabs) {
       router.replace("/(app)/(tabs)");
     }
-
-    setReady(true);
   }, [familyMember, isLoading, router]);
-
-  if (isLoading || !ready) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
 
   if (error) {
     return (
@@ -50,6 +40,9 @@ export default function AppLayout() {
       </View>
     );
   }
+
+  // Splash screen covers this while loading — no spinner needed
+  if (isLoading) return null;
 
   return <Stack screenOptions={{ headerShown: false }} />;
 }

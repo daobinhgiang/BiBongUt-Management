@@ -1,17 +1,21 @@
-import { Alert, Platform, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Switch, Text, View } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Bell,
   ArrowRight,
+  Code,
   SignOut,
 } from "phosphor-react-native";
 
 import { useSession } from "@/lib/auth/ctx";
+import { useDevMode, useDevModeStore } from "@/lib/stores/developer-mode";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { signOut } = useSession();
+  const devMode = useDevMode();
+  const toggleDevMode = useDevModeStore((s) => s.toggle);
 
   const handleSignOut = () => {
     if (Platform.OS === "web") {
@@ -69,6 +73,22 @@ export default function SettingsScreen() {
           </View>
           <ArrowRight size={20} color="#9ca3af" />
         </Pressable>
+
+        {/* Developer Mode */}
+        <View className="mt-3 flex-row items-center justify-between rounded-xl bg-white p-4 shadow-sm">
+          <View className="flex-row items-center gap-3">
+            <Code size={22} color="#819067" weight="fill" />
+            <Text className="text-base font-medium text-gray-900">
+              Developer Mode
+            </Text>
+          </View>
+          <Switch
+            value={devMode}
+            onValueChange={toggleDevMode}
+            trackColor={{ false: "#d1d5db", true: "#819067" }}
+            thumbColor="#fff"
+          />
+        </View>
 
         {/* Sign Out */}
         <Pressable

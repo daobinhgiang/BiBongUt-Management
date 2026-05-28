@@ -22,7 +22,7 @@ bibongut/
     _layout.tsx          # Root layout: QueryClientProvider + SessionProvider + AuthGate
     (auth)/              # login.tsx, signup.tsx (unauthenticated)
     (app)/family-setup.tsx # Family create/join (no family yet)
-    (app)/(tabs)/        # 5 tabs: index (Home), do, plan, lists, me (authenticated)
+    (app)/(tabs)/        # 5 tabs: index (Do), challenges, plan, lists, me (authenticated)
   components/ui/         # Button, Input, Card, Avatar, Badge, ProgressBar
   features/              # Feature modules (see below)
   lib/

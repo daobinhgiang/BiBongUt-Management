@@ -13,15 +13,27 @@ export type FamilyMemberOption = {
 async function fetchFamilyMembers(
   familyId: string,
 ): Promise<FamilyMemberOption[]> {
-  const { data, error } = await supabase
-    .from("family_members")
-    .select("id, nickname, role")
-    .eq("family_id", familyId)
-    .neq("role", "admin")
-    .order("nickname");
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    "get_assignable_family_members",
+    { p_family_id: familyId },
+  );
+
+  let data = rpcData;
+  let error = rpcError;
+
+  if (rpcError?.code === "PGRST202") {
+    const fallback = await supabase
+      .from("family_members")
+      .select("id, nickname, role")
+      .eq("family_id", familyId)
+      .neq("role", "admin")
+      .order("nickname");
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) throw error;
-  return data;
+  return data ?? [];
 }
 
 export function useFamilyMembers(familyId: string | undefined) {
