@@ -23,9 +23,10 @@ type Props = {
 };
 
 export function TreasureChestModal({ visible, coinsAwarded, onCollect }: Props) {
-  const { width: screenWidth } = useWindowDimensions();
-  const chestSize = Math.min(screenWidth * 0.22, 100);
-  const glowSize = chestSize * 1.8;
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const shortSide = Math.min(screenWidth, screenHeight);
+  const chestSize = Math.min(shortSide * 0.22, 100);
+  const glowSize = Math.min(chestSize * 1.8, shortSide * 0.35);
 
   const confettiRef = useRef<ConfettiCannon>(null);
   const coinDisplayRef = useRef<View>(null);
@@ -170,7 +171,7 @@ export function TreasureChestModal({ visible, coinsAwarded, onCollect }: Props) 
 
         <View className="items-center gap-4 px-8">
           {/* Chest container — matches TaskCard border radius & height */}
-          <View className="items-center justify-center rounded-2xl border border-bark-50 bg-white px-8 py-5 shadow-sm">
+          <View className="items-center justify-center overflow-hidden rounded-2xl border border-bark-50 bg-white px-8 py-5 shadow-sm">
             <View className="items-center justify-center">
               <Animated.View
                 style={[
