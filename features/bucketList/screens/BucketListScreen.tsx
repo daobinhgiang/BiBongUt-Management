@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, SectionList, Text, View } from "react-nat
 import { useRouter } from "expo-router";
 import { Star, PlusIcon } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useBucketListItems } from "../api/queries";
 import { BucketListCard } from "../components/BucketListCard";
 import { StatusFilterBar } from "../components/StatusFilterBar";
@@ -46,7 +46,7 @@ function groupByCategory(
 
 export function BucketListScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: items, isLoading } = useBucketListItems();
   const [filter, setFilter] = useState<StatusFilter>("all");
 
@@ -123,7 +123,7 @@ export function BucketListScreen() {
       )}
 
       {/* FAB */}
-      {family != null && (
+      {member != null && (
         <Pressable
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
           onPress={() => router.push("/(app)/bucket-list/new")}

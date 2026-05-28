@@ -1,7 +1,7 @@
 import { ActivityIndicator, Alert, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useEvent } from "../api/queries";
 import { useUpdateEvent } from "../api/mutations";
 import { EventForm } from "../components/EventForm";
@@ -10,7 +10,7 @@ import type { CreateEventFormValues } from "../schemas";
 export function EventEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: event, isLoading } = useEvent(id);
   const updateEvent = useUpdateEvent();
 
@@ -54,7 +54,7 @@ export function EventEditScreen() {
     <EventForm
       onSubmit={handleSubmit}
       isPending={updateEvent.isPending}
-      familyId={family?.family_id}
+      familyId={member?.family_id}
       initialValues={{
         title: event.title,
         description: event.description ?? "",

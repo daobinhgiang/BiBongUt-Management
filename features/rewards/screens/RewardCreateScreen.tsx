@@ -1,18 +1,18 @@
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useCreateReward } from "../api/mutations";
 import { RewardForm } from "../components/RewardForm";
 import type { CreateRewardFormValues } from "../schemas";
 
 export function RewardCreateScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const createReward = useCreateReward();
 
   const handleSubmit = (values: CreateRewardFormValues) => {
-    if (!family) return;
+    if (!member) return;
 
     createReward.mutate(
       {
@@ -20,8 +20,8 @@ export function RewardCreateScreen() {
         description: values.description || null,
         cost_coins: values.cost_coins,
         icon_url: values.icon_url,
-        family_id: family.family_id,
-        created_by: family.id,
+        family_id: member.family_id,
+        created_by: member.id,
       },
       {
         onSuccess: () => router.back(),

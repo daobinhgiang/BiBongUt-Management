@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { eventKeys } from "./queries";
 import type {
   CalendarEventInsert,
@@ -42,14 +42,14 @@ async function createEvent({ event, attendee_ids }: CreateEventInput) {
 
 export function useCreateEvent() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: createEvent,
     onSuccess: () => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.invalidateQueries({
-        queryKey: ["events", family.family_id],
+        queryKey: ["events", member.family_id],
       });
     },
   });
@@ -93,14 +93,14 @@ async function updateEvent({ eventId, updates, attendee_ids }: UpdateEventInput)
 
 export function useUpdateEvent() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: updateEvent,
     onSuccess: (_data, { eventId }) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.invalidateQueries({
-        queryKey: ["events", family.family_id],
+        queryKey: ["events", member.family_id],
       });
       qc.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
     },
@@ -111,7 +111,7 @@ export function useUpdateEvent() {
 
 export function useDeleteEvent() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: async (eventId: string) => {
@@ -122,17 +122,17 @@ export function useDeleteEvent() {
       if (error) throw error;
     },
     onMutate: async (eventId) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       // Optimistically remove from all month caches
       qc.setQueriesData<EventWithAttendees[]>(
-        { queryKey: ["events", family.family_id] },
+        { queryKey: ["events", member.family_id] },
         (old) => old?.filter((e) => e.id !== eventId),
       );
     },
     onSettled: () => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.invalidateQueries({
-        queryKey: ["events", family.family_id],
+        queryKey: ["events", member.family_id],
       });
     },
   });

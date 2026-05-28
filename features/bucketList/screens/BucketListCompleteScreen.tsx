@@ -12,7 +12,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Camera, X, Check } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useFamilyMembers } from "@/features/families/api/familyMembers";
 import { XpToast } from "@/features/tasks/components/XpToast";
 import { useBucketListItem } from "../api/queries";
@@ -23,9 +23,9 @@ import { PRIORITY_XP } from "../types";
 export function BucketListCompleteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: item, isLoading } = useBucketListItem(id);
-  const { data: members } = useFamilyMembers(family?.family_id);
+  const { data: members } = useFamilyMembers(member?.family_id);
   const completeItem = useCompleteBucketListItem();
 
   const [photoUris, setPhotoUris] = useState<string[]>([]);
@@ -55,7 +55,7 @@ export function BucketListCompleteScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!item || !family) return;
+    if (!item || !member) return;
 
     if (selectedParticipants.length === 0) {
       Alert.alert("Participants", "Select at least one participant who was there.");
@@ -68,7 +68,7 @@ export function BucketListCompleteScreen() {
     try {
       // Upload photos first
       if (photoUris.length > 0) {
-        photoPaths = await uploadPhotos(photoUris, family.family_id, id);
+        photoPaths = await uploadPhotos(photoUris, member.family_id, id);
       }
 
       // Complete via RPC

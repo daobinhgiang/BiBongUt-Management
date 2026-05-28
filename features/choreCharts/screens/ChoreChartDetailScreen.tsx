@@ -2,7 +2,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "rea
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Lightning, Pencil, Trash, User } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useFamilyMembers } from "@/features/families/api/familyMembers";
 import { useChoreChart } from "../api/queries";
 import { useDeleteChoreChart } from "../api/mutations";
@@ -11,9 +11,9 @@ import { WeeklyGridView } from "../components/WeeklyGridView";
 export function ChoreChartDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: chart, isLoading } = useChoreChart(id);
-  const { data: members } = useFamilyMembers(family?.family_id);
+  const { data: members } = useFamilyMembers(member?.family_id);
   const deleteChart = useDeleteChoreChart();
 
   // Calculate current rotation member
@@ -81,7 +81,7 @@ export function ChoreChartDetailScreen() {
             Rotation Order
           </Text>
           {chart.rotation_members.map((memberId, i) => {
-            const member = members.find((m) => m.id === memberId);
+            const m = members.find((x) => x.id === memberId);
             return (
               <View key={memberId} className="flex-row items-center gap-2">
                 <Text className="text-sm font-medium text-gray-400">
@@ -89,7 +89,7 @@ export function ChoreChartDetailScreen() {
                 </Text>
                 <User size={14} color="#6b7280" />
                 <Text className="text-sm text-gray-700">
-                  {member?.nickname ?? "Unknown"}
+                  {m?.nickname ?? "Unknown"}
                 </Text>
               </View>
             );
@@ -98,7 +98,7 @@ export function ChoreChartDetailScreen() {
       ) : null}
 
       {/* Actions */}
-      {family != null && (
+      {member != null && (
         <View className="gap-3">
           <Pressable
             className="flex-row items-center justify-center gap-2 rounded-xl bg-jungle-500 py-4"

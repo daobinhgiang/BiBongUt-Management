@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type { BucketListItemWithCreator, BucketListCompletionWithItem } from "../types";
 
 const ITEM_SELECT =
@@ -66,12 +66,12 @@ async function fetchTimeline(familyId: string): Promise<BucketListCompletionWith
 // ── Hooks ──
 
 export function useBucketListItems() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: bucketListKeys.all(family?.family_id ?? ""),
-    queryFn: () => fetchBucketListItems(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: bucketListKeys.all(member?.family_id ?? ""),
+    queryFn: () => fetchBucketListItems(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }
 
@@ -92,11 +92,11 @@ export function useBucketListCompletion(itemId: string) {
 }
 
 export function useTimeline() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: bucketListKeys.timeline(family?.family_id ?? ""),
-    queryFn: () => fetchTimeline(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: bucketListKeys.timeline(member?.family_id ?? ""),
+    queryFn: () => fetchTimeline(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }

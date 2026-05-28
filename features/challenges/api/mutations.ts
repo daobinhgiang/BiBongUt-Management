@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { taskKeys } from "@/features/tasks/api/queries";
 import { challengeKeys } from "./queries";
 import type {
@@ -46,12 +46,12 @@ async function createChallenge({
     p_family_id: challenge.family_id,
     p_created_by: challenge.created_by,
     p_title: challenge.title,
-    p_boss_name: challenge.boss_name ?? null,
+    p_boss_name: challenge.boss_name ?? "",
     p_boss_emoji: challenge.boss_emoji ?? "👹",
-    p_template_id: challenge.template_id ?? null,
-    p_reward_xp: challenge.reward_xp,
-    p_reward_coins: challenge.reward_coins,
-    p_end_date: challenge.end_date ?? null,
+    p_template_id: challenge.template_id ?? "",
+    p_reward_xp: challenge.reward_xp ?? 0,
+    p_reward_coins: challenge.reward_coins ?? 0,
+    p_end_date: challenge.end_date ?? undefined,
     p_participant_ids: uniqueIds,
     p_tasks: tasks.map((t) => ({
       title: t.title,
@@ -99,18 +99,18 @@ async function createChallenge({
 
 export function useCreateChallenge() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: createChallenge,
     onSuccess: (newChallenge) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.setQueryData<ChallengeWithDetails[]>(
-        challengeKeys.all(family.family_id),
+        challengeKeys.all(member.family_id),
         (old) => (old ? [newChallenge, ...old] : [newChallenge]),
       );
       qc.invalidateQueries({
-        queryKey: taskKeys.challengeTasks(family.family_id),
+        queryKey: taskKeys.challengeTasks(member.family_id),
       });
     },
   });
@@ -161,7 +161,7 @@ async function completeChallengeTask({ taskId, memberId }: CompleteTaskInput) {
 
 export function useCompleteChallengeTask() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: completeChallengeTask,
@@ -169,12 +169,12 @@ export function useCompleteChallengeTask() {
       // Invalidate both challenge and task caches
       qc.invalidateQueries({ queryKey: challengeKeys.detail(challengeId) });
       qc.invalidateQueries({ queryKey: challengeKeys.logs(challengeId) });
-      if (family?.family_id) {
+      if (member?.family_id) {
         qc.invalidateQueries({
-          queryKey: challengeKeys.all(family.family_id),
+          queryKey: challengeKeys.all(member.family_id),
         });
         qc.invalidateQueries({
-          queryKey: taskKeys.all(family.family_id),
+          queryKey: taskKeys.all(member.family_id),
         });
       }
     },
@@ -193,31 +193,31 @@ async function deleteChallenge(challengeId: string) {
 
 export function useDeleteChallenge() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: deleteChallenge,
     onMutate: async (challengeId) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       await qc.cancelQueries({
-        queryKey: challengeKeys.all(family.family_id),
+        queryKey: challengeKeys.all(member.family_id),
       });
       const previous = qc.getQueryData<ChallengeWithDetails[]>(
-        challengeKeys.all(family.family_id),
+        challengeKeys.all(member.family_id),
       );
       qc.setQueryData<ChallengeWithDetails[]>(
-        challengeKeys.all(family.family_id),
+        challengeKeys.all(member.family_id),
         (old) => old?.filter((c) => c.id !== challengeId) ?? [],
       );
       return { previous };
     },
     onError: (_err, _id, context) => {
-      if (!family?.family_id || !context?.previous) return;
-      qc.setQueryData(challengeKeys.all(family.family_id), context.previous);
+      if (!member?.family_id || !context?.previous) return;
+      qc.setQueryData(challengeKeys.all(member.family_id), context.previous);
     },
     onSettled: () => {
-      if (!family?.family_id) return;
-      qc.invalidateQueries({ queryKey: challengeKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      qc.invalidateQueries({ queryKey: challengeKeys.all(member.family_id) });
     },
   });
 }

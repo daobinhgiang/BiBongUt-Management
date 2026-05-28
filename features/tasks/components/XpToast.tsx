@@ -62,19 +62,27 @@ export function XpToast({ points, coins, visible, onDismiss }: Props) {
 
   if (!visible) return null;
 
+  const showXp = points > 0;
+  const showCoins = coins > 0;
+  const showBoth = showXp && showCoins;
+
   return (
     <View className="absolute left-0 right-0 top-16 z-50 items-center" pointerEvents="none">
       <Animated.View
         style={animatedStyle}
         className="flex-row items-center gap-3 rounded-full bg-jungle-900 px-5 py-2.5 shadow-lg"
       >
-        <Text className="text-base font-bold text-jungle-200">
-          +{points} XP
-        </Text>
-        <View className="h-4 w-px bg-jungle-700" />
-        <Text className="text-base font-bold text-bark-300">
-          +{coins} coins
-        </Text>
+        {showXp && (
+          <Text className="text-base font-bold text-jungle-200">
+            +{points} XP
+          </Text>
+        )}
+        {showBoth && <View className="h-4 w-px bg-jungle-700" />}
+        {showCoins && (
+          <Text className="text-base font-bold text-bark-300">
+            +{coins} coins
+          </Text>
+        )}
       </Animated.View>
     </View>
   );

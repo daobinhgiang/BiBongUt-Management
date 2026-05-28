@@ -1116,6 +1116,7 @@ export type Database = {
           points: number
           recurrence: Database["public"]["Enums"]["task_recurrence"]
           source_chart_id: string | null
+          task_type: Database["public"]["Enums"]["task_type"]
           title: string
         }
         Insert: {
@@ -1133,6 +1134,7 @@ export type Database = {
           points?: number
           recurrence?: Database["public"]["Enums"]["task_recurrence"]
           source_chart_id?: string | null
+          task_type?: Database["public"]["Enums"]["task_type"]
           title: string
         }
         Update: {
@@ -1150,6 +1152,7 @@ export type Database = {
           points?: number
           recurrence?: Database["public"]["Enums"]["task_recurrence"]
           source_chart_id?: string | null
+          task_type?: Database["public"]["Enums"]["task_type"]
           title?: string
         }
         Relationships: [
@@ -1251,6 +1254,10 @@ export type Database = {
         }
         Returns: string
       }
+      claim_daily_chest: {
+        Args: { p_member_id: string; p_tz?: string }
+        Returns: Json
+      }
       complete_task: {
         Args: { p_member_id: string; p_task_id: string }
         Returns: Json
@@ -1289,6 +1296,10 @@ export type Database = {
       create_family_with_member: {
         Args: { p_name: string; p_nickname: string }
         Returns: string
+      }
+      ensure_daily_habits: {
+        Args: { p_family_id: string; p_member_id: string; p_tz: string }
+        Returns: undefined
       }
       expire_failed_challenges: { Args: never; Returns: undefined }
       generate_chore_tasks: { Args: never; Returns: undefined }
@@ -1373,6 +1384,7 @@ export type Database = {
       movie_status: "want_to_watch" | "watched"
       task_difficulty: "easy" | "medium" | "hard"
       task_recurrence: "none" | "daily" | "weekly" | "monthly"
+      task_type: "regular" | "daily_habit"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1514,6 +1526,7 @@ export const Constants = {
       movie_status: ["want_to_watch", "watched"],
       task_difficulty: ["easy", "medium", "hard"],
       task_recurrence: ["none", "daily", "weekly", "monthly"],
+      task_type: ["regular", "daily_habit"],
     },
   },
 } as const

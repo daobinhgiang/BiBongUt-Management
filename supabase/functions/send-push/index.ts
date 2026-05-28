@@ -23,6 +23,12 @@ interface WebhookPayload {
 
 Deno.serve(async (req) => {
   try {
+    // Verify webhook secret
+    const webhookSecret = Deno.env.get("SUPABASE_WEBHOOK_SECRET");
+    if (!webhookSecret || req.headers.get("x-webhook-secret") !== webhookSecret) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const payload: WebhookPayload = await req.json();
     const { record } = payload;
 

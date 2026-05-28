@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { profileKeys } from "@/features/gamification/api/profile";
 import { rewardKeys } from "./queries";
 import type {
@@ -28,14 +28,14 @@ async function createReward(
 
 export function useCreateReward() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: createReward,
     onSuccess: (newReward) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.setQueryData<RewardWithCreator[]>(
-        rewardKeys.all(family.family_id),
+        rewardKeys.all(member.family_id),
         (old) => (old ? [newReward, ...old] : [newReward]),
       );
     },
@@ -54,31 +54,31 @@ async function deleteReward(rewardId: string) {
 
 export function useDeleteReward() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: deleteReward,
     onMutate: async (rewardId) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       await qc.cancelQueries({
-        queryKey: rewardKeys.all(family.family_id),
+        queryKey: rewardKeys.all(member.family_id),
       });
       const previous = qc.getQueryData<RewardWithCreator[]>(
-        rewardKeys.all(family.family_id),
+        rewardKeys.all(member.family_id),
       );
       qc.setQueryData<RewardWithCreator[]>(
-        rewardKeys.all(family.family_id),
+        rewardKeys.all(member.family_id),
         (old) => old?.filter((r) => r.id !== rewardId) ?? [],
       );
       return { previous };
     },
     onError: (_err, _id, context) => {
-      if (!family?.family_id || !context?.previous) return;
-      qc.setQueryData(rewardKeys.all(family.family_id), context.previous);
+      if (!member?.family_id || !context?.previous) return;
+      qc.setQueryData(rewardKeys.all(member.family_id), context.previous);
     },
     onSettled: () => {
-      if (!family?.family_id) return;
-      qc.invalidateQueries({ queryKey: rewardKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      qc.invalidateQueries({ queryKey: rewardKeys.all(member.family_id) });
     },
   });
 }
@@ -101,17 +101,17 @@ async function redeemReward({
 
 export function useRedeemReward() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: redeemReward,
     onSuccess: () => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.invalidateQueries({
-        queryKey: profileKeys.member(family.id),
+        queryKey: profileKeys.member(member.id),
       });
       qc.invalidateQueries({
-        queryKey: rewardKeys.redemptions(family.family_id),
+        queryKey: rewardKeys.redemptions(member.family_id),
       });
       // Refresh the family query so coin balance updates in header
       qc.invalidateQueries({ queryKey: ["my-family"] });

@@ -9,7 +9,7 @@ import {
   User,
 } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useBucketListItem, useBucketListCompletion } from "../api/queries";
 import { useDeleteBucketListItem } from "../api/mutations";
 import { PhotoGrid } from "../components/PhotoGrid";
@@ -18,12 +18,12 @@ import { CATEGORY_CONFIG, PRIORITY_XP } from "../types";
 export function BucketListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: item, isLoading } = useBucketListItem(id);
   const { data: completion } = useBucketListCompletion(id);
   const deleteItem = useDeleteBucketListItem();
 
-  const isParent = family?.role === "parent";
+  const isParent = member?.role === "parent";
   const isCompleted = item?.status === "completed";
 
   const handleDelete = () => {

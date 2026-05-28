@@ -2,9 +2,8 @@ import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  Target,
   Lightning,
-  CurrencyCircleDollar,
+  CoinVertical,
   User,
   PencilLine,
   ArrowsClockwise,
@@ -16,7 +15,7 @@ import {
   ClockCounterClockwise,
 } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useTask, useTaskCompletions } from "../api/queries";
 import { useCompleteTask, useDeleteTask, type CompleteTaskResult } from "../api/mutations";
 import { XpToast } from "../components/XpToast";
@@ -28,21 +27,15 @@ import {
   type TaskCompletionWithMember,
 } from "../types";
 
-const DIFFICULTY_LABEL = {
-  easy: "Easy",
-  medium: "Medium",
-  hard: "Hard",
-} as const;
-
 export function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: task, isLoading } = useTask(id);
   const { data: completions } = useTaskCompletions(id);
   const completeTask = useCompleteTask();
   const deleteTask = useDeleteTask();
-  const isParent = family?.role === "parent";
+  const isParent = member?.role === "parent";
   const [toast, setToast] = useState<{ points: number; coins: number } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [badgeToast, setBadgeToast] = useState<string | null>(null);
@@ -74,11 +67,12 @@ export function TaskDetailScreen() {
   const deadlineLocal = task.due_date
     ? formatDeadlineLocal(task.due_date, creatorTz)
     : null;
+  const isDailyHabit = task.task_type === "daily_habit";
 
   const handleComplete = () => {
-    if (!family) return;
+    if (!member) return;
     completeTask.mutate(
-      { task, memberId: family.id },
+      { task, memberId: member.id },
       {
         onSuccess: (result: CompleteTaskResult) => {
           pendingCelebration.current = {
@@ -157,18 +151,17 @@ export function TaskDetailScreen() {
 
       {/* Meta */}
       <View className="flex-row flex-wrap gap-3">
-        <MetaChip
-          icon={<Target size={14} color="#6b7a54" />}
-          label={DIFFICULTY_LABEL[task.difficulty]}
-        />
-        <MetaChip
-          icon={<Lightning size={14} color="#819067" weight="fill" />}
-          label={`${task.points} XP`}
-        />
-        <MetaChip
-          icon={<CurrencyCircleDollar size={14} color="#807200" />}
-          label={`${task.coins_reward} coins`}
-        />
+        {isDailyHabit ? (
+          <MetaChip
+            icon={<Lightning size={14} color="#819067" weight="fill" />}
+            label={`${task.points} XP`}
+          />
+        ) : (
+          <MetaChip
+            icon={<CoinVertical size={14} color="#d97706" weight="fill" />}
+            label={`${task.coins_reward} coins`}
+          />
+        )}
         <MetaChip
           icon={<PencilLine size={14} color="#6b7a54" />}
           label={`by ${task.creator.nickname}`}
@@ -179,7 +172,7 @@ export function TaskDetailScreen() {
             label={task.assignee.nickname}
           />
         )}
-        {task.recurrence !== "none" && (
+        {task.recurrence !== "none" && !isDailyHabit && (
           <MetaChip
             icon={<ArrowsClockwise size={14} color="#6b7a54" />}
             label={task.recurrence}
@@ -211,7 +204,7 @@ export function TaskDetailScreen() {
       </View>
 
       {/* Complete button */}
-      {task.is_active && (!task.assignee_id || task.assignee_id === family?.id) && (
+      {task.is_active && (!task.assignee_id || task.assignee_id === member?.id) && (
         <Pressable
           className={`flex-row items-center justify-center gap-2 rounded-lg py-3 ${
             completeTask.isPending ? "bg-green-400" : "bg-green-600"
@@ -257,27 +250,41 @@ export function TaskDetailScreen() {
               Completion History
             </Text>
           </View>
-          {completions.map((c: TaskCompletionWithMember) => (
-            <View
-              key={c.id}
-              className="flex-row items-center justify-between rounded-lg bg-bark-50 px-3 py-2"
-            >
-              <Text className="text-sm text-gray-700">
-                {c.completed_by_member?.nickname ?? "Unknown"}
-              </Text>
-              <View className="flex-row items-center gap-2">
-                <View className="flex-row items-center gap-0.5">
-                  <Lightning size={12} color="#819067" weight="fill" />
-                  <Text className="text-xs text-jungle-600">
-                    +{c.points_awarded}
+          {completions.map((c: TaskCompletionWithMember) => {
+            const showXp = c.points_awarded > 0;
+            return (
+              <View
+                key={c.id}
+                className="flex-row items-center justify-between rounded-lg bg-bark-50 px-3 py-2"
+              >
+                <Text className="text-sm text-gray-700">
+                  {c.completed_by_member?.nickname ?? "Unknown"}
+                </Text>
+                <View className="flex-row items-center gap-2">
+                  <View className="flex-row items-center gap-0.5">
+                    {showXp ? (
+                      <>
+                        <Lightning size={12} color="#819067" weight="fill" />
+                        <Text className="text-xs text-jungle-600">
+                          +{c.points_awarded} XP
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <CoinVertical size={12} color="#d97706" weight="fill" />
+                        <Text className="text-xs text-amber-700">
+                          +{c.coins_awarded}
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                  <Text className="text-xs text-gray-400">
+                    {new Date(c.completed_at).toLocaleDateString()}
                   </Text>
                 </View>
-                <Text className="text-xs text-gray-400">
-                  {new Date(c.completed_at).toLocaleDateString()}
-                </Text>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       )}
     </ScrollView>

@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useCreateBucketListItem } from "../api/mutations";
 import { BucketListForm } from "../components/BucketListForm";
 import { PRIORITY_XP } from "../types";
@@ -9,11 +9,11 @@ import type { CreateBucketListFormValues } from "../schemas";
 
 export function BucketListCreateScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const createItem = useCreateBucketListItem();
 
   const handleSubmit = (values: CreateBucketListFormValues) => {
-    if (!family) return;
+    if (!member) return;
 
     createItem.mutate(
       {
@@ -23,8 +23,8 @@ export function BucketListCreateScreen() {
         priority: values.priority,
         target_date: values.target_date,
         points: PRIORITY_XP[values.priority],
-        family_id: family.family_id,
-        created_by: family.id,
+        family_id: member.family_id,
+        created_by: member.id,
       },
       {
         onSuccess: () => router.back(),

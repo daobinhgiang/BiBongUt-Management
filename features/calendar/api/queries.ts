@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type { EventWithAttendees } from "../types";
 
 const EVENT_SELECT =
@@ -70,12 +70,12 @@ async function fetchUpcomingEvents(
 }
 
 export function useMonthEvents(month: string) {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: eventKeys.month(family?.family_id ?? "", month),
-    queryFn: () => fetchMonthEvents(family!.family_id, month),
-    enabled: !!family?.family_id,
+    queryKey: eventKeys.month(member?.family_id ?? "", month),
+    queryFn: () => fetchMonthEvents(member!.family_id, month),
+    enabled: !!member?.family_id,
   });
 }
 
@@ -88,11 +88,11 @@ export function useEvent(eventId: string) {
 }
 
 export function useUpcomingEvents() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: eventKeys.upcoming(family?.family_id ?? ""),
-    queryFn: () => fetchUpcomingEvents(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: eventKeys.upcoming(member?.family_id ?? ""),
+    queryFn: () => fetchUpcomingEvents(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }

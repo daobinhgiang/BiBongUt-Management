@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { bucketListKeys } from "./queries";
 import type {
   BucketListItemInsert,
@@ -23,14 +23,14 @@ async function createItem(item: BucketListItemInsert): Promise<BucketListItemWit
 
 export function useCreateBucketListItem() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: createItem,
     onSuccess: (newItem) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.setQueryData<BucketListItemWithCreator[]>(
-        bucketListKeys.all(family.family_id),
+        bucketListKeys.all(member.family_id),
         (old) => (old ? [newItem, ...old] : [newItem]),
       );
     },
@@ -55,14 +55,14 @@ async function updateItem({ itemId, updates }: UpdateInput): Promise<BucketListI
 
 export function useUpdateBucketListItem() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: updateItem,
     onSuccess: (updated) => {
-      if (!family?.family_id) return;
+      if (!member?.family_id) return;
       qc.setQueryData<BucketListItemWithCreator[]>(
-        bucketListKeys.all(family.family_id),
+        bucketListKeys.all(member.family_id),
         (old) => old?.map((i) => (i.id === updated.id ? updated : i)) ?? [],
       );
       qc.setQueryData(bucketListKeys.detail(updated.id), updated);
@@ -79,29 +79,29 @@ async function deleteItem(itemId: string) {
 
 export function useDeleteBucketListItem() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: deleteItem,
     onMutate: async (itemId) => {
-      if (!family?.family_id) return;
-      await qc.cancelQueries({ queryKey: bucketListKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      await qc.cancelQueries({ queryKey: bucketListKeys.all(member.family_id) });
       const previous = qc.getQueryData<BucketListItemWithCreator[]>(
-        bucketListKeys.all(family.family_id),
+        bucketListKeys.all(member.family_id),
       );
       qc.setQueryData<BucketListItemWithCreator[]>(
-        bucketListKeys.all(family.family_id),
+        bucketListKeys.all(member.family_id),
         (old) => old?.filter((i) => i.id !== itemId) ?? [],
       );
       return { previous };
     },
     onError: (_err, _id, context) => {
-      if (!family?.family_id || !context?.previous) return;
-      qc.setQueryData(bucketListKeys.all(family.family_id), context.previous);
+      if (!member?.family_id || !context?.previous) return;
+      qc.setQueryData(bucketListKeys.all(member.family_id), context.previous);
     },
     onSettled: () => {
-      if (!family?.family_id) return;
-      qc.invalidateQueries({ queryKey: bucketListKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      qc.invalidateQueries({ queryKey: bucketListKeys.all(member.family_id) });
     },
   });
 }
@@ -131,15 +131,15 @@ async function completeItem(input: CompleteInput): Promise<string> {
 
 export function useCompleteBucketListItem() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: completeItem,
     onSuccess: (_completionId, vars) => {
-      if (!family?.family_id) return;
-      qc.invalidateQueries({ queryKey: bucketListKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      qc.invalidateQueries({ queryKey: bucketListKeys.all(member.family_id) });
       qc.invalidateQueries({ queryKey: bucketListKeys.detail(vars.itemId) });
-      qc.invalidateQueries({ queryKey: bucketListKeys.timeline(family.family_id) });
+      qc.invalidateQueries({ queryKey: bucketListKeys.timeline(member.family_id) });
       // Refresh gamification data (XP, level, badges changed)
       qc.invalidateQueries({ queryKey: ["profile"] });
       qc.invalidateQueries({ queryKey: ["badges"] });

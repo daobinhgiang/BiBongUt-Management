@@ -1,50 +1,47 @@
 import { create } from "zustand";
 
+import { getPersistentStorage } from "@/lib/persistent-storage";
+
+const STORAGE_KEY = "dev-mode-by-user";
+const LEGACY_STORAGE_KEY = "dev-mode-storage";
+
+type DevModePrefs = Record<string, boolean>;
+
 type DevModeState = {
   devMode: boolean;
+  userId: string | null;
+  setUserId: (userId: string | null) => void;
   toggle: () => void;
 };
-
-type KeyValueStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
-
-/**
- * Safe localStorage accessor — on native the expo-sqlite polyfill may not
- * be installed yet when this module is first evaluated. Fall back to an
- * in-memory map so the store never blocks app startup.
- */
-function safeStorage(): KeyValueStorage {
-  if (typeof globalThis !== "undefined" && "localStorage" in globalThis) {
-    try {
-      const ls = (globalThis as typeof globalThis & { localStorage: Storage })
-        .localStorage;
-      const probe = "__dev_mode_probe__";
-      ls.setItem(probe, probe);
-      ls.removeItem(probe);
-      return ls;
-    } catch {
-      /* storage unavailable */
-    }
-  }
-  const memory: Record<string, string> = {};
-  return {
-    getItem: (key: string) => memory[key] ?? null,
-    setItem: (key: string, value: string) => {
-      memory[key] = value;
-    },
-    removeItem: (key: string) => {
-      delete memory[key];
-    },
-  };
-}
-
-const STORAGE_KEY = "dev-mode-storage";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function readStoredDevMode(storage: KeyValueStorage): boolean {
-  const raw = storage.getItem(STORAGE_KEY);
+function readPrefs(): DevModePrefs {
+  const raw = getPersistentStorage().getItem(STORAGE_KEY);
+  if (!raw) return {};
+
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed)) return {};
+
+    const prefs: DevModePrefs = {};
+    for (const [userId, enabled] of Object.entries(parsed)) {
+      if (enabled === true) prefs[userId] = true;
+    }
+    return prefs;
+  } catch {
+    return {};
+  }
+}
+
+function writePrefs(prefs: DevModePrefs) {
+  getPersistentStorage().setItem(STORAGE_KEY, JSON.stringify(prefs));
+}
+
+function readLegacyDevMode(): boolean {
+  const raw = getPersistentStorage().getItem(LEGACY_STORAGE_KEY);
   if (!raw) return false;
 
   try {
@@ -60,21 +57,41 @@ function readStoredDevMode(storage: KeyValueStorage): boolean {
   }
 }
 
-function writeStoredDevMode(storage: KeyValueStorage, devMode: boolean) {
-  storage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ state: { devMode }, version: 0 }),
-  );
+function readDevModeForUser(userId: string): boolean {
+  const prefs = readPrefs();
+  if (userId in prefs) return prefs[userId] === true;
+
+  // One-time migration from the old single-user storage key.
+  const legacy = readLegacyDevMode();
+  if (legacy) {
+    writePrefs({ ...prefs, [userId]: true });
+    getPersistentStorage().removeItem(LEGACY_STORAGE_KEY);
+    return true;
+  }
+
+  return false;
 }
 
-const devModeStorage = safeStorage();
+function writeDevModeForUser(userId: string, devMode: boolean) {
+  writePrefs({ ...readPrefs(), [userId]: devMode });
+}
 
 export const useDevModeStore = create<DevModeState>()((set, get) => ({
-  devMode: readStoredDevMode(devModeStorage),
+  devMode: false,
+  userId: null,
+  setUserId: (userId) => {
+    set({
+      userId,
+      devMode: userId ? readDevModeForUser(userId) : false,
+    });
+  },
   toggle: () => {
-    const devMode = !get().devMode;
-    writeStoredDevMode(devModeStorage, devMode);
-    set({ devMode });
+    const { userId, devMode } = get();
+    if (!userId) return;
+
+    const next = !devMode;
+    writeDevModeForUser(userId, next);
+    set({ devMode: next });
   },
 }));
 

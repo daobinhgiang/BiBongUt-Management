@@ -1,7 +1,7 @@
 import { ActivityIndicator, Alert, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useChoreChart } from "../api/queries";
 import { useUpdateChoreChart } from "../api/mutations";
 import { ChoreChartForm } from "../components/ChoreChartForm";
@@ -10,7 +10,7 @@ import type { ChoreChartFormValues } from "../schemas";
 export function ChoreChartEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: chart, isLoading } = useChoreChart(id);
   const updateChart = useUpdateChoreChart();
 
@@ -35,7 +35,7 @@ export function ChoreChartEditScreen() {
 
   return (
     <ChoreChartForm
-      familyId={family?.family_id}
+      familyId={member?.family_id}
       onSubmit={handleSubmit}
       isPending={updateChart.isPending}
       submitLabel="Save Changes"

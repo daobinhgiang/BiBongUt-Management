@@ -9,24 +9,85 @@ export function localTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
+/** Normalize deprecated IANA aliases to canonical names */
+export function normalizeTimezone(tz: string): string {
+  if (tz === "Asia/Saigon") return "Asia/Ho_Chi_Minh";
+  return tz;
+}
+
+type TzDateParts = {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+};
+
+function datePartsInTz(epochMs: number, tz: string): TzDateParts {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(epochMs));
+
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((p) => p.type === type)?.value ?? 0);
+
+  return {
+    year: get("year"),
+    month: get("month"),
+    day: get("day"),
+    hour: get("hour"),
+    minute: get("minute"),
+    second: get("second"),
+  };
+}
+
+function compareLocalTimeToMidnight(
+  parts: TzDateParts,
+  y: number,
+  m: number,
+  d: number,
+): number {
+  if (parts.year !== y) return parts.year - y;
+  if (parts.month !== m) return parts.month - m;
+  if (parts.day !== d) return parts.day - d;
+  return parts.hour * 3600 + parts.minute * 60 + parts.second;
+}
+
 /**
  * Get midnight (start of day) for an ISO date string in a specific timezone.
  * Returns epoch ms in UTC.
  *
- * Example: midnightInTz("2026-05-24", "America/Los_Angeles")
- *   → epoch ms for May 24 00:00:00 PDT (which is May 24 07:00:00 UTC)
+ * Uses Intl.formatToParts only — safe on Hermes/iOS where parsing
+ * toLocaleString output via `new Date()` is unreliable.
  */
 function midnightInTz(isoDate: string, tz: string): number {
-  // Build a "wall clock" string for midnight of that date
-  const midnightStr = `${isoDate}T00:00:00`;
-  // Parse as if it were UTC
-  const utcGuess = new Date(midnightStr + "Z").getTime();
-  // Find the UTC offset at that moment in the target tz
-  const asUtc = new Date(utcGuess);
-  const inTz = new Date(asUtc.toLocaleString("en-US", { timeZone: tz }));
-  const offsetMs = inTz.getTime() - asUtc.getTime();
-  // Actual UTC moment = wall-clock time minus offset
-  return utcGuess - offsetMs;
+  const normalizedTz = normalizeTimezone(tz);
+  const [y, m, d] = isoDate.split("-").map(Number);
+
+  let lo = Date.UTC(y, m - 1, d - 2);
+  let hi = Date.UTC(y, m - 1, d + 2);
+
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const cmp = compareLocalTimeToMidnight(
+      datePartsInTz(mid, normalizedTz),
+      y,
+      m,
+      d,
+    );
+    if (cmp < 0) lo = mid + 1;
+    else hi = mid;
+  }
+
+  return lo;
 }
 
 /**
@@ -39,7 +100,7 @@ export function deadlineMoment(dueDate: string, creatorTz: string): number {
   // Next day's date string
   const nextDay = new Date(y, m - 1, d + 1);
   const ndStr = `${nextDay.getFullYear()}-${String(nextDay.getMonth() + 1).padStart(2, "0")}-${String(nextDay.getDate()).padStart(2, "0")}`;
-  return midnightInTz(ndStr, creatorTz);
+  return midnightInTz(ndStr, normalizeTimezone(creatorTz));
 }
 
 /**
@@ -59,8 +120,9 @@ export function isDueToday(
 ): boolean {
   if (!dueDate) return false;
 
-  const deadline = deadlineMoment(dueDate, creatorTz); // end of due date in creator tz
-  const activeStart = midnightInTz(dueDate, creatorTz); // start of due date in creator tz
+  const tz = normalizeTimezone(creatorTz);
+  const deadline = deadlineMoment(dueDate, tz); // end of due date in creator tz
+  const activeStart = midnightInTz(dueDate, tz); // start of due date in creator tz
 
   const now = new Date();
   const viewerTodayStart = new Date(
@@ -83,7 +145,7 @@ export function isOverdue(
   creatorTz: string,
 ): boolean {
   if (!dueDate) return false;
-  return deadlineMoment(dueDate, creatorTz) <= Date.now();
+  return deadlineMoment(dueDate, normalizeTimezone(creatorTz)) <= Date.now();
 }
 
 /**
@@ -96,9 +158,10 @@ export function formatDeadlineLocal(
   creatorTz: string,
 ): string | null {
   const viewerTz = localTimezone();
-  if (viewerTz === creatorTz) return null;
+  const normalizedCreatorTz = normalizeTimezone(creatorTz);
+  if (viewerTz === normalizedCreatorTz) return null;
 
-  const deadline = new Date(deadlineMoment(dueDate, creatorTz));
+  const deadline = new Date(deadlineMoment(dueDate, normalizedCreatorTz));
   return deadline.toLocaleString(undefined, {
     month: "short",
     day: "numeric",

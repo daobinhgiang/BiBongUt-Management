@@ -15,7 +15,7 @@ import {
   Gift,
 } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useRewards } from "../api/queries";
 import { useRedeemReward, useDeleteReward } from "../api/mutations";
 import { RewardCard } from "../components/RewardCard";
@@ -23,16 +23,16 @@ import type { RewardWithCreator, RedeemRewardResult } from "../types";
 
 export function RewardShopScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: rewards, isLoading } = useRewards();
   const redeemReward = useRedeemReward();
   const deleteReward = useDeleteReward();
 
-  const isParent = family?.role === "parent";
-  const myCoins = family?.coins ?? 0;
+  const isParent = member?.role === "parent";
+  const myCoins = member?.coins ?? 0;
 
   function handleRedeem(reward: RewardWithCreator) {
-    if (!family) return;
+    if (!member) return;
 
     Alert.alert(
       "Redeem Reward",
@@ -43,7 +43,7 @@ export function RewardShopScreen() {
           text: "Redeem",
           onPress: () => {
             redeemReward.mutate(
-              { rewardId: reward.id, memberId: family.id },
+              { rewardId: reward.id, memberId: member.id },
               {
                 onSuccess: (result: RedeemRewardResult) => {
                   Alert.alert(

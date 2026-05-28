@@ -55,6 +55,18 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "headers": {
+          "Cross-Origin-Embedder-Policy": "credentialless",
+          "Cross-Origin-Opener-Policy": "same-origin"
+        }
+      },
+      "eas": {
+        "projectId": "f27641da-4eca-44bc-af47-7e11396b7d61"
+      }
+    },
+    "owner": "daobinhgiang"
   }
 }
