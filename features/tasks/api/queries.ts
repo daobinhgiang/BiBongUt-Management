@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
+import { localToday } from "@/lib/date";
 import type { TaskWithAssignee, TaskCompletionWithMember, ChallengeTaskForList } from "../types";
 
 const TASK_SELECT =
@@ -14,6 +15,8 @@ export const taskKeys = {
     ["tasks", "completions", taskId] as const,
   challengeTasks: (familyId: string) =>
     ["tasks", "challenge", familyId] as const,
+  todayCompletions: (memberId: string) =>
+    ["tasks", "todayCompletions", memberId] as const,
 };
 
 // ── Fetch all active tasks for the family ──
@@ -70,22 +73,22 @@ async function fetchTaskCompletions(taskId: string): Promise<TaskCompletionWithM
 // ── Hooks ──
 
 export function useTasks() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: taskKeys.all(family?.family_id ?? ""),
-    queryFn: () => fetchTasks(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: taskKeys.all(member?.family_id ?? ""),
+    queryFn: () => fetchTasks(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }
 
 export function useCompletedTasks(enabled = true) {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: taskKeys.done(family?.family_id ?? ""),
-    queryFn: () => fetchCompletedTasks(family!.family_id),
-    enabled: enabled && !!family?.family_id,
+    queryKey: taskKeys.done(member?.family_id ?? ""),
+    queryFn: () => fetchCompletedTasks(member!.family_id),
+    enabled: enabled && !!member?.family_id,
   });
 }
 
@@ -136,11 +139,36 @@ async function fetchChallengeTasks(familyId: string): Promise<ChallengeTaskForLi
 }
 
 export function useChallengeTasks() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: taskKeys.challengeTasks(family?.family_id ?? ""),
-    queryFn: () => fetchChallengeTasks(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: taskKeys.challengeTasks(member?.family_id ?? ""),
+    queryFn: () => fetchChallengeTasks(member!.family_id),
+    enabled: !!member?.family_id,
+  });
+}
+
+// ── Today's completion count for hero progress ring ──
+
+async function fetchTodayCompletionCount(memberId: string): Promise<number> {
+  const today = localToday(); // YYYY-MM-DD
+  const { count, error } = await supabase
+    .from("task_completions")
+    .select("*", { count: "exact", head: true })
+    .eq("completed_by", memberId)
+    .gte("completed_at", `${today}T00:00:00`)
+    .lt("completed_at", `${today}T23:59:59.999`);
+
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export function useTodayCompletionCount() {
+  const { data: member } = useCurrentMember();
+
+  return useQuery({
+    queryKey: taskKeys.todayCompletions(member?.id ?? ""),
+    queryFn: () => fetchTodayCompletionCount(member!.id),
+    enabled: !!member?.id,
   });
 }

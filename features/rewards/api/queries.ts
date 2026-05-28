@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type { RewardWithCreator, RedemptionWithDetails } from "../types";
 
 const REWARD_SELECT =
@@ -44,21 +44,21 @@ async function fetchRedemptions(
 }
 
 export function useRewards() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: rewardKeys.all(family?.family_id ?? ""),
-    queryFn: () => fetchRewards(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: rewardKeys.all(member?.family_id ?? ""),
+    queryFn: () => fetchRewards(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }
 
 export function useRedemptionHistory() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: rewardKeys.redemptions(family?.family_id ?? ""),
-    queryFn: () => fetchRedemptions(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: rewardKeys.redemptions(member?.family_id ?? ""),
+    queryFn: () => fetchRedemptions(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }

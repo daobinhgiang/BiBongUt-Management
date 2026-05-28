@@ -2,12 +2,12 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { usePushNotifications } from "@/features/notifications";
 
 export default function AppLayout() {
   // Family data is prefetched in AuthGate — resolves from cache on first render
-  const { data: familyMember, isLoading, error } = useFamily();
+  const { data: familyMember, isLoading, error } = useCurrentMember();
 
   // Register push token + handle notification taps (non-blocking)
   usePushNotifications();
@@ -44,5 +44,12 @@ export default function AppLayout() {
   // Splash screen covers this while loading — no spinner needed
   if (isLoading) return null;
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: "#f5f2ea" },
+      }}
+    />
+  );
 }

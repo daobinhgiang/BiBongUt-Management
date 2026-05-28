@@ -1,18 +1,18 @@
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useCreateChallenge } from "../api/mutations";
 import { ChallengeForm } from "../components/ChallengeForm";
 import type { CreateChallengeFormValues } from "../schemas";
 
 export function ChallengeCreateScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const createChallenge = useCreateChallenge();
 
   const handleSubmit = (values: CreateChallengeFormValues) => {
-    if (!family) return;
+    if (!member) return;
 
     createChallenge.mutate(
       {
@@ -25,8 +25,8 @@ export function ChallengeCreateScreen() {
           reward_xp: values.reward_xp,
           reward_coins: values.reward_coins,
           end_date: values.end_date,
-          family_id: family.family_id,
-          created_by: family.id,
+          family_id: member.family_id,
+          created_by: member.id,
         },
         participantIds: values.participant_ids,
         tasks: values.tasks,
@@ -43,8 +43,8 @@ export function ChallengeCreateScreen() {
     <ChallengeForm
       onSubmit={handleSubmit}
       isPending={createChallenge.isPending}
-      familyId={family?.family_id}
-      creatorMemberId={family?.id}
+      familyId={member?.family_id}
+      creatorMemberId={member?.id}
     />
   );
 }

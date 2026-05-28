@@ -9,6 +9,6 @@
  */
 export * from "./types";
 export { useTasks, useTask, useCompletedTasks, useTaskCompletions, useChallengeTasks, taskKeys } from "./api/queries";
-export { useCreateTask, useCompleteTask, useUpdateTask, useDeleteTask } from "./api/mutations";
+export { useCreateTask, useCompleteTask, useUpdateTask, useDeleteTask, useEnsureDailyHabits, useClaimDailyChest } from "./api/mutations";
 export { useTaskActivities, activityKeys } from "./api/activity-queries";
 export { useUpsertActivity } from "./api/activity-mutations";

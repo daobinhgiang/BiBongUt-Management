@@ -8,13 +8,13 @@ import {
 import { useRouter } from "expo-router";
 import { Sword, Plus } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useChallenges } from "../api/queries";
 import { ChallengeCard } from "../components/ChallengeCard";
 
 export function ChallengeListScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: challenges, isLoading } = useChallenges();
 
   if (isLoading) {
@@ -45,14 +45,14 @@ export function ChallengeListScreen() {
               onPress={() =>
                 router.push(`/(app)/challenges/${item.id}`)
               }
-              myMemberId={family?.id}
+              myMemberId={member?.id}
             />
           )}
         />
       )}
 
       {/* FAB — any family member can create challenges */}
-      {family != null && (
+      {member != null && (
         <Pressable
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
           onPress={() => router.push("/(app)/challenges/new")}

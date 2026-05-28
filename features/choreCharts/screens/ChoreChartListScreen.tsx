@@ -2,13 +2,13 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native
 import { useRouter } from "expo-router";
 import { CalendarBlank, PlusIcon } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useChoreCharts } from "../api/queries";
 import { ChoreChartCard } from "../components/ChoreChartCard";
 
 export function ChoreChartListScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: charts, isLoading } = useChoreCharts();
   if (isLoading) {
     return (
@@ -41,7 +41,7 @@ export function ChoreChartListScreen() {
         />
       )}
 
-      {family != null && (
+      {member != null && (
         <Pressable
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
           onPress={() => router.push("/(app)/chore-charts/new")}

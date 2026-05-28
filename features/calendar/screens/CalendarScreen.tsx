@@ -14,7 +14,7 @@ import { CaretLeft, CaretRight, CaretDown } from "phosphor-react-native";
 import { useMonthEvents } from "../api/queries";
 import { useChoreCharts } from "@/features/choreCharts";
 import { useFamilyMembers } from "@/features/families";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { MonthGrid } from "../components/MonthGrid";
 import { EventCard } from "../components/EventCard";
 import type { EventWithAttendees } from "../types";
@@ -175,8 +175,8 @@ export function CalendarScreen() {
   const [pickerVisible, setPickerVisible] = useState(false);
   const { data: events = [], isLoading } = useMonthEvents(selectedMonth);
   const { data: charts } = useChoreCharts();
-  const { data: family } = useFamily();
-  const { data: members } = useFamilyMembers(family?.family_id);
+  const { data: member } = useCurrentMember();
+  const { data: members } = useFamilyMembers(member?.family_id);
 
   const dayEvents = selectedDate
     ? events.filter((e) => {

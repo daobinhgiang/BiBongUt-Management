@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type {
   ChallengeWithDetails,
   ChallengeLogWithParticipant,
@@ -93,22 +93,22 @@ async function fetchChallengeLogs(
 // ── Hooks ──
 
 export function useChallenges() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: challengeKeys.all(family?.family_id ?? ""),
-    queryFn: () => fetchChallenges(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: challengeKeys.all(member?.family_id ?? ""),
+    queryFn: () => fetchChallenges(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }
 
 export function useCompletedChallenges() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: challengeKeys.completed(family?.family_id ?? ""),
-    queryFn: () => fetchCompletedChallenges(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: challengeKeys.completed(member?.family_id ?? ""),
+    queryFn: () => fetchCompletedChallenges(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }
 

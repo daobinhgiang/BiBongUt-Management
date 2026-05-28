@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 
 export type MemberProfile = {
   id: string;
@@ -44,6 +44,6 @@ export function useMemberProfile(memberId: string | undefined) {
 }
 
 export function useMyProfile() {
-  const { data: family } = useFamily();
-  return useMemberProfile(family?.id);
+  const { data: member } = useCurrentMember();
+  return useMemberProfile(member?.id);
 }

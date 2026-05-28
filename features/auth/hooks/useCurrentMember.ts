@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth/ctx";
 import { getMyFamily } from "@/features/families";
 
-export function useFamily() {
+export function useCurrentMember() {
   const { session } = useSession();
 
   return useQuery({

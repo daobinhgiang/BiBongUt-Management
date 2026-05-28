@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type { ChoreChartWithSlots } from "../types";
 
 const CHART_SELECT =
@@ -35,12 +35,12 @@ async function fetchChoreChart(chartId: string): Promise<ChoreChartWithSlots> {
 }
 
 export function useChoreCharts() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: choreChartKeys.all(family?.family_id ?? ""),
-    queryFn: () => fetchChoreCharts(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: choreChartKeys.all(member?.family_id ?? ""),
+    queryFn: () => fetchChoreCharts(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }
 

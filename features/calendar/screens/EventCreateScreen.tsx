@@ -1,18 +1,18 @@
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useCreateEvent } from "../api/mutations";
 import { EventForm } from "../components/EventForm";
 import type { CreateEventFormValues } from "../schemas";
 
 export function EventCreateScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const createEvent = useCreateEvent();
 
   const handleSubmit = (values: CreateEventFormValues) => {
-    if (!family) return;
+    if (!member) return;
 
     const startAt = values.all_day
       ? new Date(new Date(values.start_at).setHours(0, 0, 0, 0)).toISOString()
@@ -29,8 +29,8 @@ export function EventCreateScreen() {
           start_at: startAt,
           end_at: endAt,
           all_day: values.all_day,
-          family_id: family.family_id,
-          created_by: family.id,
+          family_id: member.family_id,
+          created_by: member.id,
         },
         attendee_ids: values.attendee_ids,
       },
@@ -46,7 +46,7 @@ export function EventCreateScreen() {
     <EventForm
       onSubmit={handleSubmit}
       isPending={createEvent.isPending}
-      familyId={family?.family_id}
+      familyId={member?.family_id}
     />
   );
 }

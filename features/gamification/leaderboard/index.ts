@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { localWeekStart } from "@/lib/date";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type { LeaderboardEntry } from "../types";
 
 export const leaderboardKeys = {
@@ -77,19 +77,19 @@ async function fetchAllTimeLeaderboard(
 }
 
 export function useWeeklyLeaderboard() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   return useQuery({
-    queryKey: leaderboardKeys.weekly(family?.family_id ?? ""),
-    queryFn: () => fetchWeeklyLeaderboard(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: leaderboardKeys.weekly(member?.family_id ?? ""),
+    queryFn: () => fetchWeeklyLeaderboard(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }
 
 export function useAllTimeLeaderboard() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   return useQuery({
-    queryKey: leaderboardKeys.allTime(family?.family_id ?? ""),
-    queryFn: () => fetchAllTimeLeaderboard(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: leaderboardKeys.allTime(member?.family_id ?? ""),
+    queryFn: () => fetchAllTimeLeaderboard(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }

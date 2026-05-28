@@ -8,7 +8,7 @@ import {
   Trash,
 } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useEvent } from "../api/queries";
 import { useDeleteEvent, useUpdateAttendance } from "../api/mutations";
 import { AttendeeList } from "../components/AttendeeList";
@@ -17,7 +17,7 @@ import type { AttendanceStatus } from "../types";
 export function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: event, isLoading } = useEvent(id);
   const deleteEvent = useDeleteEvent();
   const updateAttendance = useUpdateAttendance();
@@ -30,8 +30,8 @@ export function EventDetailScreen() {
     );
   }
 
-  const isCreator = event.created_by === family?.id;
-  const isParent = family?.role === "parent";
+  const isCreator = event.created_by === member?.id;
+  const isParent = member?.role === "parent";
   const canEdit = isCreator || isParent;
 
   const handleDelete = () => {
@@ -55,8 +55,8 @@ export function EventDetailScreen() {
   };
 
   const handleRsvp = (status: AttendanceStatus) => {
-    if (!family) return;
-    updateAttendance.mutate({ eventId: event.id, memberId: family.id, status });
+    if (!member) return;
+    updateAttendance.mutate({ eventId: event.id, memberId: member.id, status });
   };
 
   const startDate = new Date(event.start_at);
@@ -121,7 +121,7 @@ export function EventDetailScreen() {
       {event.event_attendees.length > 0 && (
         <AttendeeList
           event={event}
-          currentMemberId={family?.id}
+          currentMemberId={member?.id}
           onRsvp={handleRsvp}
         />
       )}

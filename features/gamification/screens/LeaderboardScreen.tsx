@@ -15,7 +15,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
 import { useWeeklyLeaderboard, useAllTimeLeaderboard } from "../leaderboard";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type { LeaderboardEntry } from "../types";
 
 type Tab = "weekly" | "allTime";
@@ -24,7 +24,7 @@ export function LeaderboardScreen() {
   const [tab, setTab] = useState<Tab>("weekly");
   const weekly = useWeeklyLeaderboard();
   const allTime = useAllTimeLeaderboard();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const router = useRouter();
 
   const data = tab === "weekly" ? weekly.data : allTime.data;
@@ -68,7 +68,7 @@ export function LeaderboardScreen() {
             <LeaderboardRow
               entry={item}
               rank={index + 1}
-              isMe={item.member_id === family?.id}
+              isMe={item.member_id === member?.id}
               isWeekly={tab === "weekly"}
               onPress={() =>
                 router.push(`/(app)/profile/${item.member_id}`)

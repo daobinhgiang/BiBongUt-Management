@@ -1,7 +1,7 @@
 import { ActivityIndicator, Switch, Text, View } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 
 type NotificationPrefs = {
   task_assigned: boolean;
@@ -31,25 +31,25 @@ const DEFAULT_PREFS: NotificationPrefs = {
 };
 
 function useNotificationPrefs() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useQuery({
-    queryKey: ["notification-prefs", family?.id],
+    queryKey: ["notification-prefs", member?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("family_members")
         .select("notification_prefs")
-        .eq("id", family!.id)
+        .eq("id", member!.id)
         .single();
       if (error) throw error;
       return { ...DEFAULT_PREFS, ...(data.notification_prefs as NotificationPrefs) };
     },
-    enabled: !!family?.id,
+    enabled: !!member?.id,
   });
 }
 
 function useUpdateNotificationPrefs() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const qc = useQueryClient();
 
   return useMutation({
@@ -57,11 +57,11 @@ function useUpdateNotificationPrefs() {
       const { error } = await supabase
         .from("family_members")
         .update({ notification_prefs: prefs })
-        .eq("id", family!.id);
+        .eq("id", member!.id);
       if (error) throw error;
     },
     onSuccess: (_data, prefs) => {
-      qc.setQueryData(["notification-prefs", family?.id], prefs);
+      qc.setQueryData(["notification-prefs", member?.id], prefs);
     },
   });
 }

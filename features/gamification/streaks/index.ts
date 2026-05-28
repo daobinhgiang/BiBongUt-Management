@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { localToday } from "@/lib/date";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 
 export const streakKeys = {
   member: (memberId: string) => ["streaks", memberId] as const,
@@ -56,15 +56,15 @@ export function useStreak(memberId: string | undefined) {
 }
 
 export function useMyStreak() {
-  const { data: family } = useFamily();
-  return useStreak(family?.id);
+  const { data: member } = useCurrentMember();
+  return useStreak(member?.id);
 }
 
 export function useAtRiskStreaks() {
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   return useQuery({
-    queryKey: streakKeys.atRisk(family?.family_id ?? ""),
-    queryFn: () => fetchAtRiskStreaks(family!.family_id),
-    enabled: !!family?.family_id,
+    queryKey: streakKeys.atRisk(member?.family_id ?? ""),
+    queryFn: () => fetchAtRiskStreaks(member!.family_id),
+    enabled: !!member?.family_id,
   });
 }

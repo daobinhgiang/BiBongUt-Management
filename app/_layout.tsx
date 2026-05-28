@@ -26,6 +26,7 @@ import { useEffect, useRef } from "react";
 
 import { queryClient } from "@/lib/query-client";
 import { SessionProvider, useSession } from "@/lib/auth/ctx";
+import { DevModeSync } from "@/lib/stores/DevModeSync";
 import { getMyFamily } from "@/features/families";
 
 // Keep the native splash screen visible until we explicitly hide it
@@ -90,6 +91,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
+        <DevModeSync />
         <AuthGate />
       </SessionProvider>
     </QueryClientProvider>

@@ -6,7 +6,7 @@ import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { Rows, ForkKnife, Plus } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { CalendarScreen } from "@/features/calendar/screens/CalendarScreen";
 import { useChoreCharts } from "@/features/choreCharts";
 import { ChoreChartCard } from "@/features/choreCharts/components/ChoreChartCard";
@@ -15,9 +15,9 @@ type SubTab = "chores" | "meals" | null;
 
 export default function PlanScreen() {
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: charts } = useChoreCharts();
-  const isMember = family != null;
+  const isMember = member != null;
   const [activeSubTab, setActiveSubTab] = useState<SubTab>(null);
 
   const toggleSubTab = (tab: SubTab) =>

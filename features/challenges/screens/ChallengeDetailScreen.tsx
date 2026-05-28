@@ -20,7 +20,7 @@ import {
   Sword,
 } from "phosphor-react-native";
 
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { useChallenge, useChallengeLogs } from "../api/queries";
 import {
   useJoinChallenge,
@@ -46,7 +46,7 @@ function formatPostgrestError(err: unknown): string {
 export function ChallengeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const { data: challenge, isLoading } = useChallenge(id ?? "");
   const { data: logs } = useChallengeLogs(id ?? "");
   const joinChallenge = useJoinChallenge();
@@ -66,12 +66,12 @@ export function ChallengeDetailScreen() {
   /** Blocks duplicate RPC calls before React flips `isPending` (double-tap / web repeat events). */
   const completionInFlight = useRef(false);
 
-  const isParent = family?.role === "parent";
-  const isCreator = challenge?.created_by === family?.id;
+  const isParent = member?.role === "parent";
+  const isCreator = challenge?.created_by === member?.id;
   const participants = challenge?.challenge_participants ?? [];
   const challengeTasks = challenge?.challenge_tasks ?? [];
   const isJoined = participants.some(
-    (p) => p.family_member_id === family?.id,
+    (p) => p.family_member_id === member?.id,
   );
   const isActive = challenge?.status === "active";
 
@@ -96,11 +96,11 @@ export function ChallengeDetailScreen() {
         : "I'm... defeated...";
 
   function handleCompleteTask(taskId: string) {
-    if (!family || !id) return;
+    if (!member || !id) return;
     if (completionInFlight.current || completeTask.isPending) return;
     completionInFlight.current = true;
     completeTask.mutate(
-      { taskId, memberId: family.id, challengeId: id },
+      { taskId, memberId: member.id, challengeId: id },
       {
         onSuccess: (result) => {
           const r = result as {
@@ -130,9 +130,9 @@ export function ChallengeDetailScreen() {
   }
 
   function handleJoin() {
-    if (!family || !id) return;
+    if (!member || !id) return;
     joinChallenge.mutate(
-      { challengeId: id, memberId: family.id },
+      { challengeId: id, memberId: member.id },
       { onError: (err) => Alert.alert("Error", err.message) },
     );
   }
@@ -201,7 +201,7 @@ export function ChallengeDetailScreen() {
               const task = ct.task;
               const isDone = !task.is_active;
               const isMyTask =
-                !task.assignee_id || task.assignee_id === family?.id;
+                !task.assignee_id || task.assignee_id === member?.id;
               const canComplete =
                 isActive && isJoined && !isDone && isMyTask;
 

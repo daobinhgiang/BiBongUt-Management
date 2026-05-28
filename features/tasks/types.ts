@@ -13,6 +13,7 @@ export type TaskCompletionInsert = Tables["task_completions"]["Insert"];
 // ── Enums ──
 export type TaskDifficulty = Enums["task_difficulty"];
 export type TaskRecurrence = Enums["task_recurrence"];
+export type TaskType = Enums["task_type"];
 
 // ── Joined query results ──
 export type TaskWithAssignee = Task & {
@@ -22,16 +23,6 @@ export type TaskWithAssignee = Task & {
 
 export type TaskCompletionWithMember = TaskCompletion & {
   completed_by_member: { id: string; nickname: string } | null;
-};
-
-// ── Difficulty → default points/coins mapping ──
-export const DIFFICULTY_DEFAULTS: Record<
-  TaskDifficulty,
-  { points: number; coins: number }
-> = {
-  easy: { points: 5, coins: 2 },
-  medium: { points: 15, coins: 7 },
-  hard: { points: 50, coins: 25 },
 };
 
 // Re-export shared date helpers

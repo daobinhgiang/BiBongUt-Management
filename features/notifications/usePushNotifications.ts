@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/auth/ctx";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -59,16 +59,26 @@ async function registerForPushNotifications(): Promise<string | null> {
     return null;
   }
 
-  // Get Expo push token
   const projectId =
     Constants.expoConfig?.extra?.eas?.projectId ??
     Constants.easConfig?.projectId;
 
-  const { data: token } = await Notifications.getExpoPushTokenAsync({
-    projectId,
-  });
+  if (!projectId) {
+    console.log(
+      "[push] No EAS projectId found. Run `eas init` to link an Expo project."
+    );
+    return null;
+  }
 
-  return token;
+  try {
+    const { data: token } = await Notifications.getExpoPushTokenAsync({
+      projectId,
+    });
+    return token;
+  } catch (error) {
+    console.error("[push] Failed to get push token:", error);
+    return null;
+  }
 }
 
 /**
@@ -77,27 +87,30 @@ async function registerForPushNotifications(): Promise<string | null> {
  */
 export function usePushNotifications() {
   const { session } = useSession();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
   const router = useRouter();
   const notificationResponseRef = useRef<Notifications.Subscription>(null);
 
   // Register token on login
   useEffect(() => {
-    if (!session || !family?.id) return;
+    if (!session || !member?.id) return;
 
-    registerForPushNotifications().then(async (token) => {
-      if (!token) return;
-      if (__DEV__) console.log("[push] Token:", token);
+    registerForPushNotifications()
+      .then(async (token) => {
+        if (!token) return;
+        if (__DEV__) console.log("[push] Token:", token);
 
-      // Save token to family_members
-      const { error } = await supabase
-        .from("family_members")
-        .update({ push_token: token })
-        .eq("id", family.id);
+        const { error } = await supabase
+          .from("family_members")
+          .update({ push_token: token })
+          .eq("id", member.id);
 
-      if (error) console.error("[push] Failed to save token:", error);
-    });
-  }, [session, family?.id]);
+        if (error) console.error("[push] Failed to save token:", error);
+      })
+      .catch((error) => {
+        console.error("[push] Registration failed:", error);
+      });
+  }, [session, member?.id]);
 
   // Handle notification taps → deep link
   useEffect(() => {

@@ -13,7 +13,7 @@
  *
  * @see https://docs.expo.dev/router/advanced/tabs/
  */
-import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Tabs } from "expo-router";
 import {
   House,
@@ -24,15 +24,19 @@ import {
 } from "phosphor-react-native";
 
 import { useDevMode } from "@/lib/stores/developer-mode";
-import { StatsHeader } from "@/components/StatsHeader";
 import { AnimatedTabBar } from "@/components/AnimatedTabBar";
+
+const BARK_50 = "#f5f2ea";
 
 export default function TabLayout() {
   const devMode = useDevMode();
 
   return (
-    <View className="flex-1 bg-bark-50">
-      <StatsHeader />
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: BARK_50 }}
+      edges={["top"]}
+    >
       <Tabs
         tabBar={(props) => <AnimatedTabBar {...props} />}
         screenOptions={{
@@ -40,6 +44,7 @@ export default function TabLayout() {
           headerShown: false,
           animation: "none",
           freezeOnBlur: true,
+          sceneStyle: { backgroundColor: BARK_50 },
         }}
       >
         <Tabs.Screen
@@ -90,6 +95,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </View>
+    </SafeAreaView>
   );
 }

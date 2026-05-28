@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import type { Badge, BadgeWithUnlock } from "../types";
 
 export const badgeKeys = {
@@ -58,6 +58,6 @@ export function useMemberBadges(memberId: string | undefined) {
 }
 
 export function useMyBadges() {
-  const { data: family } = useFamily();
-  return useMemberBadges(family?.id);
+  const { data: member } = useCurrentMember();
+  return useMemberBadges(member?.id);
 }

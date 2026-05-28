@@ -74,8 +74,14 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     // Get the initial session on mount
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      setSession(initialSession);
+    supabase.auth.getSession().then(({ data: { session: initialSession }, error }) => {
+      if (error || !initialSession) {
+        // Stale/invalid refresh token — clear session so the auth gate redirects to login
+        setSession(null);
+        if (error) supabase.auth.signOut().catch(() => {});
+      } else {
+        setSession(initialSession);
+      }
       setIsLoading(false);
     });
 
@@ -84,7 +90,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (__DEV__) console.log("[auth]", event);
-      setSession(newSession);
+      if (event === "SIGNED_OUT" || (event === "TOKEN_REFRESHED" && !newSession)) {
+        setSession(null);
+      } else {
+        setSession(newSession);
+      }
     });
 
     return () => {

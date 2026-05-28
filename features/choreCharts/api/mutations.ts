@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useFamily } from "@/features/auth/hooks/useFamily";
+import { useCurrentMember } from "@/features/auth/hooks/useCurrentMember";
 import { choreChartKeys } from "./queries";
 import type { ChoreChartFormValues } from "../schemas";
 
@@ -15,7 +15,7 @@ async function createChart(input: CreateInput): Promise<string> {
   const { data, error } = await supabase.rpc("create_chore_chart", {
     p_family_id: input.family_id,
     p_title: input.title,
-    p_description: input.description ?? null,
+    p_description: input.description ?? undefined,
     p_difficulty: input.difficulty,
     p_points: input.points,
     p_coins_reward: input.coins_reward,
@@ -31,13 +31,13 @@ async function createChart(input: CreateInput): Promise<string> {
 
 export function useCreateChoreChart() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: createChart,
     onSuccess: () => {
-      if (!family?.family_id) return;
-      qc.invalidateQueries({ queryKey: choreChartKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      qc.invalidateQueries({ queryKey: choreChartKeys.all(member.family_id) });
     },
   });
 }
@@ -53,7 +53,7 @@ async function updateChart(input: UpdateInput): Promise<void> {
   const { error } = await supabase.rpc("update_chore_chart", {
     p_chart_id: input.chart_id,
     p_title: input.title,
-    p_description: input.description ?? null,
+    p_description: input.description ?? undefined,
     p_difficulty: input.difficulty,
     p_points: input.points,
     p_coins_reward: input.coins_reward,
@@ -68,13 +68,13 @@ async function updateChart(input: UpdateInput): Promise<void> {
 
 export function useUpdateChoreChart() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: updateChart,
     onSuccess: (_data, vars) => {
-      if (!family?.family_id) return;
-      qc.invalidateQueries({ queryKey: choreChartKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      qc.invalidateQueries({ queryKey: choreChartKeys.all(member.family_id) });
       qc.invalidateQueries({ queryKey: choreChartKeys.detail(vars.chart_id) });
     },
   });
@@ -92,13 +92,13 @@ async function deleteChart(chartId: string): Promise<void> {
 
 export function useDeleteChoreChart() {
   const qc = useQueryClient();
-  const { data: family } = useFamily();
+  const { data: member } = useCurrentMember();
 
   return useMutation({
     mutationFn: deleteChart,
     onSuccess: (_data, chartId) => {
-      if (!family?.family_id) return;
-      qc.invalidateQueries({ queryKey: choreChartKeys.all(family.family_id) });
+      if (!member?.family_id) return;
+      qc.invalidateQueries({ queryKey: choreChartKeys.all(member.family_id) });
       qc.removeQueries({ queryKey: choreChartKeys.detail(chartId) });
     },
   });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,9 +6,7 @@ import {
   TextT,
   FileText,
   User,
-  Target,
-  Lightning,
-  CurrencyCircleDollar,
+  CoinVertical,
   CalendarBlank,
   ArrowsClockwise,
   Check,
@@ -20,11 +18,9 @@ import {
   createTaskSchema,
   type CreateTaskFormValues,
 } from "../schemas";
-import { DIFFICULTY_DEFAULTS, localToday } from "../types";
-import type { TaskDifficulty } from "../types";
+import { localToday } from "../types";
 import { useFamilyMembers } from "@/features/families";
 
-const DIFFICULTIES: TaskDifficulty[] = ["easy", "medium", "hard"];
 const RECURRENCES = ["none", "daily", "weekly", "monthly"] as const;
 
 type Props = {
@@ -46,7 +42,6 @@ export function TaskForm({
 }: Props) {
   const { data: members = [] } = useFamilyMembers(familyId);
   const isEdit = !!initialValues;
-  const [userChangedDifficulty, setUserChangedDifficulty] = useState(false);
   const [showDescription, setShowDescription] = useState(
     !!initialValues?.description?.trim(),
   );
@@ -55,7 +50,6 @@ export function TaskForm({
     control,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<CreateTaskFormValues>({
     resolver: zodResolver(createTaskSchema),
@@ -63,23 +57,12 @@ export function TaskForm({
       title: "",
       description: "",
       assignee_id: null,
-      difficulty: "easy",
-      points: DIFFICULTY_DEFAULTS.easy.points,
-      coins_reward: DIFFICULTY_DEFAULTS.easy.coins,
+      coins_reward: 5,
       due_date: localToday(),
       recurrence: "none",
       ...initialValues,
     },
   });
-
-  const difficulty = watch("difficulty");
-
-  useEffect(() => {
-    if (isEdit && !userChangedDifficulty) return;
-    const defaults = DIFFICULTY_DEFAULTS[difficulty];
-    setValue("points", defaults.points);
-    setValue("coins_reward", defaults.coins);
-  }, [difficulty, setValue, isEdit, userChangedDifficulty]);
 
   return (
     <ScrollView
@@ -199,93 +182,27 @@ export function TaskForm({
         />
       </View>
 
-      {/* Difficulty */}
+      {/* Coins */}
       <View className="gap-1">
         <FieldLabel
-          icon={<Target size={14} color="#6b7a54" />}
-          label="Difficulty"
+          icon={<CoinVertical size={14} color="#d97706" weight="fill" />}
+          label="Coins"
         />
         <Controller
           control={control}
-          name="difficulty"
+          name="coins_reward"
           render={({ field: { onChange, value } }) => (
-            <View className="flex-row gap-2">
-              {DIFFICULTIES.map((d) => (
-                <Pressable
-                  key={d}
-                  className={`flex-1 items-center rounded-lg py-2 ${
-                    value === d ? "bg-jungle-500" : "bg-bark-100"
-                  }`}
-                  onPress={() => {
-                    onChange(d);
-                    setUserChangedDifficulty(true);
-                  }}
-                >
-                  <Text
-                    className={`text-sm font-semibold capitalize ${
-                      value === d ? "text-white" : "text-gray-700"
-                    }`}
-                  >
-                    {d}
-                  </Text>
-                  <Text
-                    className={`text-xs ${
-                      value === d ? "text-jungle-100" : "text-gray-400"
-                    }`}
-                  >
-                    {DIFFICULTY_DEFAULTS[d].points} XP
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+            <TextInput
+              className="rounded-lg border border-bark-200 px-3 py-2"
+              keyboardType="number-pad"
+              value={String(value)}
+              onChangeText={(t) => {
+                const n = Number(t);
+                onChange(Number.isNaN(n) ? 0 : n);
+              }}
+            />
           )}
         />
-      </View>
-
-      {/* Points & Coins (editable) */}
-      <View className="flex-row gap-3">
-        <View className="flex-1 gap-1">
-          <FieldLabel
-            icon={<Lightning size={14} color="#819067" weight="fill" />}
-            label="XP"
-          />
-          <Controller
-            control={control}
-            name="points"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                className="rounded-lg border border-bark-200 px-3 py-2"
-                keyboardType="number-pad"
-                value={String(value)}
-                onChangeText={(t) => {
-                  const n = Number(t);
-                  onChange(Number.isNaN(n) ? 0 : n);
-                }}
-              />
-            )}
-          />
-        </View>
-        <View className="flex-1 gap-1">
-          <FieldLabel
-            icon={<CurrencyCircleDollar size={14} color="#807200" />}
-            label="Coins"
-          />
-          <Controller
-            control={control}
-            name="coins_reward"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                className="rounded-lg border border-bark-200 px-3 py-2"
-                keyboardType="number-pad"
-                value={String(value)}
-                onChangeText={(t) => {
-                  const n = Number(t);
-                  onChange(Number.isNaN(n) ? 0 : n);
-                }}
-              />
-            )}
-          />
-        </View>
       </View>
 
       {/* Due Date */}
