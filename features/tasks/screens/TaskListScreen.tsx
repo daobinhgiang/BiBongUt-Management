@@ -10,60 +10,21 @@ import { useRouter } from "expo-router";
 import { ClipboardText, PlusIcon, Sword } from "phosphor-react-native";
 
 import { useFamily } from "@/features/auth/hooks/useFamily";
-import { useTasks, useCompletedTasks, useChallengeTasks } from "../api/queries";
+import { useTasks } from "../api/queries";
 import { useCompleteTask, type CompleteTaskResult } from "../api/mutations";
 import { TaskCard } from "../components/TaskCard";
-import { TaskFilterBar } from "../components/TaskFilterBar";
 import { XpToast } from "../components/XpToast";
 import { LevelUpModal } from "@/features/gamification/components/LevelUpModal";
 import { BadgeToast } from "@/features/gamification/components/BadgeToast";
-import {
-  isDueToday,
-  isOverdue as isTaskOverdue,
-  type TaskFilter,
-  type TaskWithAssignee,
-  type ChallengeTaskForList,
-} from "../types";
+import type { TaskWithAssignee } from "../types";
 
-function filterTasks(
-  tasks: TaskWithAssignee[],
-  filter: TaskFilter,
-  myMemberId: string | undefined,
-): TaskWithAssignee[] {
-  switch (filter) {
-    case "mine_today":
-      return tasks.filter(
-        (t) =>
-          t.assignee_id === myMemberId &&
-          isDueToday(t.due_date, t.creator_tz ?? "UTC"),
-      );
-    case "mine":
-      return tasks.filter((t) => t.assignee_id === myMemberId);
-    case "today":
-      return tasks.filter((t) =>
-        isDueToday(t.due_date, t.creator_tz ?? "UTC"),
-      );
-    case "overdue":
-      return tasks.filter((t) =>
-        isTaskOverdue(t.due_date, t.creator_tz ?? "UTC"),
-      );
-    default:
-      return tasks;
-  }
-}
-
-type SectionItem = TaskWithAssignee | ChallengeTaskForList;
-type Section = { title: string; data: SectionItem[] };
+type Section = { title: string; data: TaskWithAssignee[] };
 
 export function TaskListScreen() {
   const router = useRouter();
   const { data: family } = useFamily();
   const { data: tasks, isLoading } = useTasks();
-  const { data: completedTasks, isLoading: isLoadingDone } =
-    useCompletedTasks();
-  const { data: challengeTasks } = useChallengeTasks();
   const completeTask = useCompleteTask();
-  const [filter, setFilter] = useState<TaskFilter>("mine_today");
   const [toast, setToast] = useState<{
     points: number;
     coins: number;
@@ -86,33 +47,22 @@ export function TaskListScreen() {
     }
   }, []);
 
-  const isDoneFilter = filter === "done";
-  const isChallengeFilter = filter === "challenges";
-  const sourceData = isDoneFilter ? completedTasks : tasks;
+  const isChild = family?.role === "child";
 
   const sections = useMemo<Section[]>(() => {
-    if (isChallengeFilter) {
-      return challengeTasks?.length
-        ? [{ title: "Boss Battle Tasks", data: challengeTasks }]
-        : [];
+    let all = tasks ?? [];
+    if (all.length === 0) return [];
+
+    // Children only see tasks assigned to them (or unassigned)
+    if (isChild && family) {
+      all = all.filter(
+        (t) => !t.assignee_id || t.assignee_id === family.id,
+      );
     }
 
-    const filtered = isDoneFilter
-      ? (completedTasks ?? [])
-      : filterTasks(tasks ?? [], filter, family?.id);
-
-    if (filtered.length === 0) return [];
-
-    return [{ title: isDoneFilter ? "Completed" : "Tasks", data: filtered }];
-  }, [
-    tasks,
-    completedTasks,
-    challengeTasks,
-    filter,
-    family?.id,
-    isDoneFilter,
-    isChallengeFilter,
-  ]);
+    if (all.length === 0) return [];
+    return [{ title: "Tasks", data: all }];
+  }, [tasks, isChild, family]);
 
   const handleCompleteSuccess = useCallback((result: CompleteTaskResult) => {
     pendingCelebration.current = {
@@ -122,7 +72,7 @@ export function TaskListScreen() {
     setToast(result);
   }, []);
 
-  if (isLoading || (isDoneFilter && isLoadingDone)) {
+  if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-bark-50">
         <ActivityIndicator size="large" />
@@ -132,40 +82,21 @@ export function TaskListScreen() {
 
   return (
     <View className="flex-1 bg-bark-50">
-      <TaskFilterBar active={filter} onChange={setFilter} />
-
       {sections.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
           <ClipboardText size={48} color="#9ca3af" weight="duotone" />
           <Text className="mt-3 text-center text-base font-medium text-gray-500">
-            {isDoneFilter
-              ? "No completed tasks yet."
-              : isChallengeFilter
-                ? "No challenge tasks right now."
-                : (sourceData?.length ?? 0) === 0
-                  ? "No tasks yet. Tap + to create one."
-                  : "Nothing matches that filter."}
+            No tasks yet. Tap + to create one.
           </Text>
         </View>
       ) : (
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="gap-2 px-4 pb-24"
-          renderSectionHeader={({ section }) =>
-            sections.length > 1 ? (
-              <View className="flex-row items-center gap-2 pb-1 pt-3">
-                {section.title === "Boss Battle Tasks" && (
-                  <Sword size={16} color="#6b7a54" weight="bold" />
-                )}
-                <Text className="text-sm font-semibold text-jungle-700">
-                  {section.title}
-                </Text>
-              </View>
-            ) : null
-          }
+          contentContainerClassName="px-4 pb-24 pt-3"
+          ItemSeparatorComponent={() => <View className="h-3" />}
+          renderSectionHeader={() => null}
           renderItem={({ item }) => {
-            const isChallenge = "challenge_title" in item;
             const isAssignedToMe =
               !item.assignee_id || item.assignee_id === family?.id;
             return (
@@ -173,26 +104,18 @@ export function TaskListScreen() {
                 task={item}
                 onPress={() => router.push(`/(app)/tasks/${item.id}`)}
                 onComplete={() => {
-                  if (!family || isDoneFilter || isChallengeFilter) return;
+                  if (!family) return;
                   completeTask.mutate(
                     { task: item, memberId: family.id },
                     { onSuccess: handleCompleteSuccess },
                   );
                 }}
                 isCompleting={
-                  !isDoneFilter &&
-                  !isChallengeFilter &&
                   completeTask.isPending &&
                   completeTask.variables?.task.id === item.id
                 }
-                canComplete={
-                  !isDoneFilter && !isChallengeFilter && isAssignedToMe
-                }
-                subtitle={
-                  isChallenge
-                    ? `${(item as ChallengeTaskForList).challenge_title} — ${(item as ChallengeTaskForList).damage} dmg`
-                    : undefined
-                }
+                canComplete={isAssignedToMe}
+                showAssigneeAndDeadline={!isChild}
               />
             );
           }}
@@ -225,7 +148,6 @@ export function TaskListScreen() {
         onDismiss={() => setBadgeToast(null)}
       />
 
-      {/* FAB -- any family member can create tasks */}
       {family != null && (
         <Pressable
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-jungle-500 shadow-lg"
