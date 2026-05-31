@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSharedValue } from "react-native-reanimated";
 
 import { StatsHeader } from "@/components/StatsHeader";
 import { TaskListScreen } from "@/features/tasks/screens/TaskListScreen";
@@ -10,12 +11,16 @@ import { profileKeys } from "@/features/gamification/api/profile";
 export default function DoScreen() {
   const coinIconRef = useRef<View>(null);
   const [bonusCoins, setBonusCoins] = useState(0);
+  const coinPopScale = useSharedValue(1);
   const qc = useQueryClient();
   const { data: member } = useCurrentMember();
 
-  const handleCoinArrive = useCallback(() => {
-    setBonusCoins((prev) => prev + 1);
-  }, []);
+  const handleCoinArrive = useCallback(
+    (amount: number) => {
+      setBonusCoins((prev) => prev + amount);
+    },
+    [],
+  );
 
   const handleCoinsAnimationDone = useCallback(async () => {
     if (member?.id) {
@@ -28,9 +33,10 @@ export default function DoScreen() {
 
   return (
     <>
-      <StatsHeader coinIconRef={coinIconRef} bonusCoins={bonusCoins} />
+      <StatsHeader coinIconRef={coinIconRef} bonusCoins={bonusCoins} coinPopScale={coinPopScale} />
       <TaskListScreen
         coinIconRef={coinIconRef}
+        coinPopScale={coinPopScale}
         onCoinArrive={handleCoinArrive}
         onCoinsAnimationDone={handleCoinsAnimationDone}
       />
