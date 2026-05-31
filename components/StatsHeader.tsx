@@ -1,4 +1,9 @@
 import { View, Text } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  type SharedValue,
+} from "react-native-reanimated";
 import {
   Lightning,
   CoinVertical,
@@ -12,10 +17,17 @@ import { xpForLevel } from "@/features/gamification";
 type Props = {
   coinIconRef?: React.RefObject<View | null>;
   bonusCoins?: number;
+  coinPopScale?: SharedValue<number>;
 };
 
-export function StatsHeader({ coinIconRef, bonusCoins = 0 }: Props) {
+export function StatsHeader({ coinIconRef, bonusCoins = 0, coinPopScale }: Props) {
   const { data: profile } = useMyProfile();
+  const fallbackScale = useSharedValue(1);
+  const scale = coinPopScale ?? fallbackScale;
+
+  const coinPopStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   if (!profile) return null;
 
@@ -51,16 +63,17 @@ export function StatsHeader({ coinIconRef, bonusCoins = 0 }: Props) {
       </View>
 
       {/* Coins */}
-      <View
+      <Animated.View
         ref={coinIconRef}
         collapsable={false}
+        style={coinPopStyle}
         className="flex-row items-center gap-1"
       >
         <CoinVertical size={22} color="#d97706" weight="fill" />
         <Text className="text-base font-bold text-amber-700">
           {profile.coins + bonusCoins}
         </Text>
-      </View>
+      </Animated.View>
     </View>
   );
 }

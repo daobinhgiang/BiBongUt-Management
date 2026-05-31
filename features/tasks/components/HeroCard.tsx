@@ -27,17 +27,12 @@ export function HeroCard({ tasksLeft, totalToday, onGoPress }: Props) {
       </Text>
 
       {!noTasks && !allDone && (
-        <>
-          <Text className="mt-3 text-base text-gray-400">
-            {tasksLeft} of {totalToday} remaining
-          </Text>
-          <Pressable
-            className="mt-5 rounded-full bg-jungle-500 px-10 py-3"
-            onPress={onGoPress}
-          >
-            <Text className="text-lg font-bold text-white">Go</Text>
-          </Pressable>
-        </>
+        <Pressable
+          className="mt-5 rounded-full bg-jungle-500 px-10 py-3"
+          onPress={onGoPress}
+        >
+          <Text className="text-lg font-bold text-white">Go</Text>
+        </Pressable>
       )}
     </View>
   );

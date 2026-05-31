@@ -8,6 +8,7 @@ import Animated, {
   withSequence,
   withSpring,
   Easing,
+  type SharedValue,
 } from "react-native-reanimated";
 import { Check } from "phosphor-react-native";
 import { TreasureChestIcon } from "@/components/ui/TreasureChestIcon";
@@ -18,6 +19,8 @@ type Props = {
   onClaimChest: () => void;
   chestClaimed: boolean;
   isClaimingChest: boolean;
+  orbsAnimating?: boolean;
+  barPopScale?: SharedValue<number>;
 };
 
 const isWeb = Platform.OS === "web";
@@ -28,6 +31,8 @@ export function DailyProgressBar({
   onClaimChest,
   chestClaimed,
   isClaimingChest,
+  orbsAnimating = false,
+  barPopScale,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const chestContainerSize = Math.min(screenWidth * 0.14, 64);
@@ -37,6 +42,8 @@ export function DailyProgressBar({
   const fillWidth = useSharedValue(total > 0 ? completed / total : 0);
   const chestScale = useSharedValue(1);
   const buttonGlow = useSharedValue(0);
+  const fallbackScale = useSharedValue(1);
+  const scale = barPopScale ?? fallbackScale;
 
   // Animate fill when completed changes
   useEffect(() => {
@@ -79,6 +86,10 @@ export function DailyProgressBar({
     transform: [{ scale: chestScale.value }],
   }));
 
+  const barPopStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   const buttonGlowStyle = useAnimatedStyle(() => {
     if (isWeb) {
       const alpha = buttonGlow.value * 0.8;
@@ -103,19 +114,21 @@ export function DailyProgressBar({
   // Chest claimed state
   if (chestClaimed) {
     return (
-      <View className="mb-2 flex-row items-center justify-center gap-2 rounded-2xl bg-bark-100 py-3">
-        <Check size={18} color="#4a6741" weight="bold" />
-        <Text className="text-sm font-semibold text-jungle-600">
-          Daily chest claimed!
-        </Text>
+      <View className="mb-2 rounded-3xl bg-bark-100 px-6 py-6">
+        <View className="flex-row items-center justify-center gap-2">
+          <Check size={18} color="#4a6741" weight="bold" />
+          <Text className="text-sm font-semibold text-jungle-600">
+            Daily chest claimed!
+          </Text>
+        </View>
       </View>
     );
   }
 
   // Chest available — whole section becomes a glowing tappable button
-  if (allDone) {
+  if (allDone && !orbsAnimating) {
     return (
-      <View className="mb-2">
+      <View className="mb-2 rounded-3xl bg-bark-100 px-6 py-6">
         <Pressable onPress={handleChestPress} disabled={isClaimingChest}>
           <Animated.View
             style={[
@@ -149,9 +162,10 @@ export function DailyProgressBar({
 
   // Progress bar with locked chest at the end on the right
   return (
-    <View className="mb-2">
-      <View className="relative h-8 flex-row items-center">
-        <View className="h-8 flex-1 overflow-hidden rounded-full bg-bark-200 pr-10">
+    <View className="mb-2 rounded-3xl bg-bark-100 px-6 py-6">
+      <Animated.View style={barPopStyle}>
+        <View className="relative h-8 flex-row items-center">
+        <View className="h-8 flex-1 overflow-hidden rounded-full bg-white pr-10">
           <Animated.View
             style={[
               fillStyle,
@@ -168,7 +182,7 @@ export function DailyProgressBar({
             className="rounded-full"
           />
           <View className="absolute inset-0 items-center justify-center">
-            <Text className="text-xs font-bold text-white">
+            <Text className="text-xs font-bold text-bark-600">
               {completed}/{total} exp
             </Text>
           </View>
@@ -183,7 +197,8 @@ export function DailyProgressBar({
         >
           <TreasureChestIcon size={chestIconSize} color="#8a7a6a" />
         </View>
-      </View>
+        </View>
+      </Animated.View>
     </View>
   );
 }

@@ -8,9 +8,12 @@ import {
   Text,
   View,
   type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSharedValue, type SharedValue } from "react-native-reanimated";
 import { ArrowCounterClockwise, ClipboardText, PlusIcon } from "phosphor-react-native";
 
 import { useDevMode } from "@/lib/stores/developer-mode";
@@ -39,26 +42,41 @@ import type { TaskWithAssignee } from "../types";
 
 type Section = { title: string; data: TaskWithAssignee[] };
 type Point = { x: number; y: number };
+type Rect = { x: number; y: number; width: number; height: number };
 
 const DAILY_HABIT_TOTAL = 3;
 const DAILY_HABIT_XP = 5;
 const LIST_CONTENT_PADDING_TOP = 12;
 const MAX_FLYING_COINS = 8;
 
+function coinIncrementForOrb(
+  orbIndex: number,
+  totalCoins: number,
+  orbCount: number,
+): number {
+  if (orbCount <= 0) return 0;
+  const base = Math.floor(totalCoins / orbCount);
+  const remainder = totalCoins % orbCount;
+  return base + (orbIndex < remainder ? 1 : 0);
+}
+
 type FlyingCoinState = {
   from: Point;
   to: Point;
   count: number;
+  totalCoins: number;
   source: "chest" | "task";
+  targetRect: Rect;
 };
 
 type Props = {
   coinIconRef?: React.RefObject<View | null>;
-  onCoinArrive?: () => void;
+  coinPopScale?: SharedValue<number>;
+  onCoinArrive?: (amount: number) => void;
   onCoinsAnimationDone?: () => void;
 };
 
-export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone }: Props) {
+export function TaskListScreen({ coinIconRef, coinPopScale, onCoinArrive, onCoinsAnimationDone }: Props) {
   const router = useRouter();
   const qc = useQueryClient();
   const { data: member } = useCurrentMember();
@@ -85,14 +103,21 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
   const seededRef = useRef(false);
 
   // Flying orb + progress bar state
-  const [flyingOrb, setFlyingOrb] = useState<{ from: Point; to: Point; count: number } | null>(null);
+  const [flyingOrb, setFlyingOrb] = useState<{ from: Point; to: Point; count: number; targetRect: Rect; launchScrollY: number } | null>(null);
   const progressBarRef = useRef<View>(null);
+  const barPopScale = useSharedValue(1);
+  // Live scroll offset of the list so XP orbs track the progress bar as it scrolls
+  const scrollY = useSharedValue(0);
+  const preOrbCompleted = useRef(0);
+  const [orbsArrivedCount, setOrbsArrivedCount] = useState(0);
   const [chestClaimedLocal, setChestClaimedLocal] = useState(false);
   const chestClaimed = chestClaimedFromServer || chestClaimedLocal;
   const [chestReward, setChestReward] = useState<number | null>(null);
 
   // Flying coin state (shared for chest + task coins)
   const [flyingCoin, setFlyingCoin] = useState<FlyingCoinState | null>(null);
+  const flyingCoinRef = useRef(flyingCoin);
+  flyingCoinRef.current = flyingCoin;
 
   // Track origin of the last completed non-daily task for coin animation
   const pendingTaskOrigin = useRef<Point | null>(null);
@@ -169,6 +194,15 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
     listHeaderHeightRef.current = event.nativeEvent.layout.height;
   }, []);
 
+  // Mirror the list's scroll offset into a shared value (no setState → no re-render).
+  // Flying XP orbs read it to re-aim at the progress bar while it scrolls.
+  const handleScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollY.value = e.nativeEvent.contentOffset.y;
+    },
+    [scrollY],
+  );
+
   const handleGoPress = useCallback(() => {
     const targetOffset =
       LIST_CONTENT_PADDING_TOP + listHeaderHeightRef.current;
@@ -204,12 +238,14 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
       if (coins <= 0 || !origin || !coinIconRef?.current) return;
 
       coinIconRef.current.measureInWindow((x, y, width, height) => {
-        const to = { x: x + width / 2, y: y + height / 2 };
+        const orbCount = Math.min(coins, MAX_FLYING_COINS);
         setFlyingCoin({
           from: origin,
-          to,
-          count: Math.min(coins, MAX_FLYING_COINS),
+          to: { x: x + width / 2, y: y + height / 2 },
+          count: orbCount,
+          totalCoins: coins,
           source: "task",
+          targetRect: { x, y, width, height },
         });
       });
     },
@@ -228,13 +264,19 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
     (task: TaskWithAssignee, origin: Point) => {
       if (!member) return;
 
-      const launchOrbs = (to: Point) => {
-        const orbCount = Math.max(1, task.points);
-        setFlyingOrb({ from: origin, to, count: orbCount });
-      };
+      // Snapshot current fill before orbs start
+      preOrbCompleted.current = dailyCompleted * DAILY_HABIT_XP;
+      setOrbsArrivedCount(0);
 
       progressBarRef.current?.measureInWindow((x, y, width, height) => {
-        launchOrbs({ x: x + width / 2, y: y + height / 2 });
+        const orbCount = Math.max(1, task.points);
+        setFlyingOrb({
+          from: origin,
+          to: { x: x + width / 2, y: y + height / 2 },
+          count: orbCount,
+          targetRect: { x, y, width, height },
+          launchScrollY: scrollY.value,
+        });
       });
 
       completeTask.mutate(
@@ -242,11 +284,30 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
         { onSuccess: handleCompleteSuccess },
       );
     },
-    [member, completeTask, handleCompleteSuccess],
+    [member, completeTask, handleCompleteSuccess, dailyCompleted, scrollY],
+  );
+
+  const handleOrbArrive = useCallback((_orbIndex: number) => {
+    setOrbsArrivedCount((prev) => prev + 1);
+  }, []);
+
+  const handleCoinOrbArrive = useCallback(
+    (orbIndex: number) => {
+      const state = flyingCoinRef.current;
+      if (!state) return;
+      const increment = coinIncrementForOrb(
+        orbIndex,
+        state.totalCoins,
+        state.count,
+      );
+      onCoinArrive?.(increment);
+    },
+    [onCoinArrive],
   );
 
   const handleOrbsArrived = useCallback(() => {
     setFlyingOrb(null);
+    setOrbsArrivedCount(0);
   }, []);
 
   const handleClaimChest = useCallback(() => {
@@ -272,12 +333,14 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
       }
 
       coinIconRef.current.measureInWindow((x, y, width, height) => {
-        const to = { x: x + width / 2, y: y + height / 2 };
+        const orbCount = Math.min(coins, MAX_FLYING_COINS);
         setFlyingCoin({
           from: coinPosition,
-          to,
-          count: Math.min(coins, MAX_FLYING_COINS),
+          to: { x: x + width / 2, y: y + height / 2 },
+          count: orbCount,
+          totalCoins: coins,
           source: "chest",
+          targetRect: { x, y, width, height },
         });
       });
     },
@@ -301,6 +364,12 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
     );
   }
 
+  // While orbs are flying, step the fill up per orb instead of jumping to query value
+  const displayCompleted =
+    flyingOrb !== null
+      ? preOrbCompleted.current + orbsArrivedCount
+      : dailyCompleted * DAILY_HABIT_XP;
+
   const heroCard = (
     <View onLayout={handleListHeaderLayout}>
       <HeroCard
@@ -310,11 +379,13 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
       />
       <View ref={progressBarRef} collapsable={false}>
         <DailyProgressBar
-          completed={dailyCompleted * DAILY_HABIT_XP}
+          completed={displayCompleted}
           total={DAILY_HABIT_TOTAL * DAILY_HABIT_XP}
           onClaimChest={handleClaimChest}
           chestClaimed={chestClaimed}
           isClaimingChest={claimDailyChest.isPending}
+          orbsAnimating={flyingOrb !== null}
+          barPopScale={barPopScale}
         />
       </View>
     </View>
@@ -337,6 +408,8 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
           ref={sectionListRef}
           sections={sections}
           keyExtractor={(item) => item.id}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 96, paddingTop: 12 }}
           ItemSeparatorComponent={() => <View className="h-3" />}
           renderSectionHeader={({ section }) => (
@@ -384,7 +457,12 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
               from={flyingOrb.from}
               to={flyingOrb.to}
               count={flyingOrb.count}
+              onOrbArrive={handleOrbArrive}
               onAllArrived={handleOrbsArrived}
+              targetPopScale={barPopScale}
+              targetRect={flyingOrb.targetRect}
+              scrollY={scrollY}
+              launchScrollY={flyingOrb.launchScrollY}
             />
           </View>
         </Modal>
@@ -398,8 +476,10 @@ export function TaskListScreen({ coinIconRef, onCoinArrive, onCoinsAnimationDone
               from={flyingCoin.from}
               to={flyingCoin.to}
               count={flyingCoin.count}
-              onCoinArrive={onCoinArrive}
+              onCoinArrive={handleCoinOrbArrive}
               onAllArrived={handleCoinsArrived}
+              targetPopScale={coinPopScale}
+              targetRect={flyingCoin.targetRect}
             />
           </View>
         </Modal>
